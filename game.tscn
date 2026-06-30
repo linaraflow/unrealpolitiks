@@ -1,0 +1,242 @@
+[gd_scene format=4 uid="uid://ij512lr78ddd"]
+
+[ext_resource type="Shader" uid="uid://xn8w8kgxotvn" path="res://game.gdshader" id="1_feb5d"]
+[ext_resource type="Texture2D" uid="uid://d4av1ydgjmb2n" path="res://VisualMap_alpha_03.png" id="2_215e1"]
+[ext_resource type="Script" uid="uid://mxtsm64ad2jr" path="res://scripts/map.gd" id="3_hb5m1"]
+[ext_resource type="Script" uid="uid://s5wqfaaqwfp" path="res://scripts/selection_box.gd" id="5_x5p1p"]
+[ext_resource type="PackedScene" uid="uid://uh1sd1fvacpa" path="res://CounrtyMenu.tscn" id="6_mfdv2"]
+[ext_resource type="Resource" uid="uid://bhx1w7f44qx7h" path="res://new_resource.tres" id="6_ryrav"]
+[ext_resource type="PackedScene" uid="uid://b50l3xjltcm0l" path="res://DivisionMenu.tscn" id="7_80cx4"]
+[ext_resource type="PackedScene" uid="uid://cbj0ixihecpff" path="res://ProvinceMenu.tscn" id="8_j5wjh"]
+[ext_resource type="PackedScene" uid="uid://d1sj147vs04l7" path="res://Exit_menu.tscn" id="8_mfdv2"]
+[ext_resource type="PackedScene" uid="uid://b14dkd4blc7n5" path="res://DevMenu.tscn" id="9_80cx4"]
+[ext_resource type="PackedScene" uid="uid://6xx7f8a4rcsk" path="res://Date.tscn" id="11_lc2xo"]
+[ext_resource type="PackedScene" uid="uid://cj1in6tdy6kyq" path="res://BalanceMenu.tscn" id="12_7sc4i"]
+[ext_resource type="Script" uid="uid://dx01a1dmagols" path="res://scripts/blue.gd" id="13_i2p71"]
+[ext_resource type="PackedScene" uid="uid://byyy3krch8deb" path="res://NegotiationMenu.tscn" id="14_e8heu"]
+[ext_resource type="Script" uid="uid://rs2yte7mkhc7" path="res://scripts/flag_rect.gd" id="14_xa8c5"]
+[ext_resource type="Script" uid="uid://vkd6brrqe1wh" path="res://scripts/war_banner.gd" id="20_36jdj"]
+[ext_resource type="Script" uid="uid://4krs8r4ah56r" path="res://scripts/camera_2d.gd" id="21_xfvwf"]
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_iotsf"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_fc0e3"]
+shader = ExtResource("1_feb5d")
+shader_parameter/tech_map = SubResource("CompressedTexture2D_iotsf")
+shader_parameter/country_colors = PackedVector4Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+shader_parameter/selected_province_color = Vector3(-1, -1, -1)
+shader_parameter/highlight_time = -1.0
+shader_parameter/camera_pos = Vector2(0, 0)
+shader_parameter/texture_size = Vector2(1, 1)
+shader_parameter/stripe_width = 5.0
+shader_parameter/stripe_opacity = 0.45
+shader_parameter/negotiation_mode = false
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_lc2xo"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_215e1"]
+bg_color = Color(1, 0.21568628, 0.11372549, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+
+[node name="Game" type="Node2D" unique_id=1162060292]
+texture_filter = 1
+
+[node name="Map" type="Sprite2D" parent="." unique_id=750627191]
+material = SubResource("ShaderMaterial_fc0e3")
+position = Vector2(1078.33, 606.565)
+scale = Vector2(1.1232638, 1.1232638)
+texture = ExtResource("2_215e1")
+script = ExtResource("3_hb5m1")
+settings = ExtResource("6_ryrav")
+
+[node name="SelectionBox" type="Control" parent="." unique_id=1158140647]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 3840.0
+offset_bottom = 2160.0
+mouse_filter = 2
+script = ExtResource("5_x5p1p")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=2005519769]
+
+[node name="CountryMenu" parent="CanvasLayer" unique_id=1494951920 instance=ExtResource("6_mfdv2")]
+offset_left = 24.0
+offset_top = 85.49
+offset_right = 24.0
+offset_bottom = 85.49
+size_flags_horizontal = 4
+metadata/_edit_use_anchors_ = true
+
+[node name="DivisionMenu" parent="CanvasLayer" unique_id=770860264 instance=ExtResource("7_80cx4")]
+offset_left = 24.0
+offset_top = 509.27
+offset_right = 24.0
+offset_bottom = 509.27
+
+[node name="DevMenu" parent="CanvasLayer" unique_id=1311671348 instance=ExtResource("9_80cx4")]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_bottom = 0.0
+offset_left = -256.0
+offset_top = 40.0
+offset_bottom = 319.0
+grow_horizontal = 0
+grow_vertical = 1
+
+[node name="BLUE" type="Button" parent="CanvasLayer" unique_id=1940952531]
+custom_minimum_size = Vector2(200, 80)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -100.0
+offset_top = -40.0
+offset_right = 100.0
+offset_bottom = 40.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+text = "Choose Country"
+script = ExtResource("13_i2p71")
+settings = ExtResource("6_ryrav")
+
+[node name="FlagRect" type="Button" parent="CanvasLayer" unique_id=900807940]
+offset_left = 24.0
+offset_top = 27.0
+offset_right = 105.0
+offset_bottom = 72.99995
+theme_override_styles/normal = SubResource("StyleBoxTexture_lc2xo")
+script = ExtResource("14_xa8c5")
+settings = ExtResource("6_ryrav")
+
+[node name="Date" parent="CanvasLayer" unique_id=1563938549 instance=ExtResource("11_lc2xo")]
+
+[node name="Exit_menu" parent="CanvasLayer" unique_id=1693922976 instance=ExtResource("8_mfdv2")]
+process_mode = 3
+visible = false
+
+[node name="NegotiationMenu" parent="CanvasLayer" unique_id=1683955890 instance=ExtResource("14_e8heu")]
+visible = false
+offset_right = -1497.0
+
+[node name="BalanceMenu" parent="CanvasLayer" unique_id=898268288 instance=ExtResource("12_7sc4i")]
+offset_left = 115.21
+offset_top = 27.0
+offset_right = 115.21
+offset_bottom = 27.0
+
+[node name="ProvinceMenu" parent="CanvasLayer" unique_id=329358764 instance=ExtResource("8_j5wjh")]
+offset_left = 24.0
+offset_top = 335.57
+offset_right = 24.0
+offset_bottom = 335.57
+
+[node name="WarBanner" type="CanvasLayer" parent="." unique_id=317580348]
+script = ExtResource("20_36jdj")
+
+[node name="BannerPanel" type="Panel" parent="WarBanner" unique_id=370706674]
+clip_contents = true
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -171.5
+offset_top = 112.0
+offset_right = 171.5
+offset_bottom = 227.00015
+grow_horizontal = 2
+
+[node name="RedAccent" type="Panel" parent="WarBanner/BannerPanel" unique_id=1430224056]
+layout_mode = 0
+offset_left = -0.5
+offset_top = -0.48999786
+offset_right = 342.5
+offset_bottom = 12.510002
+theme_override_styles/panel = SubResource("StyleBoxFlat_215e1")
+
+[node name="FlagA" type="TextureRect" parent="WarBanner/BannerPanel" unique_id=1619914023]
+layout_mode = 0
+offset_left = 40.24
+offset_top = 23.78
+offset_right = 96.20037
+offset_bottom = 55.559998
+expand_mode = 2
+
+[node name="FlagB" type="TextureRect" parent="WarBanner/BannerPanel" unique_id=795369609]
+layout_mode = 0
+offset_left = 244.57
+offset_top = 23.78
+offset_right = 300.5304
+offset_bottom = 55.559998
+expand_mode = 2
+
+[node name="AggressorName" type="Label" parent="WarBanner/BannerPanel" unique_id=1748614742]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_top = -1.5000725
+offset_right = 135.0
+offset_bottom = 21.499928
+grow_vertical = 2
+theme_override_font_sizes/font_size = 10
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="DefenderName" type="Label" parent="WarBanner/BannerPanel" unique_id=1919295798]
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -134.5
+offset_top = -1.5000725
+offset_right = 0.49993896
+offset_bottom = 21.499928
+grow_horizontal = 0
+grow_vertical = 2
+theme_override_font_sizes/font_size = 10
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="WarLabel" type="Label" parent="WarBanner/BannerPanel" unique_id=49652215]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -34.5
+offset_top = 34.13
+offset_right = 34.5
+offset_bottom = 50.130013
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 14
+text = "Declares war"
+
+[node name="CasusBelliLabel" type="Label" parent="WarBanner/BannerPanel" unique_id=1422543999]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.43
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -91.0
+offset_top = 34.32997
+offset_right = 94.0
+offset_bottom = 49.209976
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 11
+text = "???"
+horizontal_alignment = 1
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=436452401]
+position = Vector2(1076.65, 605.93)
+script = ExtResource("21_xfvwf")
+
+[connection signal="pressed" from="CanvasLayer/BLUE" to="CanvasLayer/BLUE" method="_on_pressed"]
+[connection signal="mouse_entered" from="CanvasLayer/FlagRect" to="CanvasLayer/FlagRect" method="_on_mouse_entered"]
+[connection signal="mouse_exited" from="CanvasLayer/FlagRect" to="CanvasLayer/FlagRect" method="_on_mouse_exited"]
+[connection signal="pressed" from="CanvasLayer/FlagRect" to="CanvasLayer/FlagRect" method="_on_pressed"]

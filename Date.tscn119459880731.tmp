@@ -1,0 +1,125 @@
+[gd_scene format=3 uid="uid://6xx7f8a4rcsk"]
+
+[ext_resource type="Script" uid="uid://bk0y1mqr1uqtt" path="res://date_label.gd" id="1_mucso"]
+[ext_resource type="Script" uid="uid://r6brx2c108ax" path="res://panel_2.gd" id="1_qlixl"]
+[ext_resource type="Script" uid="uid://ks08etqdqn8y" path="res://pause_button.gd" id="2_rxh8r"]
+[ext_resource type="Resource" uid="uid://bhx1w7f44qx7h" path="res://new_resource.tres" id="3_opceo"]
+[ext_resource type="Script" uid="uid://bklktkqi4u6s" path="res://plus_speed_button.gd" id="4_kosmi"]
+[ext_resource type="Script" uid="uid://w28t1x7anejm" path="res://minus_speed_button.gd" id="5_2n4x8"]
+[ext_resource type="Script" uid="uid://bmbjsiu107w1v" path="res://speed_label.gd" id="6_kvvtr"]
+[ext_resource type="Texture2D" uid="uid://due03bxc3mlaj" path="res://assets/minus_speed.png" id="6_l6tke"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_kvvtr"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_qlixl"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_l6tke"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_cytfv"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_hv37e"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_jehlj"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kvvtr"]
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[node name="Date" type="Control" unique_id=1563938549]
+layout_mode = 3
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+grow_horizontal = 2
+
+[node name="Panel2" type="Panel" parent="." unique_id=226907444]
+layout_mode = 0
+offset_left = -116.0
+offset_top = 3.0
+offset_right = 116.0
+offset_bottom = 27.0
+theme_override_styles/panel = SubResource("StyleBoxEmpty_kvvtr")
+script = ExtResource("1_qlixl")
+
+[node name="DateLabel" type="Label" parent="." unique_id=1484784717]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -53.0
+offset_right = 53.0
+offset_bottom = 31.0
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 20
+text = "01.01.2013"
+horizontal_alignment = 1
+script = ExtResource("1_mucso")
+
+[node name="PauseButton" type="Button" parent="." unique_id=1856095882]
+layout_mode = 0
+offset_left = 61.0
+offset_top = 3.0
+offset_right = 85.0
+offset_bottom = 27.0
+script = ExtResource("2_rxh8r")
+settings = ExtResource("3_opceo")
+
+[node name="PlusSpeedButton" type="Button" parent="." unique_id=441127151]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 0
+offset_left = -85.0
+offset_top = 3.0
+offset_right = -61.0
+offset_bottom = 27.0
+theme_override_font_sizes/font_size = 11
+script = ExtResource("4_kosmi")
+
+[node name="MinusSpeedButton" type="Button" parent="." unique_id=1621220236]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 0
+offset_left = -116.0
+offset_top = 3.0
+offset_right = -92.0
+offset_bottom = 27.0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_qlixl")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_l6tke")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_cytfv")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_hv37e")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_jehlj")
+icon = ExtResource("6_l6tke")
+expand_icon = true
+script = ExtResource("5_2n4x8")
+
+[node name="Panel" type="Panel" parent="." unique_id=2063257494]
+layout_mode = 0
+offset_left = 92.0
+offset_top = 3.0
+offset_right = 116.0
+offset_bottom = 27.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_kvvtr")
+
+[node name="SpeedLabel" type="Label" parent="Panel" unique_id=438151119]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -20.0
+offset_top = 2.0
+offset_right = -4.0
+offset_bottom = 22.0
+grow_horizontal = 0
+theme_override_font_sizes/font_size = 14
+text = "x1"
+script = ExtResource("6_kvvtr")
+
+[connection signal="mouse_entered" from="PauseButton" to="PauseButton" method="_on_mouse_entered"]
+[connection signal="mouse_exited" from="PauseButton" to="PauseButton" method="_on_mouse_exited"]
+[connection signal="pressed" from="PauseButton" to="PauseButton" method="_on_pressed"]
+[connection signal="mouse_entered" from="PlusSpeedButton" to="PlusSpeedButton" method="_on_mouse_entered"]
+[connection signal="mouse_exited" from="PlusSpeedButton" to="PlusSpeedButton" method="_on_mouse_exited"]
+[connection signal="pressed" from="PlusSpeedButton" to="PlusSpeedButton" method="_on_pressed"]
+[connection signal="mouse_entered" from="MinusSpeedButton" to="MinusSpeedButton" method="_on_mouse_entered"]
+[connection signal="mouse_exited" from="MinusSpeedButton" to="MinusSpeedButton" method="_on_mouse_exited"]
+[connection signal="pressed" from="MinusSpeedButton" to="MinusSpeedButton" method="_on_pressed"]

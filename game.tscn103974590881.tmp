@@ -1,0 +1,62 @@
+[gd_scene format=3 uid="uid://ij512lr78ddd"]
+
+[ext_resource type="Texture2D" uid="uid://c6wtrt26ceyrg" path="res://germany_visual.png" id="1_e2o6t"]
+[ext_resource type="Shader" uid="uid://xn8w8kgxotvn" path="res://game.gdshader" id="1_feb5d"]
+[ext_resource type="Texture2D" uid="uid://dix4sjf7jy5aw" path="res://germany_tech.png" id="2_fc0e3"]
+[ext_resource type="Script" uid="uid://b33lgdybm8hh" path="res://map.gd" id="2_feb5d"]
+[ext_resource type="Script" uid="uid://caw8xlnsy7gon" path="res://blue.gd" id="5_7jktm"]
+[ext_resource type="Resource" uid="uid://bhx1w7f44qx7h" path="res://new_resource.tres" id="6_ryrav"]
+[ext_resource type="Script" uid="uid://dnnq8hqm7yohb" path="res://pink.gd" id="7_eow3j"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_fc0e3"]
+shader = ExtResource("1_feb5d")
+shader_parameter/tech_map = ExtResource("2_fc0e3")
+shader_parameter/paint_color = Color(0, 0, 0, 1)
+
+[node name="Game" type="Node2D" unique_id=1162060292]
+
+[node name="Map" type="Sprite2D" parent="." unique_id=750627191]
+material = SubResource("ShaderMaterial_fc0e3")
+position = Vector2(577.1111, 323.5)
+scale = Vector2(1.1232638, 1.1232638)
+texture = ExtResource("1_e2o6t")
+script = ExtResource("2_feb5d")
+settings = ExtResource("6_ryrav")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=2005519769]
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer" unique_id=1716800196]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -202.0
+offset_top = -40.0
+offset_right = 202.0
+offset_bottom = 40.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_constants/separation = 15
+alignment = 1
+
+[node name="BLUE" type="Button" parent="CanvasLayer/HBoxContainer" unique_id=1940952531]
+custom_minimum_size = Vector2(200, 80)
+layout_mode = 2
+size_flags_vertical = 0
+text = "BLUE"
+script = ExtResource("5_7jktm")
+settings = ExtResource("6_ryrav")
+
+[node name="PINK" type="Button" parent="CanvasLayer/HBoxContainer" unique_id=808375015]
+custom_minimum_size = Vector2(200, 80)
+layout_mode = 2
+size_flags_vertical = 0
+text = "PINK"
+script = ExtResource("7_eow3j")
+settings = ExtResource("6_ryrav")
+
+[connection signal="pressed" from="CanvasLayer/HBoxContainer/BLUE" to="CanvasLayer/HBoxContainer/BLUE" method="_on_pressed"]
+[connection signal="pressed" from="CanvasLayer/HBoxContainer/PINK" to="CanvasLayer/HBoxContainer/PINK" method="_on_pressed"]

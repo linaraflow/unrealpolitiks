@@ -1,0 +1,20 @@
+[gd_scene format=3 uid="uid://ij512lr78ddd"]
+
+[ext_resource type="Texture2D" uid="uid://c6wtrt26ceyrg" path="res://germany_visual.png" id="1_e2o6t"]
+[ext_resource type="Shader" uid="uid://xn8w8kgxotvn" path="res://game.gdshader" id="1_feb5d"]
+[ext_resource type="Texture2D" uid="uid://dix4sjf7jy5aw" path="res://germany_tech.png" id="2_fc0e3"]
+[ext_resource type="Script" uid="uid://b33lgdybm8hh" path="res://map.gd" id="2_feb5d"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_fc0e3"]
+shader = ExtResource("1_feb5d")
+shader_parameter/target_color = Vector4(0, 0, 0, 0)
+shader_parameter/paint_color = Vector4(0, 0, 0, 0)
+shader_parameter/tech_map = ExtResource("2_fc0e3")
+
+[node name="Game" type="Node2D" unique_id=1162060292]
+
+[node name="Map" type="Sprite2D" parent="." unique_id=750627191]
+material = SubResource("ShaderMaterial_fc0e3")
+position = Vector2(512, 288)
+texture = ExtResource("1_e2o6t")
+script = ExtResource("2_feb5d")

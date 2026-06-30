@@ -1,0 +1,60 @@
+[gd_scene format=3 uid="uid://b50l3xjltcm0l"]
+
+[ext_resource type="Script" uid="uid://bdxmg2pw1f4l7" path="res://scripts/division_menu.gd" id="1_myptv"]
+[ext_resource type="Resource" uid="uid://bhx1w7f44qx7h" path="res://new_resource.tres" id="2_gmcrd"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_jtvnc"]
+
+[node name="DivisionMenu" type="Control" unique_id=770860264]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_myptv")
+settings = ExtResource("2_gmcrd")
+
+[node name="Panel" type="Panel" parent="." unique_id=1985480761]
+layout_mode = 1
+offset_right = 270.0
+offset_bottom = 189.0
+
+[node name="DivisionsLabel" type="Label" parent="Panel" unique_id=1028678123]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -35.0
+offset_top = 9.96
+offset_right = 35.0
+offset_bottom = 32.960003
+grow_horizontal = 2
+text = "🪖 Divisions"
+
+[node name="LandDivisionsPanel" type="Panel" parent="Panel" unique_id=1153273632]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -135.0
+offset_top = -51.5
+offset_right = 134.0
+offset_bottom = 94.5
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxEmpty_jtvnc")
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Panel/LandDivisionsPanel" unique_id=1382218479]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -134.5
+offset_right = 135.5
+offset_bottom = 146.0
+grow_horizontal = 2
+
+[node name="ArmiesList" type="VBoxContainer" parent="Panel/LandDivisionsPanel/ScrollContainer" unique_id=675767592]
+layout_mode = 2
+
+[connection signal="mouse_entered" from="Panel/LandDivisionsPanel/ScrollContainer" to="." method="_on_scroll_container_mouse_entered"]
+[connection signal="mouse_exited" from="Panel/LandDivisionsPanel/ScrollContainer" to="." method="_on_scroll_container_mouse_exited"]

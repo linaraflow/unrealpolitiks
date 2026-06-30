@@ -1,0 +1,44 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="Unrealpolitiks"
+run/main_scene="uid://ij512lr78ddd"
+config/features=PackedStringArray("4.6", "Forward Plus")
+config/icon="res://icon.svg"
+
+[autoload]
+
+ProvinceRegistry="*uid://dti3ta4u036ab"
+Global="*uid://n7hktav8eloh"
+ProvinceMap="*uid://cll1q0harv8l1"
+Pathfinder="*uid://cbgx2s4vhlukw"
+PathCache="*uid://dpxo5xpc5ea70"
+GameClock="*uid://ba72rx5pt8d71"
+DivisionManager="*uid://cimrrui40bvkb"
+SelectionManager="*uid://bbt7e01fvpxsn"
+CombatManager="*uid://bwb4w72r5ooxs"
+AiManager="*uid://bmbwfaixh8rv8"
+
+[display]
+
+window/size/viewport_width=1920
+window/size/viewport_height=1080
+window/size/mode=3
+window/stretch/mode="canvas_items"
+
+[physics]
+
+3d/physics_engine="Jolt Physics"
+
+[rendering]
+
+rendering_device/driver.windows="d3d12"

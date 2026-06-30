@@ -1,0 +1,70 @@
+extends Camera2D
+
+var settings = preload("res://new_resource.tres")
+
+@export var zoom_speed: float = 0.06
+@export var max_zoom: float = 10.0
+
+signal zoom_changed(new_zoom: Vector2)
+
+var min_zoom: float = 1.0
+var map_rect: Rect2
+var is_dragging: bool = false
+var is_mouse_over_ui: bool = false
+
+func _ready():
+    var map = get_parent().get_node("Map")
+    var texture_size = map.texture.get_size() * map.scale
+    var map_pos = map.position
+    
+    # Если спрайт центрирован (Centered = true, по умолчанию)
+    map_rect = Rect2(map_pos - texture_size / 2.0, texture_size)
+    
+    _update_min_zoom()
+
+func _update_min_zoom():
+    var viewport_size = get_viewport_rect().size
+    var zoom_x = viewport_size.x / map_rect.size.x
+    var zoom_y = viewport_size.y / map_rect.size.y
+    min_zoom = max(zoom_x, zoom_y)  # чтобы карта всегда заполняла экран
+    zoom = Vector2(min_zoom, min_zoom)
+
+func _unhandled_input(event):
+    if event is InputEventMouseButton:
+        if settings.is_mouse_over_ui:
+            return # если мышка над нужным ui
+
+        if event.button_index == MOUSE_BUTTON_WHEEL_UP:
+            _set_zoom(zoom.x + zoom_speed)
+        elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+            _set_zoom(zoom.x - zoom_speed)
+        if event.button_index == MOUSE_BUTTON_MIDDLE:
+            is_dragging = event.pressed
+    if event is InputEventMouseMotion and is_dragging:
+        position -= event.relative / zoom.x
+        _clamp_position()
+
+func _set_zoom(value: float):
+    var new_zoom = clamp(value, min_zoom, max_zoom)
+    zoom = Vector2(new_zoom, new_zoom)
+    zoom_changed.emit(zoom)
+    _clamp_position()
+
+func _clamp_position():
+    var viewport_size = get_viewport_rect().size
+    var half = viewport_size / 2.0 / zoom.x
+    
+    var min_x = map_rect.position.x + half.x
+    var max_x = map_rect.end.x - half.x
+    var min_y = map_rect.position.y + half.y
+    var max_y = map_rect.end.y - half.y
+    
+    if min_x > max_x:
+        position.x = map_rect.position.x + map_rect.size.x / 2.0
+    else:
+        position.x = clamp(position.x, min_x, max_x)
+    
+    if min_y > max_y:
+        position.y = map_rect.position.y + map_rect.size.y / 2.0
+    else:
+        position.y = clamp(position.y, min_y, max_y)

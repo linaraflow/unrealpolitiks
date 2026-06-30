@@ -1,0 +1,107 @@
+[gd_scene format=3 uid="uid://cbj0ixihecpff"]
+
+[ext_resource type="Script" uid="uid://bhn7610u0q4gq" path="res://scripts/ProvinceMenu.gd" id="1_ehxlg"]
+[ext_resource type="Script" uid="uid://3hvpxjq71i0q" path="res://scripts/recruite_button.gd" id="3_n6hjb"]
+[ext_resource type="Resource" uid="uid://bhx1w7f44qx7h" path="res://new_resource.tres" id="4_lsrs6"]
+[ext_resource type="Script" uid="uid://bk0y6lyt1mnn7" path="res://recruit_slider_panel.gd" id="4_n6hjb"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ehxlg"]
+bg_color = Color(0.14509805, 0.14509805, 0.14509805, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.2901961, 0.2901961, 0.2901961, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+corner_detail = 20
+
+[node name="ProvinceMenu" type="Control" unique_id=329358764]
+layout_mode = 3
+anchors_preset = 0
+size_flags_horizontal = 4
+script = ExtResource("1_ehxlg")
+settings = ExtResource("4_lsrs6")
+
+[node name="Panel" type="Panel" parent="." unique_id=283001299]
+layout_mode = 1
+offset_right = 270.0
+offset_bottom = 161.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel" unique_id=250842582]
+layout_mode = 0
+offset_left = 12.0
+offset_top = 9.0
+offset_right = 257.0
+offset_bottom = 341.0
+
+[node name="OwnerLabel" type="Label" parent="Panel/VBoxContainer" unique_id=329666651]
+layout_mode = 2
+text = "Owner:"
+
+[node name="NameLabel" type="Label" parent="Panel/VBoxContainer" unique_id=1640279133]
+layout_mode = 2
+text = "Province:"
+
+[node name="PopulationLabel" type="Label" parent="Panel/VBoxContainer" unique_id=260322795]
+layout_mode = 2
+text = "Population 👥: "
+
+[node name="RecruitButton" type="Button" parent="Panel" unique_id=121099447]
+layout_mode = 0
+offset_left = 12.0
+offset_top = 100.0
+offset_right = 62.0
+offset_bottom = 150.00024
+focus_mode = 0
+script = ExtResource("3_n6hjb")
+settings = ExtResource("4_lsrs6")
+
+[node name="Label" type="Label" parent="Panel/RecruitButton" unique_id=453485479]
+layout_mode = 0
+offset_right = 50.0
+offset_bottom = 50.0
+text = "🪖"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="RecruitSliderPanel" type="Panel" parent="." unique_id=281622795]
+layout_mode = 0
+offset_left = 74.0
+offset_top = 25.0
+offset_right = 274.0
+offset_bottom = 225.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_ehxlg")
+script = ExtResource("4_n6hjb")
+
+[node name="VSlider" type="VSlider" parent="RecruitSliderPanel" unique_id=549304727]
+layout_mode = 0
+offset_left = 6.0
+offset_top = 6.0
+offset_right = 22.0
+offset_bottom = 194.0
+
+[node name="TroopsLabel" type="Label" parent="RecruitSliderPanel" unique_id=79185797]
+layout_mode = 0
+offset_left = 28.0
+offset_top = 48.0
+offset_right = 144.0
+offset_bottom = 72.0
+
+[node name="CostLabel" type="Label" parent="RecruitSliderPanel" unique_id=2123890742]
+layout_mode = 0
+offset_left = 28.0
+offset_top = 108.0
+offset_right = 144.0
+offset_bottom = 132.0
+
+[node name="ConfirmButton" type="Button" parent="RecruitSliderPanel" unique_id=426619689]
+layout_mode = 0
+offset_left = 28.0
+offset_top = 174.0
+offset_right = 194.0
+offset_bottom = 194.0
+theme_override_font_sizes/font_size = 8
+text = "confirm"

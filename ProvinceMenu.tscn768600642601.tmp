@@ -1,0 +1,51 @@
+[gd_scene format=3 uid="uid://cbj0ixihecpff"]
+
+[ext_resource type="Script" uid="uid://c5bnwpgdxkgpc" path="res://ProvinceMenu.gd" id="1_m7jo2"]
+[ext_resource type="Script" uid="uid://cc28ru18m8vrc" path="res://recruit_button.gd" id="2_aopjg"]
+
+[node name="ProvinceMenu" type="Control" unique_id=329358764]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = 257.0
+offset_right = -1626.0
+offset_bottom = -469.99902
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 4
+script = ExtResource("1_m7jo2")
+
+[node name="Panel" type="Panel" parent="." unique_id=283001299]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -135.0
+offset_top = -176.50043
+offset_right = 135.0
+offset_bottom = 176.50043
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel" unique_id=250842582]
+layout_mode = 0
+offset_left = 12.0
+offset_top = 9.0
+offset_right = 257.0
+offset_bottom = 341.0
+
+[node name="OwnerLabel" type="Label" parent="Panel/VBoxContainer" unique_id=329666651]
+layout_mode = 2
+text = "Owner:"
+
+[node name="NameLabel" type="Label" parent="Panel/VBoxContainer" unique_id=1640279133]
+layout_mode = 2
+text = "Province:"
+
+[node name="RecruitButton" type="Button" parent="Panel/VBoxContainer" unique_id=528876176]
+layout_mode = 2
+script = ExtResource("2_aopjg")

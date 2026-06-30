@@ -1,0 +1,137 @@
+[gd_scene format=3 uid="uid://byyy3krch8deb"]
+
+[ext_resource type="Script" uid="uid://838jasvewi4h" path="res://scripts/negotiation_menu.gd" id="1_fa6gv"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fa6gv"]
+bg_color = Color(0.14406255, 0.14406255, 0.14406249, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.2901961, 0.2901961, 0.2901961, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+corner_detail = 20
+
+[node name="NegotiationMenu" type="Control" unique_id=1683955890]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_fa6gv")
+
+[node name="MainRect" type="ColorRect" parent="." unique_id=1526123359]
+layout_mode = 0
+offset_right = 423.0
+offset_bottom = 1080.0
+color = Color(0, 0, 0, 0.5921569)
+
+[node name="TopRect" type="ColorRect" parent="." unique_id=682133900]
+layout_mode = 0
+offset_left = 423.0
+offset_right = 1920.0
+offset_bottom = 60.0
+color = Color(0, 0, 0, 0.5921569)
+
+[node name="BottomRect" type="ColorRect" parent="." unique_id=912418094]
+layout_mode = 0
+offset_left = 423.0
+offset_top = 1020.0
+offset_right = 1920.0
+offset_bottom = 1080.0
+color = Color(0, 0, 0, 0.5921569)
+
+[node name="CloseButton" type="Button" parent="." unique_id=86878989]
+layout_mode = 0
+offset_left = 12.0
+offset_top = 12.0
+offset_right = 106.0
+offset_bottom = 44.0
+text = "Leave"
+
+[node name="SendDemands" type="Button" parent="." unique_id=1077653473]
+layout_mode = 0
+offset_left = 277.0
+offset_top = 1032.0
+offset_right = 411.0
+offset_bottom = 1068.0
+text = "Send Demands"
+
+[node name="SelectAll" type="Button" parent="." unique_id=845970479]
+layout_mode = 0
+offset_left = 12.0
+offset_top = 1032.0
+offset_right = 146.0
+offset_bottom = 1068.0005
+text = "Select All"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=440313199]
+layout_mode = 0
+offset_left = 12.0
+offset_top = 150.0
+offset_right = 106.0
+offset_bottom = 483.0
+
+[node name="PlayerFlag" type="TextureRect" parent="VBoxContainer" unique_id=1754850248]
+custom_minimum_size = Vector2(94, 53)
+layout_mode = 2
+expand_mode = 1
+
+[node name="PlayerProvincePanel" type="Panel" parent="VBoxContainer" unique_id=2001342176]
+custom_minimum_size = Vector2(94, 50)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_fa6gv")
+
+[node name="PlayerTitleLabel" type="Label" parent="VBoxContainer/PlayerProvincePanel" unique_id=2054537127]
+layout_mode = 0
+offset_left = 6.0
+offset_top = 5.0
+offset_right = 100.0
+offset_bottom = 22.0
+theme_override_font_sizes/font_size = 12
+
+[node name="PlayerCountLabel" type="Label" parent="VBoxContainer/PlayerProvincePanel" unique_id=1381243706]
+layout_mode = 0
+offset_left = 6.0
+offset_top = 22.000002
+offset_right = 100.0
+offset_bottom = 45.000004
+theme_override_colors/font_color = Color(0.28436446, 0.7817348, 0.09893442, 1)
+
+[node name="separator" type="Control" parent="VBoxContainer" unique_id=824317125]
+layout_mode = 2
+
+[node name="EnemyFlag" type="TextureRect" parent="VBoxContainer" unique_id=1029134568]
+custom_minimum_size = Vector2(94, 53)
+layout_mode = 2
+expand_mode = 1
+
+[node name="EnemyProvincePanel" type="Panel" parent="VBoxContainer" unique_id=598756758]
+custom_minimum_size = Vector2(94, 50)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_fa6gv")
+
+[node name="EnemyTitleLabel" type="Label" parent="VBoxContainer/EnemyProvincePanel" unique_id=1072758819]
+layout_mode = 0
+offset_left = 6.0
+offset_top = 5.0
+offset_right = 100.0
+offset_bottom = 22.0
+theme_override_font_sizes/font_size = 12
+
+[node name="EnemyCountLabel" type="Label" parent="VBoxContainer/EnemyProvincePanel" unique_id=1204680869]
+layout_mode = 0
+offset_left = 6.0
+offset_top = 22.0
+offset_right = 100.0
+offset_bottom = 45.0
+theme_override_colors/font_color = Color(0.9450055, 0.023975058, 1.92523e-07, 1)
+theme_override_font_sizes/font_size = 16
+
+[connection signal="pressed" from="CloseButton" to="." method="_on_close_button_pressed"]
+[connection signal="pressed" from="SendDemands" to="." method="_on_send_demands_pressed"]
+[connection signal="pressed" from="SelectAll" to="." method="_on_select_all_pressed"]

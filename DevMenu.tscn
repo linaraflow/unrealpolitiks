@@ -1,0 +1,65 @@
+[gd_scene format=3 uid="uid://b14dkd4blc7n5"]
+
+[ext_resource type="Script" uid="uid://b26xug05pplnl" path="res://scripts/dev_menu.gd" id="1_c1jpb"]
+[ext_resource type="Resource" uid="uid://bhx1w7f44qx7h" path="res://new_resource.tres" id="2_c1jpb"]
+
+[node name="DevMenu" type="Control" unique_id=1311671348]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_c1jpb")
+settings = ExtResource("2_c1jpb")
+
+[node name="Panel" type="Panel" parent="." unique_id=1216612573]
+layout_mode = 0
+offset_right = 211.0
+offset_bottom = 267.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel" unique_id=182092291]
+layout_mode = 0
+offset_right = 211.0
+offset_bottom = 79.0
+
+[node name="DevMenuLabel" type="Label" parent="Panel/VBoxContainer" unique_id=1833464972]
+layout_mode = 2
+size_flags_vertical = 6
+text = "Dev Menu"
+horizontal_alignment = 1
+
+[node name="DevRecruitButton" type="Button" parent="Panel/VBoxContainer" unique_id=1213689242]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_font_sizes/font_size = 9
+text = "+1 land army"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Panel/VBoxContainer" unique_id=1621084421]
+layout_mode = 2
+
+[node name="LeftCountry" type="OptionButton" parent="Panel/VBoxContainer/HBoxContainer" unique_id=1212896073]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+
+[node name="WarButton" type="Button" parent="Panel/VBoxContainer/HBoxContainer" unique_id=877423971]
+layout_mode = 2
+
+[node name="RightCountry" type="OptionButton" parent="Panel/VBoxContainer/HBoxContainer" unique_id=911490063]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+
+[node name="IncreaseMoney" type="Button" parent="Panel/VBoxContainer" unique_id=1985396578]
+layout_mode = 2
+theme_override_font_sizes/font_size = 9
+text = "+money"
+
+[node name="AllDivSelectable" type="CheckBox" parent="Panel/VBoxContainer" unique_id=1312603162]
+layout_mode = 2
+theme_override_font_sizes/font_size = 9
+text = "all div. selectable"
+
+[connection signal="pressed" from="Panel/VBoxContainer/DevRecruitButton" to="." method="_on_dev_recruit_button_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/HBoxContainer/WarButton" to="." method="_on_war_button_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/IncreaseMoney" to="." method="_on_increase_money_pressed"]
+[connection signal="toggled" from="Panel/VBoxContainer/AllDivSelectable" to="." method="_on_all_div_selectable_toggled"]
