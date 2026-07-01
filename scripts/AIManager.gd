@@ -3,7 +3,7 @@ extends Node
 var settings = preload("res://new_resource.tres")
 
 # Ссылка на интерфейс баланса (путь взят из твоего DivisionManager)
-@onready var balance_label = get_node_or_null("/root/Game/CanvasLayer/BalanceMenu/Panel/BalanceLabel")
+@onready var balance_label = get_node_or_null("/root/Game/CanvasLayer/TopMenu/TopPanel/BalanceLabel")
 
 func _ready() -> void:
     # Военную логику (передвижение) оставляем раз в месяц, чтобы не спамить командами
@@ -12,11 +12,17 @@ func _ready() -> void:
     GameClock.on_day_passed.connect(_on_day_passed_population)
     # Добавляем вызов найма для ИИ раз в день
     GameClock.on_day_passed.connect(_on_day_passed_ai_recruitment)
+    # Добавляем продажу товаров для ИИ раз в день
+    GameClock.on_day_passed.connect(_on_day_passed_ai_trading)
+
+    # Сразу считаем monthly_income при старте игры, чтобы не ждать первого месяца
+    for country in ProvinceRegistry.countries_data.keys():
+        _update_monthly_income(country)
 
 func _process(delta: float) -> void:
     if GameClock.paused:
         return
-        
+
     _process_per_frame_economy(delta)
 
 func _process_per_frame_economy(delta: float) -> void:
@@ -47,6 +53,7 @@ func _on_day_passed_ai_recruitment(_date: Dictionary) -> void:
     for country in ProvinceRegistry.countries_data.keys():
         if country != settings.active_country:
             _process_ai_recruitment(country)
+            _process_ai_economy(country)
 
 func _process_ai_recruitment(country: String) -> void:
     var c_data = ProvinceRegistry.countries_data[country]
@@ -77,12 +84,54 @@ func _process_ai_recruitment(country: String) -> void:
         # Передаем amount третьим аргументом
         DivisionManager.recruit(target_p_id, local_pos, recruit_amount)
 
+# --- НОВЫЙ МЕТОД ---
+# Ежедневная проверка возможности продать накопленные товары для ботов
+func _on_day_passed_ai_trading(_date: Dictionary) -> void:
+    for country in ProvinceRegistry.countries_data.keys():
+        if country != settings.active_country:
+            _process_ai_trade(country)
+
+func _process_ai_trade(country: String) -> void:
+    var c_data = ProvinceRegistry.countries_data[country]
+    var current_stock = c_data.get("products", 0.0)
+
+    if current_stock <= 0:
+        return
+
+    # Бот продаёт весь накопленный запас товаров по текущей цене
+    var revenue = current_stock * settings.product_cost
+
+    c_data["products"] = 0.0
+    c_data["balance"] = c_data.get("balance", 0.0) + revenue
+
 func _on_month_passed(date: Dictionary) -> void:
+    # Пересчитываем месячный доход (налоги) для ВСЕХ стран, включая игрока
+    for country in ProvinceRegistry.countries_data.keys():
+        _update_monthly_income(country)
+
     for country in ProvinceRegistry.countries_data.keys():
         if country == settings.active_country:
             continue
         _process_ai_military(country)
         _process_ai_diplomacy(country)
+
+# --- НОВЫЙ МЕТОД ---
+# Считает и записывает monthly_income страны по формуле: население * 100 (налоги)
+func _update_monthly_income(country: String) -> void:
+    var c_data = ProvinceRegistry.countries_data[country]
+    var income = _calculate_monthly_income(country)
+    c_data["monthly_income"] = income
+
+func _calculate_monthly_income(country: String) -> float:
+    var total_population = _get_country_population(country)
+    return float(total_population) * 1.0
+
+func _get_country_population(country: String) -> int:
+    var total_population = 0
+    for p_id in _get_country_provinces(country):
+        var p_data = ProvinceRegistry.province_data.get(str(p_id), {})
+        total_population += int(p_data.get("population", 0))
+    return total_population
 
 func _process_ai_military(country: String) -> void:
     var enemies = ProvinceRegistry.war_relations.get(country, [])
@@ -90,7 +139,6 @@ func _process_ai_military(country: String) -> void:
         return
         
     var my_provinces = _get_country_provinces(country)
-    var capital_id = int(ProvinceRegistry.countries_data[country].get("capital", 0))
     var enemy_provinces = []
     
     for e in enemies:
@@ -131,6 +179,24 @@ func _process_ai_diplomacy(country: String) -> void:
             print(country, " ищет жертву. Найден сосед: ", neighbor)
             if neighbor != "" and neighbor != country:
                 ProvinceRegistry.declare_war(country, neighbor)
+
+func _process_ai_economy(country: String) -> void:
+    var c_data = ProvinceRegistry.countries_data[country]
+    
+    if c_data.get("balance", 0.0) >= settings.factory_cost + (settings.factory_cost / 2):
+        var my_provinces = _get_country_provinces(country)
+        var safe_provinces = []
+        
+        for p_id in my_provinces:
+            var p_data = ProvinceRegistry.province_data.get(str(p_id), {})
+            # Бот проверяет: провинция не в бою, не оккупирована, и очередь заводов МЕНЬШЕ 5
+            if not CombatManager.active_battles.has(p_id) and not ProvinceRegistry.is_occupied(p_id):
+                if p_data.get("factory_queue", []).size() < 5:
+                    safe_provinces.append(p_id)
+                
+        if not safe_provinces.is_empty():
+            var target_p = safe_provinces.pick_random()
+            ProvinceRegistry.start_factory_construction(target_p, country)
 
 func _on_day_passed_population(_date: Dictionary) -> void:
     var population_migration: Dictionary = {}

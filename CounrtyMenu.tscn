@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://d061sein83pwj" path="res://scripts/panel.gd" id="1_e437t"]
 [ext_resource type="Resource" uid="uid://bhx1w7f44qx7h" path="res://new_resource.tres" id="3_e437t"]
 [ext_resource type="Script" uid="uid://b4o1m5ptqx655" path="res://scripts/declare_war.gd" id="3_xs2co"]
+[ext_resource type="Script" uid="uid://rs2yte7mkhc7" path="res://scripts/flag_rect.gd" id="4_xs2co"]
 
 [node name="CountryMenu" type="Control" unique_id=1494951920]
 layout_mode = 3
@@ -11,21 +12,24 @@ anchors_preset = 0
 [node name="Panel" type="Panel" parent="." unique_id=135916731]
 layout_mode = 1
 offset_right = 270.0
-offset_bottom = 240.0
+offset_bottom = 350.0
 script = ExtResource("1_e437t")
 settings = ExtResource("3_e437t")
 
+[node name="CountryLabel" type="Label" parent="Panel" unique_id=1384884281]
+layout_mode = 0
+offset_left = 105.0
+offset_top = 23.0
+offset_right = 257.0
+offset_bottom = 47.0
+text = "Country"
+
 [node name="VBoxContainer1" type="VBoxContainer" parent="Panel" unique_id=2120683771]
 layout_mode = 0
-offset_left = 19.0
-offset_top = 11.515
-offset_right = 249.0
-offset_bottom = 71.36504
-
-[node name="CountryLabel" type="Label" parent="Panel/VBoxContainer1" unique_id=1384884281]
-layout_mode = 2
-text = "Country"
-horizontal_alignment = 1
+offset_left = 12.0
+offset_top = 88.0
+offset_right = 242.0
+offset_bottom = 154.48492
 
 [node name="ProvincesLabel" type="Label" parent="Panel/VBoxContainer1" unique_id=1943410449]
 layout_mode = 2
@@ -35,12 +39,17 @@ text = "Provinces: "
 layout_mode = 2
 text = "Population 👥: "
 
+[node name="FactoriesLabel" type="Label" parent="Panel/VBoxContainer1" unique_id=1264732361]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.13552234, 0.55294275, 1.92523e-07, 1)
+text = "GDP: "
+
 [node name="VBoxContainer2" type="VBoxContainer" parent="Panel" unique_id=567417450]
 layout_mode = 0
-offset_left = 19.0
-offset_top = 96.91
-offset_right = 249.0
-offset_bottom = 156.76059
+offset_left = 12.0
+offset_top = 180.0
+offset_right = 242.0
+offset_bottom = 239.8505
 
 [node name="InfluenceLabel" type="Label" parent="Panel/VBoxContainer2" unique_id=1503665151]
 layout_mode = 2
@@ -55,10 +64,10 @@ layout_mode = 1
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
-offset_left = 15.0
-offset_top = -64.0
-offset_right = 65.00001
-offset_bottom = -14.0
+offset_left = 12.0
+offset_top = -61.0
+offset_right = 62.000008
+offset_bottom = -11.0
 grow_vertical = 0
 theme_override_font_sizes/font_size = 23
 text = "⚔️"
@@ -70,13 +79,25 @@ layout_mode = 1
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
-offset_left = 15.0
-offset_top = -64.0
-offset_right = 65.00009
-offset_bottom = -14.0
+offset_left = 12.0
+offset_top = -61.0
+offset_right = 62.00009
+offset_bottom = -11.0
 grow_vertical = 0
 theme_override_font_sizes/font_size = 23
 text = "🏳️"
 
+[node name="FlagRect" type="TextureRect" parent="Panel" unique_id=1307867362]
+layout_mode = 0
+offset_left = 12.0
+offset_top = 12.0
+offset_right = 93.0
+offset_bottom = 57.999947
+expand_mode = 1
+script = ExtResource("4_xs2co")
+settings = ExtResource("3_e437t")
+
 [connection signal="pressed" from="Panel/DeclareWar" to="Panel/DeclareWar" method="_on_pressed"]
 [connection signal="pressed" from="Panel/Negotiation" to="Panel" method="_on_negotiation_pressed"]
+[connection signal="mouse_entered" from="Panel/FlagRect" to="Panel/FlagRect" method="_on_mouse_entered"]
+[connection signal="mouse_exited" from="Panel/FlagRect" to="Panel/FlagRect" method="_on_mouse_exited"]

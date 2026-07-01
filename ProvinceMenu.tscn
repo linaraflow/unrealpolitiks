@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://bhn7610u0q4gq" path="res://scripts/ProvinceMenu.gd" id="1_ehxlg"]
 [ext_resource type="Script" uid="uid://3hvpxjq71i0q" path="res://scripts/recruite_button.gd" id="3_n6hjb"]
 [ext_resource type="Resource" uid="uid://bhx1w7f44qx7h" path="res://new_resource.tres" id="4_lsrs6"]
-[ext_resource type="Script" uid="uid://bk0y6lyt1mnn7" path="res://recruit_slider_panel.gd" id="4_n6hjb"]
+[ext_resource type="Script" uid="uid://bk0y6lyt1mnn7" path="res://scripts/recruit_slider_panel.gd" id="4_n6hjb"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ehxlg"]
 bg_color = Color(0.14509805, 0.14509805, 0.14509805, 1)
@@ -28,7 +28,7 @@ settings = ExtResource("4_lsrs6")
 [node name="Panel" type="Panel" parent="." unique_id=283001299]
 layout_mode = 1
 offset_right = 270.0
-offset_bottom = 161.0
+offset_bottom = 184.0
 
 [node name="VBoxContainer" type="VBoxContainer" parent="Panel" unique_id=250842582]
 layout_mode = 0
@@ -49,12 +49,16 @@ text = "Province:"
 layout_mode = 2
 text = "Population 👥: "
 
+[node name="FactoriesLabel" type="Label" parent="Panel/VBoxContainer" unique_id=722026785]
+layout_mode = 2
+text = "Factories 🏭: "
+
 [node name="RecruitButton" type="Button" parent="Panel" unique_id=121099447]
 layout_mode = 0
 offset_left = 12.0
-offset_top = 100.0
+offset_top = 123.0
 offset_right = 62.0
-offset_bottom = 150.00024
+offset_bottom = 173.00024
 focus_mode = 0
 script = ExtResource("3_n6hjb")
 settings = ExtResource("4_lsrs6")
@@ -67,7 +71,24 @@ text = "🪖"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="BuildFactoryButton" type="Button" parent="Panel" unique_id=744798989]
+layout_mode = 0
+offset_left = 74.0
+offset_top = 123.0
+offset_right = 124.0
+offset_bottom = 173.00024
+focus_mode = 0
+
+[node name="Label" type="Label" parent="Panel/BuildFactoryButton" unique_id=789199862]
+layout_mode = 0
+offset_right = 50.0
+offset_bottom = 50.0
+text = "🏭"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="RecruitSliderPanel" type="Panel" parent="." unique_id=281622795]
+visible = false
 layout_mode = 0
 offset_left = 74.0
 offset_top = 25.0
@@ -105,3 +126,5 @@ offset_right = 194.0
 offset_bottom = 194.0
 theme_override_font_sizes/font_size = 8
 text = "confirm"
+
+[connection signal="pressed" from="Panel/BuildFactoryButton" to="." method="_on_build_factory_button_pressed"]

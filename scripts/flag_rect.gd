@@ -1,4 +1,4 @@
-extends Button
+extends TextureRect
 
 
 @export var settings: Resource
@@ -14,25 +14,14 @@ var last_clicked_province
 
 func _ready() -> void:
     add_to_group("FlagRect1")
-    
-    expand_icon = true
-
-func _on_pressed():
-    pass
-
 
 func update():
-    #province_data = settings.province_data
     last_clicked_province = settings.last_clicked_province_id
     owner_name = ProvinceRegistry.province_data[str(last_clicked_province)].get("owner", "unknown")
     
     var flag_path = "res://assets/flags/" + owner_name + ".png"
     
-    var style = StyleBoxTexture.new()
-    style.texture = load(flag_path)
-    add_theme_stylebox_override("normal", style)
-    add_theme_stylebox_override("hover", style)
-    add_theme_stylebox_override("pressed", style)
+    texture = load(flag_path)
     
 
 

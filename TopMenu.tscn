@@ -1,0 +1,224 @@
+[gd_scene format=3 uid="uid://bcohuv24brb7r"]
+
+[ext_resource type="Script" uid="uid://wdkj6n36kays" path="res://scripts/top_menu.gd" id="1_0l7yi"]
+[ext_resource type="Script" uid="uid://kxx6tpa27k5v" path="res://scripts/balance_label.gd" id="1_vpl8j"]
+[ext_resource type="Resource" uid="uid://bhx1w7f44qx7h" path="res://new_resource.tres" id="2_axhfq"]
+[ext_resource type="Script" uid="uid://b6yjskttrhop4" path="res://scripts/date.gd" id="3_3xdjs"]
+[ext_resource type="Texture2D" uid="uid://1mfwr551sxwh" path="res://assets/pause_opened.png" id="4_0l7yi"]
+[ext_resource type="Texture2D" uid="uid://bv25inl2btpch" path="res://assets/plus_speed.png" id="5_ym8ti"]
+[ext_resource type="Texture2D" uid="uid://due03bxc3mlaj" path="res://assets/minus_speed.png" id="6_p7twc"]
+[ext_resource type="Script" uid="uid://ctb4bvdw8phsl" path="res://scripts/products_label.gd" id="8_ym8ti"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_kvvtr"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_pvj37"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_horfb"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_q7cts"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_8c5fy"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_lv2w8"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_nifp2"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_75nvf"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_dq3wg"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_3b6cs"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_j1lfg"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_qlixl"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_l6tke"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_cytfv"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_hv37e"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_jehlj"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kvvtr"]
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[node name="TopMenu" type="Control" unique_id=462479503]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_0l7yi")
+
+[node name="TopPanel" type="Panel" parent="." unique_id=774799938]
+layout_mode = 0
+offset_right = 1920.0
+offset_bottom = 50.0
+
+[node name="Flag" type="Button" parent="TopPanel" unique_id=462960174]
+layout_mode = 0
+offset_left = 5.0
+offset_top = 5.0
+offset_right = 75.0
+offset_bottom = 45.0
+icon_alignment = 1
+expand_icon = true
+
+[node name="BalanceLabel" type="Label" parent="TopPanel" unique_id=5045629]
+layout_mode = 0
+offset_left = 90.0
+offset_right = 270.0
+offset_bottom = 50.0
+text = "0 💵"
+vertical_alignment = 1
+script = ExtResource("1_vpl8j")
+settings = ExtResource("2_axhfq")
+
+[node name="ProductsLabel" type="RichTextLabel" parent="TopPanel" unique_id=1130383569]
+layout_mode = 0
+offset_left = 294.0
+offset_right = 458.0
+offset_bottom = 50.0
+size_flags_horizontal = 3
+bbcode_enabled = true
+vertical_alignment = 1
+script = ExtResource("8_ym8ti")
+settings = ExtResource("2_axhfq")
+
+[node name="DatePanel" type="Panel" parent="TopPanel" unique_id=226907444]
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -245.0
+offset_top = -12.0
+offset_right = -13.0
+offset_bottom = 12.0
+grow_horizontal = 0
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxEmpty_kvvtr")
+script = ExtResource("3_3xdjs")
+settings = ExtResource("2_axhfq")
+
+[node name="DateLabel" type="Label" parent="TopPanel/DatePanel" unique_id=1484784717]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -53.0
+offset_top = -3.0
+offset_right = 53.0
+offset_bottom = 28.0
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 20
+text = "01.01.2013"
+horizontal_alignment = 1
+
+[node name="PauseButton" type="Button" parent="TopPanel/DatePanel" unique_id=1856095882]
+layout_mode = 0
+offset_left = 177.0
+offset_right = 201.0
+offset_bottom = 24.0
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_pvj37")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_horfb")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_q7cts")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_8c5fy")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_lv2w8")
+icon = ExtResource("4_0l7yi")
+expand_icon = true
+
+[node name="PlusSpeedButton" type="Button" parent="TopPanel/DatePanel" unique_id=441127151]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 0
+offset_left = 31.0
+offset_right = 55.0
+offset_bottom = 24.0
+theme_override_font_sizes/font_size = 11
+theme_override_styles/normal = SubResource("StyleBoxEmpty_nifp2")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_75nvf")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_dq3wg")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_3b6cs")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_j1lfg")
+icon = ExtResource("5_ym8ti")
+expand_icon = true
+
+[node name="MinusSpeedButton" type="Button" parent="TopPanel/DatePanel" unique_id=1621220236]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 0
+offset_right = 24.0
+offset_bottom = 24.0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_qlixl")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_l6tke")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_cytfv")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_hv37e")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_jehlj")
+icon = ExtResource("6_p7twc")
+expand_icon = true
+
+[node name="SpeedPanel" type="Panel" parent="TopPanel/DatePanel" unique_id=2063257494]
+layout_mode = 0
+offset_left = 208.0
+offset_right = 232.0
+offset_bottom = 24.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_kvvtr")
+
+[node name="SpeedLabel" type="Label" parent="TopPanel/DatePanel/SpeedPanel" unique_id=438151119]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -20.0
+offset_top = 2.0
+offset_right = -4.0
+offset_bottom = 22.0
+grow_horizontal = 0
+theme_override_font_sizes/font_size = 14
+text = "x1"
+
+[node name="SellMenu" type="Panel" parent="." unique_id=1518076992]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 285.25
+offset_top = 62.0
+offset_right = 466.75
+offset_bottom = 139.0
+
+[node name="SellInput" type="SpinBox" parent="SellMenu" unique_id=1477380691]
+layout_mode = 0
+offset_left = 5.0
+offset_top = 5.0
+offset_right = 91.5
+offset_bottom = 36.0
+
+[node name="SellButton" type="Button" parent="SellMenu" unique_id=1103670734]
+layout_mode = 0
+offset_left = 96.5
+offset_top = 5.0
+offset_right = 176.5
+offset_bottom = 36.0
+text = "sell"
+
+[node name="SellAllButton" type="Button" parent="SellMenu" unique_id=114786105]
+layout_mode = 0
+offset_left = 96.5
+offset_top = 41.0
+offset_right = 176.5
+offset_bottom = 72.0
+text = "sell all"
+
+[connection signal="mouse_entered" from="TopPanel/Flag" to="." method="_on_flag_mouse_entered"]
+[connection signal="mouse_exited" from="TopPanel/Flag" to="." method="_on_flag_mouse_exited"]
+[connection signal="pressed" from="TopPanel/DatePanel/PauseButton" to="TopPanel/DatePanel" method="_on_pause_button_pressed"]
+[connection signal="pressed" from="TopPanel/DatePanel/PlusSpeedButton" to="TopPanel/DatePanel" method="_on_plus_speed_button_pressed"]
+[connection signal="pressed" from="TopPanel/DatePanel/MinusSpeedButton" to="TopPanel/DatePanel" method="_on_minus_speed_button_pressed"]
+[connection signal="pressed" from="SellMenu/SellButton" to="TopPanel/ProductsLabel" method="_on_sell_button_pressed"]
+[connection signal="pressed" from="SellMenu/SellAllButton" to="TopPanel/ProductsLabel" method="_on_sell_all_button_pressed"]

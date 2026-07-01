@@ -10,11 +10,9 @@
 [ext_resource type="PackedScene" uid="uid://cbj0ixihecpff" path="res://ProvinceMenu.tscn" id="8_j5wjh"]
 [ext_resource type="PackedScene" uid="uid://d1sj147vs04l7" path="res://Exit_menu.tscn" id="8_mfdv2"]
 [ext_resource type="PackedScene" uid="uid://b14dkd4blc7n5" path="res://DevMenu.tscn" id="9_80cx4"]
-[ext_resource type="PackedScene" uid="uid://6xx7f8a4rcsk" path="res://Date.tscn" id="11_lc2xo"]
-[ext_resource type="PackedScene" uid="uid://cj1in6tdy6kyq" path="res://BalanceMenu.tscn" id="12_7sc4i"]
 [ext_resource type="Script" uid="uid://dx01a1dmagols" path="res://scripts/blue.gd" id="13_i2p71"]
 [ext_resource type="PackedScene" uid="uid://byyy3krch8deb" path="res://NegotiationMenu.tscn" id="14_e8heu"]
-[ext_resource type="Script" uid="uid://rs2yte7mkhc7" path="res://scripts/flag_rect.gd" id="14_xa8c5"]
+[ext_resource type="PackedScene" uid="uid://bcohuv24brb7r" path="res://TopMenu.tscn" id="16_rvswv"]
 [ext_resource type="Script" uid="uid://vkd6brrqe1wh" path="res://scripts/war_banner.gd" id="20_36jdj"]
 [ext_resource type="Script" uid="uid://4krs8r4ah56r" path="res://scripts/camera_2d.gd" id="21_xfvwf"]
 
@@ -31,8 +29,6 @@ shader_parameter/texture_size = Vector2(1, 1)
 shader_parameter/stripe_width = 5.0
 shader_parameter/stripe_opacity = 0.45
 shader_parameter/negotiation_mode = false
-
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_lc2xo"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_215e1"]
 bg_color = Color(1, 0.21568628, 0.11372549, 1)
@@ -60,27 +56,31 @@ script = ExtResource("5_x5p1p")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=2005519769]
 
+[node name="TopMenu" parent="CanvasLayer" unique_id=462479503 instance=ExtResource("16_rvswv")]
+offset_right = -1920.0
+offset_bottom = -1080.0
+
 [node name="CountryMenu" parent="CanvasLayer" unique_id=1494951920 instance=ExtResource("6_mfdv2")]
-offset_left = 24.0
-offset_top = 85.49
-offset_right = 24.0
-offset_bottom = 85.49
+offset_left = 12.0
+offset_top = 62.0
+offset_right = 12.0
+offset_bottom = 62.0
 size_flags_horizontal = 4
 metadata/_edit_use_anchors_ = true
 
 [node name="DivisionMenu" parent="CanvasLayer" unique_id=770860264 instance=ExtResource("7_80cx4")]
-offset_left = 24.0
-offset_top = 509.27
-offset_right = 24.0
-offset_bottom = 509.27
+offset_left = 12.0
+offset_top = 620.0
+offset_right = 12.0
+offset_bottom = 620.0
 
 [node name="DevMenu" parent="CanvasLayer" unique_id=1311671348 instance=ExtResource("9_80cx4")]
 anchors_preset = 1
 anchor_left = 1.0
 anchor_bottom = 0.0
 offset_left = -256.0
-offset_top = 40.0
-offset_bottom = 319.0
+offset_top = 70.0
+offset_bottom = 349.0
 grow_horizontal = 0
 grow_vertical = 1
 
@@ -103,17 +103,6 @@ text = "Choose Country"
 script = ExtResource("13_i2p71")
 settings = ExtResource("6_ryrav")
 
-[node name="FlagRect" type="Button" parent="CanvasLayer" unique_id=900807940]
-offset_left = 24.0
-offset_top = 27.0
-offset_right = 105.0
-offset_bottom = 72.99995
-theme_override_styles/normal = SubResource("StyleBoxTexture_lc2xo")
-script = ExtResource("14_xa8c5")
-settings = ExtResource("6_ryrav")
-
-[node name="Date" parent="CanvasLayer" unique_id=1563938549 instance=ExtResource("11_lc2xo")]
-
 [node name="Exit_menu" parent="CanvasLayer" unique_id=1693922976 instance=ExtResource("8_mfdv2")]
 process_mode = 3
 visible = false
@@ -122,17 +111,11 @@ visible = false
 visible = false
 offset_right = -1497.0
 
-[node name="BalanceMenu" parent="CanvasLayer" unique_id=898268288 instance=ExtResource("12_7sc4i")]
-offset_left = 115.21
-offset_top = 27.0
-offset_right = 115.21
-offset_bottom = 27.0
-
 [node name="ProvinceMenu" parent="CanvasLayer" unique_id=329358764 instance=ExtResource("8_j5wjh")]
-offset_left = 24.0
-offset_top = 335.57
-offset_right = 24.0
-offset_bottom = 335.57
+offset_left = 12.0
+offset_top = 424.0
+offset_right = 12.0
+offset_bottom = 424.0
 
 [node name="WarBanner" type="CanvasLayer" parent="." unique_id=317580348]
 script = ExtResource("20_36jdj")
@@ -237,6 +220,3 @@ position = Vector2(1076.65, 605.93)
 script = ExtResource("21_xfvwf")
 
 [connection signal="pressed" from="CanvasLayer/BLUE" to="CanvasLayer/BLUE" method="_on_pressed"]
-[connection signal="mouse_entered" from="CanvasLayer/FlagRect" to="CanvasLayer/FlagRect" method="_on_mouse_entered"]
-[connection signal="mouse_exited" from="CanvasLayer/FlagRect" to="CanvasLayer/FlagRect" method="_on_mouse_exited"]
-[connection signal="pressed" from="CanvasLayer/FlagRect" to="CanvasLayer/FlagRect" method="_on_pressed"]
