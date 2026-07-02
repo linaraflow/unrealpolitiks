@@ -11,16 +11,11 @@ anchors_preset = 0
 offset_right = 1920.0
 offset_bottom = 1080.0
 
-[node name="Panel" type="Panel" parent="." unique_id=135916731 node_paths=PackedStringArray("ideology_panel", "ideology_list", "change_btn", "close_btn")]
+[node name="Panel" type="Panel" parent="." unique_id=135916731]
 layout_mode = 1
 offset_right = 270.0
 offset_bottom = 400.0
 script = ExtResource("1_e437t")
-settings = ExtResource("3_e437t")
-ideology_panel = NodePath("IdeologySelectionPanel")
-ideology_list = NodePath("IdeologySelectionPanel/VBoxContainer/ScrollContainer/IdeologyList")
-change_btn = NodePath("IdeologySelectionPanel/VBoxContainer/HBoxContainer/ChangeBtn")
-close_btn = NodePath("IdeologySelectionPanel/VBoxContainer/HBoxContainer/CloseBtn")
 
 [node name="CountryLabel" type="Label" parent="Panel" unique_id=1384884281]
 layout_mode = 0
@@ -162,7 +157,6 @@ theme_override_font_sizes/font_size = 23
 text = "💡"
 
 [node name="IdeologySelectionPanel" type="Panel" parent="Panel" unique_id=1096770221]
-unique_name_in_owner = true
 layout_mode = 1
 offset_left = 273.0
 offset_top = 171.0
@@ -181,11 +175,7 @@ layout_mode = 2
 text = "Choose ideology"
 horizontal_alignment = 1
 
-[node name="ScrollContainer" type="ScrollContainer" parent="Panel/IdeologySelectionPanel/VBoxContainer" unique_id=1174452239]
-custom_minimum_size = Vector2(0, 227)
-layout_mode = 2
-
-[node name="IdeologyList" type="VBoxContainer" parent="Panel/IdeologySelectionPanel/VBoxContainer/ScrollContainer" unique_id=1085414924]
+[node name="IdeologyList" type="VBoxContainer" parent="Panel/IdeologySelectionPanel/VBoxContainer" unique_id=1085414924]
 layout_mode = 2
 
 [node name="HBoxContainer" type="HBoxContainer" parent="Panel/IdeologySelectionPanel/VBoxContainer" unique_id=805410781]
@@ -193,12 +183,10 @@ layout_mode = 2
 
 [node name="ChangeBtn" type="Button" parent="Panel/IdeologySelectionPanel/VBoxContainer/HBoxContainer" unique_id=916835276]
 layout_mode = 2
-size_flags_horizontal = 3
 text = "Change"
 
 [node name="CloseBtn" type="Button" parent="Panel/IdeologySelectionPanel/VBoxContainer/HBoxContainer" unique_id=561421025]
 layout_mode = 2
-size_flags_horizontal = 3
 text = "Close"
 
 [node name="FlagRect" type="TextureRect" parent="Panel" unique_id=1307867362]

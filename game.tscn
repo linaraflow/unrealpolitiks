@@ -70,9 +70,9 @@ metadata/_edit_use_anchors_ = true
 
 [node name="DivisionMenu" parent="CanvasLayer" unique_id=770860264 instance=ExtResource("7_80cx4")]
 offset_left = 12.0
-offset_top = 620.0
+offset_top = 670.0
 offset_right = 12.0
-offset_bottom = 620.0
+offset_bottom = 670.0
 
 [node name="DevMenu" parent="CanvasLayer" unique_id=1311671348 instance=ExtResource("9_80cx4")]
 anchors_preset = 1
@@ -113,9 +113,9 @@ offset_right = -1497.0
 
 [node name="ProvinceMenu" parent="CanvasLayer" unique_id=329358764 instance=ExtResource("8_j5wjh")]
 offset_left = 12.0
-offset_top = 424.0
+offset_top = 474.0
 offset_right = 12.0
-offset_bottom = 424.0
+offset_bottom = 474.0
 
 [node name="WarBanner" type="CanvasLayer" parent="." unique_id=317580348]
 script = ExtResource("20_36jdj")

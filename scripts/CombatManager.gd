@@ -46,6 +46,22 @@ func check_for_battle(division, province_id: int) -> void:
     if countries_present.size() < 2:
         _maybe_end_battle(province_id)
         return
+
+    # ВАЖНО: убираем страны, которые физически стоят в провинции, но ни с кем
+    # из присутствующих не воюют (например, недобитый гарнизон после белого мира).
+    # Иначе они "зависают" в сторонах боя и ломают определение победителя.
+    var all_countries = countries_present.keys()
+    var belligerents: Dictionary = {}
+    for country in all_countries:
+        for other in all_countries:
+            if other != country and ProvinceRegistry.is_at_war(country, other):
+                belligerents[country] = countries_present[country]
+                break
+    countries_present = belligerents
+
+    if countries_present.size() < 2:
+        _maybe_end_battle(province_id)
+        return
         
     # Проверяем: есть ли хоть одна пара врагов
     var country_list = countries_present.keys()

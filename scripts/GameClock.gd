@@ -13,7 +13,7 @@ const SECONDS_PER_DAY = 2.0       # сколько реальных секунд
 
 var day: int = 1
 var month: int = 1
-var year: int = 2013
+var year: int = 2012
 
 var speed_index: int = 1          # текущая скорость (индекс в SPEEDS)
 var paused: bool = true

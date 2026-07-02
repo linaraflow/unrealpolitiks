@@ -6,6 +6,7 @@ var settings = preload("res://new_resource.tres")
 @onready var troops_label = $TroopsLabel # Текст с войсками
 @onready var cost_label = $CostLabel # Текст со стоимостью
 @onready var confirm_btn = $ConfirmButton # Кнопка "Призвать"
+@onready var balance_label = get_node_or_null("/root/Game/CanvasLayer/TopMenu/TopPanel/BalanceLabel")
 
 var current_province_id = -1
 var local_pos = Vector2.ZERO
@@ -42,13 +43,14 @@ func _on_slider_value_changed(value: float):
 func _update_info(amount: int):
     var cost = int(amount * settings.COST_PER_SOLDIER)
     troops_label.text = "🪖 Troops: " + str(amount)
-    cost_label.text = "💵 Cost: " + str(cost)
+    cost_label.text = "💵 Cost: " + ProvinceRegistry._format_number(cost, ".")
     # Минимальный порог призыва - 100 человек
     confirm_btn.disabled = amount < 100
 
 func _on_confirm_pressed():
     if slider.value >= 100:
         DivisionManager.recruit(current_province_id, local_pos, int(slider.value))
+        balance_label.balance_update()
         hide()
         # Вызываем обновление UI (например, в ProvinceMenu и DivisionMenu)
         get_parent().update_info(ProvinceRegistry.province_data[str(current_province_id)])

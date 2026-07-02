@@ -5,27 +5,29 @@ extends Button
 @onready var DivisionMenu = get_node("/root/Game/CanvasLayer/DivisionMenu")
 @onready var TopMenu = get_node("/root/Game/CanvasLayer/TopMenu")
 @onready var recruit_btn = get_node("/root/Game/CanvasLayer/ProvinceMenu/Panel/RecruitButton")
+@onready var CountryPanel = get_node("/root/Game/CanvasLayer/CountryMenu/Panel")
 
 func _ready():
-	add_to_group("choose_button")
-	# Загружаем JSON
-	var file = FileAccess.open("res://scripts/countries.json", FileAccess.READ)
-	var json = JSON.parse_string(file.get_as_text())
-	file.close()
-	
+    add_to_group("choose_button")
+    # Загружаем JSON
+    var file = FileAccess.open("res://scripts/countries.json", FileAccess.READ)
+    var json = JSON.parse_string(file.get_as_text())
+    file.close()
+    
 
 func _on_pressed():
-	if text != "Choose Country":
-		if settings:
-			settings.active_country = text
-			settings.can_draw = true
-			hide()
-			#get_parent().queue_free()
-		GameClock.paused = false
-		get_node("/root/Game/CanvasLayer/TopMenu/TopPanel/DatePanel/PauseButton").icon = load("res://assets/pause_opened.png")
-		TopMenu.update(text)
-		TopMenu.show()
-		DivisionMenu.show()
-		DivisionMenu.update_info(settings.province_data[str(settings.last_clicked_province_id)])
-		ProvinceMenu.show()
-		recruit_btn.show()
+    if text != "Choose Country":
+        if settings:
+            settings.active_country = text
+            settings.can_draw = true
+            hide()
+            #get_parent().queue_free()
+        GameClock.paused = false
+        get_node("/root/Game/CanvasLayer/TopMenu/TopPanel/DatePanel/PauseButton").icon = load("res://assets/pause_opened.png")
+        TopMenu.update(text)
+        TopMenu.show()
+        CountryPanel.update_info()
+        DivisionMenu.show()
+        DivisionMenu.update_info(settings.province_data[str(settings.last_clicked_province_id)])
+        ProvinceMenu.show()
+        recruit_btn.show()
