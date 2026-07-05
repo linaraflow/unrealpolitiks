@@ -6,6 +6,7 @@ extends Control
 @onready var name_label  = $Panel/VBoxContainer/NameLabel
 @onready var population_label = $Panel/VBoxContainer/PopulationLabel
 @onready var factories_label = $Panel/VBoxContainer/FactoriesLabel
+@onready var happiness_label = $Panel/VBoxContainer/HappinessLabel
 @onready var recruit_btn = $Panel/RecruitButton
 @onready var build_factory_btn = $Panel/BuildFactoryButton
 @onready var balance_label = get_node_or_null("/root/Game/CanvasLayer/TopMenu/TopPanel/BalanceLabel")
@@ -30,6 +31,7 @@ func update_info(data: Dictionary):
     name_label.text  = "Province" + ": " + data.get("name", "unknown")
     population_label.text = "Population" + " 👥: " + _format_population(int(data.get("population", 0)))
     factories_label.text = "Factories" + " 🏭: " + str(data.get("factories", 0))
+    happiness_label.text = get_happiness(round(data.get("happiness", 0)))
     var flag_path = "res://assets/flags/" + owner_name + ".png"
     recruit_btn.visible = owner_name == settings.active_country and data.get("against_occupation", "") == ""
     build_factory_btn.visible = owner_name == settings.active_country and data.get("against_occupation", "") == ""
@@ -64,3 +66,12 @@ func _on_build_factory_button_pressed() -> void:
         balance_label.balance_update()
     else:
         print("Недостаточно денег (нужно 1 000 000 💵)!")
+        
+func get_happiness(happiness) -> String:
+    if happiness <= 30:
+        return "😫 " + str(happiness)
+    elif happiness <= 70:
+        return "😐 " + str(happiness)
+    else:
+        return "😁 " + str(happiness)
+    return ""

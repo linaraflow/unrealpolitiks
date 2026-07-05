@@ -54,6 +54,11 @@ func can_move_to(target_province_id: int, target_owner: String) -> bool:
             return true
         if ProvinceRegistry.is_at_war(owner, target_owner):
             return true
+        var owner_data = ProvinceRegistry.countries_data[div.division_owner]
+        var province_owner_data = ProvinceRegistry.countries_data[target_owner]
+        var check_control = div.division_owner in province_owner_data["control"] or target_owner in owner_data["control"]
+        if check_control:
+            return true
     return false
 
 func get_selected_count() -> int:

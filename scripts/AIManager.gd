@@ -38,6 +38,17 @@ const RECRUIT_COOLDOWN_DAYS = 5     # раз в 5 дней нанимаем во
 const MIN_RECRUIT_SIZE      = 50    # минимальный размер призыва
 const RECRUIT_BUDGET_FRACTION = 0.3 # тратим на армию 30% текущего баланса
 
+# УСТАРЕЛО: лимит зависел от счастья, теперь рассчитывается от ВВП
+# const AI_ARMY_CAP_MIN = 500000
+# const AI_ARMY_CAP_MAX = 1000000
+
+# На сколько падает счастье провинции за каждую 1000 набранных солдат
+const HAPPINESS_DRAIN_PER_1K_RECRUITS = 0.1
+
+# --- НОВЫЙ ЛИМИТ АРМИИ НА ОСНОВЕ ВВП ---
+# Коэффициент пересчёта ВВП в лимит армии (1 солдат на ~14 000 ВВП)
+const ARMY_LIMIT_GDP_RATIO = 0.0000714
+
 # -----------------------------------------------------------------------------
 # 2. ИНИЦИАЛИЗАЦИЯ И ТИКИ
 # -----------------------------------------------------------------------------
@@ -153,73 +164,218 @@ func _process_recruitment(country: String) -> void:
     var mil_mult = DiplomacyManager.IDEOLOGIES[ideology]["mil"]
     var balance  = c_data.get("balance", 0.0)
 
-    # 2. Поиск лучшей провинции для найма
+    # 2. Расчёт лимита армии (снимается во время войны)
+    var total_soldiers = _get_country_total_soldiers(country)
+    var is_at_war = not ProvinceRegistry.war_relations.get(country, []).is_empty()
+    var army_limit = 1e9 if is_at_war else _get_army_limit(country)   # огромное число во время войны
+
+    if total_soldiers >= army_limit:
+        return
+
+    # 3. Поиск лучшей провинции для найма
     var best_p_id = _get_best_recruitment_province(country)
     if best_p_id == -1:
         return
 
     var p_data = ProvinceRegistry.province_data[str(best_p_id)]
     var pop    = p_data.get("population", 0)
+    var province_happiness = float(p_data.get("happiness", 50.0))
 
-    # 3. Расчёт желаемого количества (1% населения, но не менее MIN_RECRUIT_SIZE)
+    # 4. Расчёт желаемого количества (1% населения, но не менее MIN_RECRUIT_SIZE),
+    #    урезаем так, чтобы не пробить потолок армии страны
     var desired_amount = max(MIN_RECRUIT_SIZE, int(pop * 0.01))
-    var cost_per_unit  = settings.COST_PER_SOLDIER * mil_mult
+    desired_amount = min(desired_amount, int(army_limit - total_soldiers))
+    if desired_amount < MIN_RECRUIT_SIZE:
+        return
 
-    # 4. Тратим только 30% текущего баланса
+    var cost_per_unit = settings.COST_PER_SOLDIER * mil_mult
+
+    # 5. Тратим только 30% текущего баланса
     var available_for_recruitment = balance * RECRUIT_BUDGET_FRACTION
     var affordable_amount = int(available_for_recruitment / cost_per_unit)
     var recruit_amount = min(desired_amount, affordable_amount)
 
-    # 5. Если получается меньше MIN_RECRUIT_SIZE — пропускаем найм
+    # 6. Если получается меньше MIN_RECRUIT_SIZE — пропускаем найм
     if recruit_amount < MIN_RECRUIT_SIZE:
         return
 
-    # 6. Списываем деньги и вызываем DivisionManager
+    # 7. Списываем деньги и вызываем DivisionManager
     var cost = recruit_amount * cost_per_unit
     c_data["balance"] -= cost
     var local_pos = settings.province_centers.get(best_p_id, Vector2.ZERO)
     DivisionManager.recruit(best_p_id, local_pos, recruit_amount)
 
-    # 7. Устанавливаем кулдаун
+    # 8. Призыв истощает счастье провинции
+    var happiness_drain = (float(recruit_amount) / 1000.0) * HAPPINESS_DRAIN_PER_1K_RECRUITS
+    p_data["happiness"] = max(0.0, province_happiness - happiness_drain)
+
+    # 9. Устанавливаем кулдаун
     recruitment_cooldowns[country] = RECRUIT_COOLDOWN_DAYS
 
-## Провинция с максимальным населением (без боёв и оккупации)
+## Провинция с максимальным населением (без боёв, оккупации и сильно просевшего счастья)
 func _get_best_recruitment_province(country: String) -> int:
     var best_id  = -1
     var best_pop = -1
+    var country_happiness = ProvinceRegistry.get_country_happiness(country)
 
     for p_id in _get_country_provinces(country):
         if CombatManager.active_battles.has(p_id):
             continue
         if ProvinceRegistry.is_occupied(p_id):
             continue
-        var pop = ProvinceRegistry.province_data.get(str(p_id), {}).get("population", 0)
+
+        var p_data = ProvinceRegistry.province_data.get(str(p_id), {})
+        var province_happiness = float(p_data.get("happiness", 50.0))
+
+        # Если счастье провинции отстаёт от среднего по стране на 10+ - она больше не "лучшая",
+        # идём дальше перебирать остальные провинции
+        if country_happiness - province_happiness >= 10.0:
+            continue
+
+        var pop = p_data.get("population", 0)
         if pop > best_pop:
             best_pop = pop
             best_id  = p_id
 
     return best_id
 
+## Максимальный размер армии для страны (на основе ВВП и идеологии)
+func _get_army_limit(country: String) -> int:
+    var c_data = ProvinceRegistry.countries_data[country]
+    var factories = c_data.get("factories", 0)
+    var monthly_income = c_data.get("monthly_income", 0.0)
+    var gdp = (factories * settings.product_cost + monthly_income) * 12.0
+    var ideology = c_data.get("ideology", "liberalism")
+    var mil_mult = DiplomacyManager.IDEOLOGIES[ideology]["mil"]
+    var limit_float = gdp * ARMY_LIMIT_GDP_RATIO * mil_mult
+    return int(limit_float)
+
 ## Движение армий во время войны (теперь вызывается ежедневно)
+## Атакуем только пограничные провинции врага (соседствующие с нашей территорией)
+## и равномерно распределяем удары по всей линии фронта, чтобы наступление
+## продвигалось не в одну точку, а по всему фронту сразу.
 func _process_military_movement(country: String) -> void:
     var enemies = ProvinceRegistry.war_relations.get(country, [])
     if enemies.is_empty():
         return
 
-    var enemy_provinces = []
-    for e in enemies:
-        enemy_provinces.append_array(_get_country_provinces(e))
-    if enemy_provinces.is_empty():
-        return
+    # "Своя" территория для военных целей = собственные провинции + провинции
+    # контролёра (сюзерена) + провинции марионеток. Благодаря этому армии могут
+    # стоять и перемещаться в т.ч. с территории контролирующей/подконтрольной страны.
+    var own_provinces = _get_allied_territory_provinces(country)
+    var own_set: Dictionary = {}
+    for p in own_provinces:
+        own_set[p] = true
 
-    for p_id in _get_country_provinces(country):
+    # Линия фронта: вражеские провинции, граничащие с нашей территорией
+    # (включая территорию контролёра/марионеток)
+    var frontier_targets = _get_frontier_enemy_provinces(enemies, own_set)
+
+    # Резервный вариант (старое поведение) — если фронта нет вообще
+    # (например, армия оказалась в анклаве без прямых соседей-врагов)
+    var fallback_targets = []
+    if frontier_targets.is_empty():
+        for e in enemies:
+            fallback_targets.append_array(_get_country_provinces(e))
+        if fallback_targets.is_empty():
+            return
+
+    # Счётчик уже назначенных в этом тике целей — для равномерного распределения удара
+    var assigned_count: Dictionary = {}
+
+    for p_id in own_provinces:
         if CombatManager.active_battles.has(p_id):
             continue
+        # Двигаем именно армии страны country — они могут физически находиться
+        # на территории своего контролёра или марионетки, а не только "дома"
         for army in DivisionManager.armies.get(p_id, []):
-            if is_instance_valid(army) and army.division_owner == country and not army.is_moving:
-                var target_p_id = enemy_provinces.pick_random()
-                var target_pos  = settings.province_centers.get(target_p_id, Vector2.ZERO)
-                army.start_movement_to(target_p_id, target_pos)
+            if not is_instance_valid(army) or army.division_owner != country or army.is_moving:
+                continue
+
+            var target_p_id = -1
+
+            if not frontier_targets.is_empty():
+                # Приграничные вражеские провинции, соседствующие именно с этой армией
+                var adjacent_targets = []
+                for adj_id in ProvinceRegistry.province_adjacency.get(str(p_id), []):
+                    var t_id = int(adj_id)
+                    if frontier_targets.has(t_id):
+                        adjacent_targets.append(t_id)
+
+                if not adjacent_targets.is_empty():
+                    target_p_id = _pick_least_assigned_target(adjacent_targets, assigned_count)
+                else:
+                    # Армия в тылу — направляем её на самый "слабоатакуемый" участок фронта,
+                    # чтобы наступление подтягивалось равномерно по всей линии
+                    target_p_id = _pick_least_assigned_target(frontier_targets, assigned_count)
+            else:
+                target_p_id = fallback_targets.pick_random()
+
+            if target_p_id == -1:
+                continue
+
+            assigned_count[target_p_id] = assigned_count.get(target_p_id, 0) + 1
+
+            var target_pos = settings.province_centers.get(target_p_id, Vector2.ZERO)
+            army.start_movement_to(target_p_id, target_pos)
+
+## Провинции страны + провинции её контролёра (сюзерена) + провинции всех её
+## марионеток. Используется для военных передвижений: армии могут находиться
+## и перемещаться по территории обеих сторон вассальных отношений.
+func _get_allied_territory_provinces(country: String) -> Array:
+    var result: Array = _get_country_provinces(country)
+    var seen: Dictionary = {}
+    for p in result:
+        seen[p] = true
+
+    var c_data = ProvinceRegistry.countries_data.get(country, {})
+
+    var controller = c_data.get("controller", "")
+    if controller != "" and controller != country:
+        for p in _get_country_provinces(controller):
+            if not seen.has(p):
+                seen[p] = true
+                result.append(p)
+
+    for puppet in c_data.get("control", []):
+        if puppet == "" or puppet == country:
+            continue
+        for p in _get_country_provinces(puppet):
+            if not seen.has(p):
+                seen[p] = true
+                result.append(p)
+
+    return result
+
+## Вражеские провинции, граничащие хотя бы с одной нашей провинцией
+func _get_frontier_enemy_provinces(enemies: Array, own_set: Dictionary) -> Array:
+    var result = []
+    var seen: Dictionary = {}
+    for p_id in own_set.keys():
+        for adj_id in ProvinceRegistry.province_adjacency.get(str(p_id), []):
+            var t_id = int(adj_id)
+            if seen.has(t_id):
+                continue
+            var owner = ProvinceRegistry.province_data.get(str(t_id), {}).get("owner", "")
+            if owner != "" and enemies.has(owner):
+                seen[t_id] = true
+                result.append(t_id)
+    return result
+
+## Выбирает цель с наименьшим числом уже направленных на неё армий в этом тике
+## (перемешиваем, чтобы при равенстве счёта не всегда выбирать одну и ту же провинцию)
+func _pick_least_assigned_target(candidates: Array, assigned_count: Dictionary) -> int:
+    var shuffled = candidates.duplicate()
+    shuffled.shuffle()
+
+    var best_id    = -1
+    var best_count = INF
+    for t_id in shuffled:
+        var c = assigned_count.get(t_id, 0)
+        if c < best_count:
+            best_count = c
+            best_id    = t_id
+    return best_id
 
 # -----------------------------------------------------------------------------
 # 5. ДИПЛОМАТИЯ
@@ -420,6 +576,15 @@ func _get_country_population(country: String) -> int:
     var total = 0
     for p_id in _get_country_provinces(country):
         total += int(ProvinceRegistry.province_data.get(str(p_id), {}).get("population", 0))
+    return total
+
+## Суммарная численность войск страны (по всем её провинциям)
+func _get_country_total_soldiers(country: String) -> int:
+    var total := 0
+    for p_id in _get_country_provinces(country):
+        for circle in DivisionManager.armies.get(p_id, []):
+            if is_instance_valid(circle) and circle.division_owner == country:
+                total += circle.soldiers
     return total
 
 func _get_country_provinces(country: String) -> Array:

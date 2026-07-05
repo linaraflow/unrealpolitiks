@@ -14,6 +14,6 @@ var is_mouse_over_ui: bool = false
 var province_adjacency: Dictionary
 var can_select: bool = false
 var negotiation_mode: bool = false
-var COST_PER_SOLDIER: float = 10000
+var COST_PER_SOLDIER: float = 2000
 var product_cost: int = 500000
 var factory_cost: int = 10000000

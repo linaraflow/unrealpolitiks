@@ -4,6 +4,7 @@
 [ext_resource type="Resource" uid="uid://bhx1w7f44qx7h" path="res://new_resource.tres" id="2_c1jpb"]
 
 [node name="DevMenu" type="Control" unique_id=1311671348]
+visible = false
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0

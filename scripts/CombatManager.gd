@@ -15,6 +15,7 @@ signal battle_ended(province_id: int, winner: String)
 
 const BASE_DAMAGE   := 10000        # фиксированный урон от всей стороны (коалиции) за один тик
 const TICK_INTERVAL  := 0.5       # секунды между тиками боя (реального времени)
+const WAR_EXHAUSTION_PER_TICK := 0.01   # усталость, начисляемая стороне за каждый боевой тик, в котором она участвует
 
 # Активные бои: province_id -> { "sides": { "CountryA": {...}, "CountryB": {...} }, "timer": float }
 # Структура стороны: { "countries": [str], "circles": [ArmyCircle], "hp": int }
@@ -234,14 +235,22 @@ func _process_battle_tick(province_id: int) -> bool:
         if enemies.is_empty():
             continue
         
-        var dmg_per_enemy = BASE_DAMAGE
+        # Усталость от войны снижает урон атакующей стороны: BASE_DAMAGE * (1 - усталость/100)
+        var attacker_fatigue = ProvinceRegistry.get_war_exhaustion(attacker)
+        var dmg_per_enemy = int(BASE_DAMAGE * (1.0 - attacker_fatigue / 100.0))
+        dmg_per_enemy = max(dmg_per_enemy, 0)
         
         if not enemies[0] in hit:
             sides[enemies[0]]["hp"] -= dmg_per_enemy
-            print("[Combat] Провинция %d | %s → %s: -%d HP (осталось %d)" % [
-                province_id, attacker, enemies[0], dmg_per_enemy, sides[enemies[0]]["hp"]
+            print("[Combat] Провинция %d | %s → %s: -%d HP (осталось %d) [усталость атакующего: %.2f%%]" % [
+                province_id, attacker, enemies[0], dmg_per_enemy, sides[enemies[0]]["hp"], attacker_fatigue
             ])
             hit.append(enemies[0])
+        
+        # Атакующая сторона получает усталость от войны за участие в этом тике боя.
+        # Если страна воюет одновременно в нескольких провинциях — усталость суммируется,
+        # так как тик каждой провинции обрабатывается независимо и вызывает этот код отдельно.
+        ProvinceRegistry.add_war_exhaustion(attacker, WAR_EXHAUSTION_PER_TICK)
     
     # ── Синхронизируем солдат кружков с текущим HP ───────────────────────────
     for country in sides:
@@ -354,3 +363,44 @@ func _maybe_end_battle(province_id: int) -> void:
         return
     active_battles.erase(province_id)
     print("[Combat] Бой в провинции %d завершён (враги ушли или уничтожены)" % province_id)
+
+## Принудительно останавливает бои между двумя странами — вызывается при мире.
+## Логика: если в бою кроме country_a/country_b больше никто ни с кем не воюет,
+## бой завершается полностью, без урона и без "победителя" (мирное завершение).
+## Если же в этом же бою участвует ещё и коалиция (например, третья страна,
+## которая всё ещё воюет с одной из сторон) — сам бой продолжается, просто
+## country_a и country_b перестают наносить урон друг другу (это уже гарантирует
+## проверка is_at_war в _process_battle_tick).
+func end_battles_between(country_a: String, country_b: String) -> void:
+    var provinces_to_check: Array = active_battles.keys().duplicate()
+
+    for province_id in provinces_to_check:
+        if not active_battles.has(province_id):
+            continue
+
+        var battle = active_battles[province_id]
+        var sides: Dictionary = battle["sides"]
+
+        if not (sides.has(country_a) and sides.has(country_b)):
+            continue
+
+        if _battle_has_other_conflicts(sides, country_a, country_b):
+            continue
+
+        active_battles.erase(province_id)
+        print("[Combat] Бой в провинции %d остановлен: %s и %s заключили мир" % [province_id, country_a, country_b])
+        battle_ended.emit(province_id, "")
+
+## Есть ли в бою враждующая пара, не считая саму пару country_a/country_b
+func _battle_has_other_conflicts(sides: Dictionary, country_a: String, country_b: String) -> bool:
+    var keys = sides.keys()
+    for i in range(keys.size()):
+        for j in range(i + 1, keys.size()):
+            var ca = keys[i]
+            var cb = keys[j]
+            var is_the_peace_pair = (ca == country_a and cb == country_b) or (ca == country_b and cb == country_a)
+            if is_the_peace_pair:
+                continue
+            if ProvinceRegistry.is_at_war(ca, cb):
+                return true
+    return false

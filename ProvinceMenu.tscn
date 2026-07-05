@@ -28,7 +28,7 @@ settings = ExtResource("4_lsrs6")
 [node name="Panel" type="Panel" parent="." unique_id=283001299]
 layout_mode = 1
 offset_right = 270.0
-offset_bottom = 184.0
+offset_bottom = 204.0
 
 [node name="VBoxContainer" type="VBoxContainer" parent="Panel" unique_id=250842582]
 layout_mode = 0
@@ -53,12 +53,16 @@ text = "Population 👥: "
 layout_mode = 2
 text = "Factories 🏭: "
 
+[node name="HappinessLabel" type="Label" parent="Panel/VBoxContainer" unique_id=334202560]
+layout_mode = 2
+text = "😁 78%"
+
 [node name="RecruitButton" type="Button" parent="Panel" unique_id=121099447]
 layout_mode = 0
 offset_left = 12.0
-offset_top = 123.0
+offset_top = 143.0
 offset_right = 62.0
-offset_bottom = 173.00024
+offset_bottom = 193.00024
 focus_mode = 0
 script = ExtResource("3_n6hjb")
 settings = ExtResource("4_lsrs6")
@@ -74,9 +78,9 @@ vertical_alignment = 1
 [node name="BuildFactoryButton" type="Button" parent="Panel" unique_id=744798989]
 layout_mode = 0
 offset_left = 74.0
-offset_top = 123.0
+offset_top = 143.0
 offset_right = 124.0
-offset_bottom = 173.00024
+offset_bottom = 193.00024
 focus_mode = 0
 
 [node name="Label" type="Label" parent="Panel/BuildFactoryButton" unique_id=789199862]
@@ -91,9 +95,9 @@ vertical_alignment = 1
 visible = false
 layout_mode = 0
 offset_left = 74.0
-offset_top = 25.0
+offset_top = 45.0
 offset_right = 274.0
-offset_bottom = 225.0
+offset_bottom = 245.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_ehxlg")
 script = ExtResource("4_n6hjb")
 

@@ -8,6 +8,9 @@ signal province_army_changed(p_id: int)
 # НОВЫЙ СИГНАЛ: провинция оккупирована / снята с оккупации
 signal province_occupied(province_id: int, occupier: String)   # occupier="" → снятие оккупации
 
+signal war_declared(attacker: String, defender: String)
+signal war_ended(country_a: String, country_b: String)
+
 # province_id -> country_id (строка типа "Germany", "France")
 var province_owners: Dictionary = {}
 
@@ -25,17 +28,45 @@ var war_relations: Dictionary = {}
 
 var countries_data: Dictionary = {}
 
+# ─── УСТАЛОСТЬ ОТ ВОЙНЫ ────────────────────────────────────────────────────────
+const WAR_EXHAUSTION_MAX          := 100.0
+const WAR_EXHAUSTION_DECAY_PER_DAY := 1.0   # снижение в день, только если страна ни с кем не воюет
+
 func _ready():
     _load_countries()
     _load_province_data()
     _load_province_adjacency()
     GameClock.on_day_passed.connect(_on_day_passed)
     _recalculate_all_populations()
+    _recalculate_all_happiness()
     _recalculate_all_factories() # Первичный расчет фабрик при старте игры
 
 func _on_day_passed(_date: Dictionary) -> void:
     _recalculate_all_populations()
+    _recalculate_all_happiness()
     _process_economy()
+    _decay_war_exhaustion()
+
+## Получить текущую усталость страны от войны (0..100)
+func get_war_exhaustion(country: String) -> float:
+    return float(countries_data.get(country, {}).get("war_exhaustion", 0.0))
+
+## Добавить (или отнять, если amount отрицательный) усталость от войны стране
+func add_war_exhaustion(country: String, amount: float) -> void:
+    if not countries_data.has(country):
+        return
+    var current = get_war_exhaustion(country)
+    countries_data[country]["war_exhaustion"] = clamp(current + amount, 0.0, WAR_EXHAUSTION_MAX)
+
+## Раз в игровой день: снижаем усталость странам, которые ни с кем не воюют (полный мир)
+func _decay_war_exhaustion() -> void:
+    for country in countries_data:
+        var at_war = not war_relations.get(country, []).is_empty()
+        if at_war:
+            continue
+        var current = get_war_exhaustion(country)
+        if current > 0.0:
+            countries_data[country]["war_exhaustion"] = max(0.0, current - WAR_EXHAUSTION_DECAY_PER_DAY)
 
 ## Пересчитывает население каждой страны как сумму населения её провинций
 func _recalculate_all_populations() -> void:
@@ -64,6 +95,27 @@ func _recalculate_all_factories() -> void:
             var f_count = int(p.get("factories", 0))
             if countries_data.has(owner):
                 countries_data[owner]["factories"] += f_count
+
+## Пересчитывает счастье каждой страны как среднее арифметическое счастья её провинций
+func _recalculate_all_happiness() -> void:
+    var totals: Dictionary = {}
+    var counts: Dictionary = {}
+    for key in province_data:
+        var p = province_data[key]
+        var owner = p.get("owner", "")
+        if owner == "":
+            continue
+        var happ = float(p.get("happiness", 50.0))
+        totals[owner] = totals.get(owner, 0.0) + happ
+        counts[owner] = counts.get(owner, 0) + 1
+
+    for country in countries_data:
+        var cnt = counts.get(country, 0)
+        countries_data[country]["happiness"] = (totals.get(country, 0.0) / cnt) if cnt > 0 else 0.0
+
+## Среднее счастье страны (0..100), уже посчитанное, обновляется раз в игровой день
+func get_country_happiness(country: String) -> float:
+    return float(countries_data.get(country, {}).get("happiness", 50.0))
 
 ## Население одной провинции
 func get_province_population(province_id: int) -> int:
@@ -128,6 +180,12 @@ func _load_countries():
             entry["relations"] = {}
         if not entry.has("sanctions"):
             entry["sanctions"] = 0.0
+        if not entry.has("war_exhaustion"):
+            entry["war_exhaustion"] = 0.0
+        if not entry.has("control"):
+            entry["control"] = []
+        if not entry.has("controller"):
+            entry["controller"] = ""
 
 # ─── ЗАХВАТ (полная передача владения) ────────────────────────────────────────
 
@@ -248,6 +306,7 @@ func declare_war(attacker: String, defender: String):
     countries_data[defender]["is_at_war"] = true
 
     print("War: ", attacker, " vs ", defender)
+    war_declared.emit(attacker, defender)
 
 func is_at_war(country_a: String, country_b: String) -> bool:
     return war_relations.get(country_a, []).has(country_b)
@@ -266,6 +325,11 @@ func end_war(country_a: String, country_b: String) -> void:
         if countries_data.has(country_b):
             countries_data[country_b]["is_at_war"] = false
 
+    # Останавливаем все текущие бои между этими двумя странами — иначе бой,
+    # не имея урона (обе стороны больше не at_war), навсегда "зависает"
+    # в active_battles, а армии не освобождаются.
+    CombatManager.end_battles_between(country_a, country_b)
+
     # === Белый мир: провинции возвращаются своим корам ===
     var provinces_to_liberate = []
     for p_id in province_occupants.keys():
@@ -279,7 +343,11 @@ func end_war(country_a: String, country_b: String) -> void:
         var core_is_party = (core == country_a or core == country_b)
         var occupier_is_party = (current_owner == country_a or current_owner == country_b)
 
-        if core_is_party or occupier_is_party:
+        # Освобождаем только те провинции, где ОБЕ стороны (кор-владелец и текущий
+        # оккупант) относятся именно к этим двум странам — то есть провинция реально
+        # является предметом ЭТОЙ войны. Иначе, например, при мире со страной B
+        # возвращались бы и провинции, отнятые у страны C, с которой война всё ещё продолжается.
+        if core_is_party and occupier_is_party:
             provinces_to_liberate.append(p_id)
 
     for p_id in provinces_to_liberate:
@@ -292,6 +360,7 @@ func end_war(country_a: String, country_b: String) -> void:
         province_occupied.emit(p_id, "")
 
     print("[Registry] Война завершена: %s и %s (возвращено провинций: %d)" % [country_a, country_b, provinces_to_liberate.size()])
+    war_ended.emit(country_a, country_b)
     
 func _check_capital_transfer(captured_p_id: int, old_owner: String) -> void:
     if not countries_data.has(old_owner):
@@ -351,6 +420,15 @@ func _process_economy() -> void:
         if total_factories > 0:
             var daily_product = total_factories / 30.0
             countries_data[country]["products"] = countries_data[country].get("products", 0.0) + daily_product
+
+## Приблизительный ВВП страны за год:
+## (заводы × стоимость продукта + месячный доход) × 12
+func get_gdp(country: String) -> float:
+    var data = countries_data.get(country, {})
+    var factories = float(data.get("factories", 0))
+    var product_cost = settings.product_cost
+    var monthly_income = float(data.get("monthly_income", 0))
+    return (factories * product_cost + monthly_income) * 12.0
 
 func start_factory_construction(p_id: int, country: String) -> bool:
     var p = province_data[str(p_id)]

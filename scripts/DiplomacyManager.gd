@@ -2,6 +2,9 @@ extends Node
 
 var settings = preload("res://new_resource.tres")
 
+signal sanctions_imposed(attacker: String, target: String)
+signal sanctions_removed(attacker: String, target: String)
+
 const IDEOLOGIES = {
     "liberalism": {"tax": 1.0, "war": 0.5, "peace": 1.5, "mil": 0.8, "eco": 1.2},
     "parliamentary_republic": {"tax": 1.1, "war": 0.6, "peace": 1.3, "mil": 0.9, "eco": 1.1},
@@ -103,6 +106,7 @@ func toggle_sanctions(attacker: String, target: String, cost: float) -> bool:
         target_data["sanctioned_by"].erase(attacker)
         _recalculate_total_sanctions(target)
         change_relation(attacker, target, 15.0) 
+        sanctions_removed.emit(attacker, target)
         return true
         
     # ЕСЛИ САНКЦИЙ НЕТ -> НАКЛАДЫВАЕМ
@@ -120,6 +124,7 @@ func toggle_sanctions(attacker: String, target: String, cost: float) -> bool:
         target_data["sanctioned_by"][attacker] = sanction_power
         _recalculate_total_sanctions(target)
         change_relation(attacker, target, -15.0)
+        sanctions_imposed.emit(attacker, target)
         return true
         
     return false

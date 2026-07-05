@@ -1,9 +1,28 @@
 [gd_scene format=3 uid="uid://byyy3krch8deb"]
 
 [ext_resource type="Script" uid="uid://838jasvewi4h" path="res://scripts/negotiation_menu.gd" id="1_fa6gv"]
+[ext_resource type="Texture2D" uid="uid://cax3w4hq1ih2k" path="res://assets/flags/Germany.png" id="2_df4wd"]
+[ext_resource type="Texture2D" uid="uid://cl63kylm71fv2" path="res://assets/flags/Ukraine.png" id="3_v1y1u"]
+[ext_resource type="Texture2D" uid="uid://cq7sp04od60d4" path="res://assets/icons_negotiation_menu/map.svg" id="4_uul61"]
+[ext_resource type="Texture2D" uid="uid://da71g3xldsniu" path="res://assets/icons_negotiation_menu/coin.svg" id="5_nf8vq"]
+[ext_resource type="Texture2D" uid="uid://b7jftx0dqtbkg" path="res://assets/icons_negotiation_menu/flag.svg" id="6_40vur"]
+[ext_resource type="Texture2D" uid="uid://d1qb5ockrsvma" path="res://assets/icons_negotiation_menu/crown.svg" id="7_fe0qs"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fa6gv"]
 bg_color = Color(0.14406255, 0.14406255, 0.14406249, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.2901961, 0.2901961, 0.2901961, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+corner_detail = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4c1hm"]
+bg_color = Color(0.14509805, 0.14509805, 0.14509805, 1)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
@@ -61,13 +80,22 @@ offset_right = 411.0
 offset_bottom = 1068.0
 text = "Send Demands"
 
-[node name="SelectAll" type="Button" parent="." unique_id=845970479]
+[node name="ReparationsSlider" type="HSlider" parent="." unique_id=561755127]
 layout_mode = 0
-offset_left = 12.0
-offset_top = 1032.0
-offset_right = 146.0
-offset_bottom = 1068.0005
-text = "Select All"
+offset_left = 118.0
+offset_top = 448.0
+offset_right = 411.0
+offset_bottom = 464.0
+
+[node name="ReparationCostLabel" type="Label" parent="ReparationsSlider" unique_id=241496953]
+layout_mode = 0
+offset_top = -20.0
+offset_right = 293.0
+offset_bottom = 3.0
+theme_override_font_sizes/font_size = 14
+text = "13.504.000 $"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=440313199]
 layout_mode = 0
@@ -79,6 +107,7 @@ offset_bottom = 483.0
 [node name="PlayerFlag" type="TextureRect" parent="VBoxContainer" unique_id=1754850248]
 custom_minimum_size = Vector2(94, 53)
 layout_mode = 2
+texture = ExtResource("2_df4wd")
 expand_mode = 1
 
 [node name="PlayerProvincePanel" type="Panel" parent="VBoxContainer" unique_id=2001342176]
@@ -93,6 +122,7 @@ offset_top = 5.0
 offset_right = 100.0
 offset_bottom = 22.0
 theme_override_font_sizes/font_size = 12
+text = "Germany"
 
 [node name="PlayerCountLabel" type="Label" parent="VBoxContainer/PlayerProvincePanel" unique_id=1381243706]
 layout_mode = 0
@@ -101,6 +131,7 @@ offset_top = 22.000002
 offset_right = 100.0
 offset_bottom = 45.000004
 theme_override_colors/font_color = Color(0.28436446, 0.7817348, 0.09893442, 1)
+text = "23 Prov."
 
 [node name="separator" type="Control" parent="VBoxContainer" unique_id=824317125]
 layout_mode = 2
@@ -108,6 +139,7 @@ layout_mode = 2
 [node name="EnemyFlag" type="TextureRect" parent="VBoxContainer" unique_id=1029134568]
 custom_minimum_size = Vector2(94, 53)
 layout_mode = 2
+texture = ExtResource("3_v1y1u")
 expand_mode = 1
 
 [node name="EnemyProvincePanel" type="Panel" parent="VBoxContainer" unique_id=598756758]
@@ -122,6 +154,7 @@ offset_top = 5.0
 offset_right = 100.0
 offset_bottom = 22.0
 theme_override_font_sizes/font_size = 12
+text = "Ukraine"
 
 [node name="EnemyCountLabel" type="Label" parent="VBoxContainer/EnemyProvincePanel" unique_id=1204680869]
 layout_mode = 0
@@ -131,7 +164,44 @@ offset_right = 100.0
 offset_bottom = 45.0
 theme_override_colors/font_color = Color(0.9450055, 0.023975058, 1.92523e-07, 1)
 theme_override_font_sizes/font_size = 16
+text = "11 Prov."
+
+[node name="SelectAllButton" type="Button" parent="VBoxContainer" unique_id=74346000]
+custom_minimum_size = Vector2(94, 50)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxFlat_4c1hm")
+icon = ExtResource("4_uul61")
+icon_alignment = 1
+
+[node name="WarReparationsButton" type="Button" parent="VBoxContainer" unique_id=856058131]
+custom_minimum_size = Vector2(94, 50)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxFlat_4c1hm")
+icon = ExtResource("5_nf8vq")
+icon_alignment = 1
+
+[node name="ChangeIdeologyButton" type="Button" parent="VBoxContainer" unique_id=1823391533]
+custom_minimum_size = Vector2(94, 50)
+layout_mode = 2
+tooltip_text = "Force enemy to adopt your ideology"
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxFlat_4c1hm")
+icon = ExtResource("6_40vur")
+icon_alignment = 1
+
+[node name="ControlButton" type="Button" parent="VBoxContainer" unique_id=1992808077]
+custom_minimum_size = Vector2(94, 50)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxFlat_4c1hm")
+icon = ExtResource("7_fe0qs")
+icon_alignment = 1
 
 [connection signal="pressed" from="CloseButton" to="." method="_on_close_button_pressed"]
 [connection signal="pressed" from="SendDemands" to="." method="_on_send_demands_pressed"]
-[connection signal="pressed" from="SelectAll" to="." method="_on_select_all_pressed"]
+[connection signal="pressed" from="VBoxContainer/SelectAllButton" to="." method="_on_select_all_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/WarReparationsButton" to="." method="_on_war_reparations_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/ChangeIdeologyButton" to="." method="_on_change_ideology_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/ControlButton" to="." method="_on_control_button_pressed"]

@@ -5,11 +5,13 @@ extends Panel
 @onready var CountryLabel = $CountryLabel
 @onready var ProvincesLabel = $VBoxContainer1/ProvincesLabel
 @onready var PopulationLabel = $VBoxContainer1/PopulationLabel
+@onready var HappinessLabel = $VBoxContainer1/HappinessLabel
 @onready var FactoriesLabel = $VBoxContainer1/FactoriesLabel
 
 @onready var IdeologyLabel = $VBoxContainer1/IdeologyLabel
 @onready var RelationsLabel = $VBoxContainer1/RelationsLabel
 @onready var SanctionsLabel = $VBoxContainer1/SanctionsLabel
+@onready var WarExhaustionLabel = $VBoxContainer1/WarExhaustionLabel
 
 @onready var InfluenceLabel = $VBoxContainer2/InfluenceLabel
 @onready var StabilityLabel = $VBoxContainer2/StabilityLabel
@@ -78,12 +80,14 @@ func update_info():
     CountryLabel.text = owner_name
     ProvincesLabel.text = "Provinces: " + str(ProvinceRegistry.owner_province_count[owner_name])
     PopulationLabel.text = "Population 👥: " + ProvinceRegistry._format_number(ProvinceRegistry.get_country_population(owner_name), " ")
+    HappinessLabel.text = get_happiness(round(data.get("happiness", 0)))
     var GDP = (ProvinceRegistry.countries_data[owner_name].get("factories", 0) * settings.product_cost + data.get("monthly_income", 0)) * 12
     FactoriesLabel.text = "GDP: " + ProvinceRegistry._format_number(GDP, ".") + "$"
     
     IdeologyLabel.text = "Ideology: " + str(data.get("ideology", "liberalism")).capitalize()
     RelationsLabel.text = "Relations: " + str(DiplomacyManager.get_relation(settings.active_country, owner_name))
     SanctionsLabel.text = "Sanctions: " + str(int(round(data.get("sanctions", 0.0)))) + "%"
+    WarExhaustionLabel.text = "War Exhaustion: " + str(int(round(data.get("war_exhaustion", 0.0)))) + "%"
     
     InfluenceLabel.text = 'Influence 🌐: ' + str(ProvinceRegistry.countries_data[owner_name]['influence']) + '%'
     StabilityLabel.text = 'Stability 🛡️: ' + str(ProvinceRegistry.countries_data[owner_name]['stability']) + '%'
@@ -179,3 +183,13 @@ func _on_change_btn_pressed() -> void:
 func _on_close_btn_pressed() -> void:
     ideology_panel.visible = false
     selected_ideology = ""
+    
+
+func get_happiness(happiness) -> String:
+    if happiness <= 30:
+        return "😫 " + str(happiness)
+    elif happiness <= 70:
+        return "😐 " + str(happiness)
+    else:
+        return "😁 " + str(happiness)
+    return ""

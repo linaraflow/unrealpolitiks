@@ -1,0 +1,61 @@
+[gd_scene format=3 uid="uid://drqgjjt2yw2oq"]
+
+[ext_resource type="Script" uid="uid://bg8eolukieet4" path="res://notification_menu.gd" id="1_f0py6"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4c1hm"]
+bg_color = Color(0.12591082, 0.12591085, 0.12591076, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_detail = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hc05d"]
+bg_color = Color(0.10747974, 0.10747974, 0.10747967, 1)
+corner_radius_top_left = 3
+corner_detail = 20
+
+[node name="NotificationMenu" type="Control" unique_id=1559544385]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_f0py6")
+
+[node name="NotificationPanel" type="Panel" parent="." unique_id=180607034]
+layout_mode = 0
+offset_right = 325.0
+offset_bottom = 325.0
+
+[node name="TopPanel" type="Panel" parent="NotificationPanel" unique_id=1232175972]
+layout_mode = 0
+offset_right = 325.0
+offset_bottom = 40.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_4c1hm")
+
+[node name="Label" type="Label" parent="NotificationPanel/TopPanel" unique_id=899987495]
+layout_mode = 0
+offset_right = 325.0
+offset_bottom = 40.0
+text = "Notification Menu"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CloseButton" type="Button" parent="NotificationPanel/TopPanel" unique_id=1355614065]
+layout_mode = 0
+offset_right = 15.0
+offset_bottom = 40.0
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxFlat_hc05d")
+text = ">"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="NotificationPanel" unique_id=1621859173]
+layout_mode = 0
+offset_left = 5.0
+offset_top = 45.0
+offset_right = 320.0
+offset_bottom = 320.0
+
+[node name="List" type="VBoxContainer" parent="NotificationPanel/ScrollContainer" unique_id=1021878764]
+layout_mode = 2
+size_flags_horizontal = 3

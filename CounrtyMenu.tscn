@@ -14,7 +14,7 @@ offset_bottom = 1080.0
 [node name="Panel" type="Panel" parent="." unique_id=135916731 node_paths=PackedStringArray("ideology_panel", "ideology_list", "change_btn", "close_btn")]
 layout_mode = 1
 offset_right = 270.0
-offset_bottom = 400.0
+offset_bottom = 430.0
 script = ExtResource("1_e437t")
 settings = ExtResource("3_e437t")
 ideology_panel = NodePath("IdeologySelectionPanel")
@@ -45,6 +45,10 @@ text = "Provinces: "
 layout_mode = 2
 text = "Population 👥: "
 
+[node name="HappinessLabel" type="Label" parent="Panel/VBoxContainer1" unique_id=1287609698]
+layout_mode = 2
+text = "😁 78%"
+
 [node name="FactoriesLabel" type="Label" parent="Panel/VBoxContainer1" unique_id=1264732361]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.13552234, 0.55294275, 1.92523e-07, 1)
@@ -62,12 +66,16 @@ text = "Relations: "
 layout_mode = 2
 text = "Sanctions: "
 
+[node name="WarExhaustionLabel" type="Label" parent="Panel/VBoxContainer1" unique_id=644397585]
+layout_mode = 2
+text = "War Exhaustion:"
+
 [node name="VBoxContainer2" type="VBoxContainer" parent="Panel" unique_id=567417450]
 layout_mode = 0
 offset_left = 12.0
-offset_top = 270.0
+offset_top = 305.0
 offset_right = 242.0
-offset_bottom = 329.8505
+offset_bottom = 364.8505
 
 [node name="InfluenceLabel" type="Label" parent="Panel/VBoxContainer2" unique_id=1503665151]
 layout_mode = 2
@@ -87,6 +95,7 @@ offset_top = -61.0
 offset_right = 62.000008
 offset_bottom = -11.0
 grow_vertical = 0
+focus_mode = 0
 theme_override_font_sizes/font_size = 23
 text = "⚔️"
 script = ExtResource("3_xs2co")
@@ -102,6 +111,7 @@ offset_top = -61.0
 offset_right = 62.00009
 offset_bottom = -11.0
 grow_vertical = 0
+focus_mode = 0
 theme_override_font_sizes/font_size = 23
 text = "🏳️"
 
@@ -117,6 +127,7 @@ offset_bottom = -11.0
 grow_vertical = 0
 tooltip_text = "Improve Relations
 -50.000"
+focus_mode = 0
 theme_override_font_sizes/font_size = 23
 text = "+"
 
@@ -131,6 +142,7 @@ offset_right = 186.00009
 offset_bottom = -11.0
 grow_vertical = 0
 tooltip_text = "Worsen Relations"
+focus_mode = 0
 theme_override_font_sizes/font_size = 23
 text = "-"
 
@@ -144,6 +156,7 @@ offset_top = -61.0
 offset_right = 248.00009
 offset_bottom = -11.0
 grow_vertical = 0
+focus_mode = 0
 theme_override_font_sizes/font_size = 23
 text = "💀"
 
@@ -158,6 +171,7 @@ offset_right = 248.00009
 offset_bottom = -11.0
 grow_vertical = 0
 tooltip_text = "Change ideology"
+focus_mode = 0
 theme_override_font_sizes/font_size = 23
 text = "💡"
 

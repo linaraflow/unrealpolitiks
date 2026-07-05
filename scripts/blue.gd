@@ -6,6 +6,7 @@ extends Button
 @onready var TopMenu = get_node("/root/Game/CanvasLayer/TopMenu")
 @onready var recruit_btn = get_node("/root/Game/CanvasLayer/ProvinceMenu/Panel/RecruitButton")
 @onready var CountryPanel = get_node("/root/Game/CanvasLayer/CountryMenu/Panel")
+@onready var NotificationMenu = get_node("/root/Game/CanvasLayer/NotificationMenu")
 
 func _ready():
     add_to_group("choose_button")
@@ -30,4 +31,5 @@ func _on_pressed():
         DivisionMenu.show()
         DivisionMenu.update_info(settings.province_data[str(settings.last_clicked_province_id)])
         ProvinceMenu.show()
+        NotificationMenu.show()
         recruit_btn.show()

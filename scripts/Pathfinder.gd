@@ -27,8 +27,13 @@ func find_path(start_id: int, goal_id: int, country: String) -> Array:
 
             if n != goal_id:
                 var owner = settings.province_data[str(n)].get("owner", "")
+                var owner_data = ProvinceRegistry.countries_data[owner]
+                if country == "":
+                    continue
+                var province_owner_data = ProvinceRegistry.countries_data[country]
+                var check_control = owner in province_owner_data["control"] or country in owner_data["control"]
                 # Своя провинция — проходим, враг — проходим, нейтрал — нет
-                if owner != country and not ProvinceRegistry.is_at_war(country, owner):
+                if owner != country and not ProvinceRegistry.is_at_war(country, owner) and not check_control:
                     continue
 
             visited[n] = true
