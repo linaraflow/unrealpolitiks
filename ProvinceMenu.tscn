@@ -1,9 +1,137 @@
 [gd_scene format=3 uid="uid://cbj0ixihecpff"]
 
 [ext_resource type="Script" uid="uid://bhn7610u0q4gq" path="res://scripts/ProvinceMenu.gd" id="1_ehxlg"]
-[ext_resource type="Script" uid="uid://3hvpxjq71i0q" path="res://scripts/recruite_button.gd" id="3_n6hjb"]
+[ext_resource type="Texture2D" uid="uid://bibgkkv8ss0yu" path="res://assets/icons_province_menu/population.svg" id="3_ddf8l"]
+[ext_resource type="Texture2D" uid="uid://daeuasg27vao2" path="res://assets/icons_province_menu/factory.svg" id="4_kgwgh"]
 [ext_resource type="Resource" uid="uid://bhx1w7f44qx7h" path="res://new_resource.tres" id="4_lsrs6"]
 [ext_resource type="Script" uid="uid://bk0y6lyt1mnn7" path="res://scripts/recruit_slider_panel.gd" id="4_n6hjb"]
+[ext_resource type="Texture2D" uid="uid://di1sqh6a4xwlf" path="res://assets/icons_province_menu/declare_war.svg" id="5_7oiae"]
+[ext_resource type="Texture2D" uid="uid://bw2mdyartqmr7" path="res://assets/icons_province_menu/build_factory.svg" id="6_5cf6e"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_n6hjb"]
+bg_color = Color(0.12265947, 0.12265957, 0.11823251, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.35156286, 0.35156295, 0.35156265, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+corner_detail = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_adx7h"]
+content_margin_left = 0.0
+content_margin_top = 5.0
+content_margin_right = 0.0
+content_margin_bottom = 5.0
+bg_color = Color(0.18000475, 0.18000492, 0.18000486, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+corner_detail = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cocem"]
+content_margin_left = 0.0
+content_margin_top = 5.0
+content_margin_right = 0.0
+content_margin_bottom = 5.0
+bg_color = Color(0.18000475, 0.18000492, 0.18000486, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+corner_detail = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_iy337"]
+content_margin_left = 79.0
+content_margin_top = 8.0
+content_margin_bottom = 8.0
+bg_color = Color(0.16924527, 0.16924533, 0.16924518, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.585062, 0.5850621, 0.5850618, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+corner_detail = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ddf8l"]
+content_margin_left = 79.0
+content_margin_top = 8.0
+content_margin_bottom = 8.0
+bg_color = Color(0.103743605, 0.103743516, 0.103743516, 1)
+border_color = Color(0.585062, 0.5850621, 0.5850618, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+corner_detail = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kgwgh"]
+content_margin_left = 79.0
+content_margin_top = 8.0
+content_margin_bottom = 8.0
+bg_color = Color(0.14767182, 0.14767182, 0.14767176, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.585062, 0.5850621, 0.5850618, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+corner_detail = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_y5c12"]
+content_margin_left = 79.0
+content_margin_top = 8.0
+content_margin_bottom = 8.0
+bg_color = Color(0.16924527, 0.16924533, 0.16924518, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.585062, 0.5850621, 0.5850618, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+corner_detail = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7oiae"]
+content_margin_left = 79.0
+content_margin_top = 8.0
+content_margin_bottom = 8.0
+bg_color = Color(0.103743605, 0.103743516, 0.103743516, 1)
+border_color = Color(0.585062, 0.5850621, 0.5850618, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+corner_detail = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_5cf6e"]
+content_margin_left = 79.0
+content_margin_top = 8.0
+content_margin_bottom = 8.0
+bg_color = Color(0.14767182, 0.14767182, 0.14767176, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.585062, 0.5850621, 0.5850618, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+corner_detail = 20
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ehxlg"]
 bg_color = Color(0.14509805, 0.14509805, 0.14509805, 1)
@@ -27,77 +155,141 @@ settings = ExtResource("4_lsrs6")
 
 [node name="Panel" type="Panel" parent="." unique_id=283001299]
 layout_mode = 1
-offset_right = 270.0
-offset_bottom = 204.0
+offset_right = 300.0
+offset_bottom = 245.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_n6hjb")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Panel" unique_id=250842582]
+[node name="MarginContainer" type="MarginContainer" parent="Panel" unique_id=1804025954]
 layout_mode = 0
-offset_left = 12.0
-offset_top = 9.0
-offset_right = 257.0
-offset_bottom = 341.0
+offset_right = 300.0
+offset_bottom = 245.0
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
 
-[node name="OwnerLabel" type="Label" parent="Panel/VBoxContainer" unique_id=329666651]
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel/MarginContainer" unique_id=209447278]
 layout_mode = 2
-text = "Owner:"
+theme_override_constants/separation = 12
 
-[node name="NameLabel" type="Label" parent="Panel/VBoxContainer" unique_id=1640279133]
+[node name="HeaderRow" type="HBoxContainer" parent="Panel/MarginContainer/VBoxContainer" unique_id=412504170]
 layout_mode = 2
-text = "Province:"
 
-[node name="PopulationLabel" type="Label" parent="Panel/VBoxContainer" unique_id=260322795]
+[node name="NameLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer/HeaderRow" unique_id=1640279133]
 layout_mode = 2
-text = "Population 👥: "
+text = "Prague"
 
-[node name="FactoriesLabel" type="Label" parent="Panel/VBoxContainer" unique_id=722026785]
+[node name="OwnerLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer/HeaderRow" unique_id=329666651]
 layout_mode = 2
-text = "Factories 🏭: "
-
-[node name="HappinessLabel" type="Label" parent="Panel/VBoxContainer" unique_id=334202560]
-layout_mode = 2
-text = "😁 78%"
-
-[node name="RecruitButton" type="Button" parent="Panel" unique_id=121099447]
-layout_mode = 0
-offset_left = 12.0
-offset_top = 143.0
-offset_right = 62.0
-offset_bottom = 193.00024
-focus_mode = 0
-script = ExtResource("3_n6hjb")
-settings = ExtResource("4_lsrs6")
-
-[node name="Label" type="Label" parent="Panel/RecruitButton" unique_id=453485479]
-layout_mode = 0
-offset_right = 50.0
-offset_bottom = 50.0
-text = "🪖"
-horizontal_alignment = 1
+size_flags_horizontal = 10
+theme_override_colors/font_color = Color(0.53333336, 0.53333336, 0.53333336, 1)
+theme_override_font_sizes/font_size = 12
+text = "Czech republic"
 vertical_alignment = 1
 
-[node name="BuildFactoryButton" type="Button" parent="Panel" unique_id=744798989]
-layout_mode = 0
-offset_left = 74.0
-offset_top = 143.0
-offset_right = 124.0
-offset_bottom = 193.00024
-focus_mode = 0
+[node name="StatsRow" type="HBoxContainer" parent="Panel/MarginContainer/VBoxContainer" unique_id=7882408]
+layout_mode = 2
+theme_override_constants/separation = 5
 
-[node name="Label" type="Label" parent="Panel/BuildFactoryButton" unique_id=789199862]
-layout_mode = 0
-offset_right = 50.0
-offset_bottom = 50.0
-text = "🏭"
+[node name="PopulationBox" type="PanelContainer" parent="Panel/MarginContainer/VBoxContainer/StatsRow" unique_id=1484266118]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_adx7h")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel/MarginContainer/VBoxContainer/StatsRow/PopulationBox" unique_id=754391665]
+layout_mode = 2
+theme_override_constants/separation = -3
+
+[node name="PopIcon" type="TextureRect" parent="Panel/MarginContainer/VBoxContainer/StatsRow/PopulationBox/VBoxContainer" unique_id=1762847866]
+layout_mode = 2
+offset_transform_enabled = true
+offset_transform_scale = Vector2(0.6, 0.6)
+texture = ExtResource("3_ddf8l")
+stretch_mode = 3
+
+[node name="PopulationLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer/StatsRow/PopulationBox/VBoxContainer" unique_id=730039095]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "6.83 m"
 horizontal_alignment = 1
-vertical_alignment = 1
+
+[node name="FactoriesBox" type="PanelContainer" parent="Panel/MarginContainer/VBoxContainer/StatsRow" unique_id=723739969]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_cocem")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel/MarginContainer/VBoxContainer/StatsRow/FactoriesBox" unique_id=1244927009]
+layout_mode = 2
+theme_override_constants/separation = -3
+
+[node name="FactoriesIcon" type="TextureRect" parent="Panel/MarginContainer/VBoxContainer/StatsRow/FactoriesBox/VBoxContainer" unique_id=1954885696]
+layout_mode = 2
+offset_transform_enabled = true
+offset_transform_scale = Vector2(0.6, 0.6)
+texture = ExtResource("4_kgwgh")
+stretch_mode = 3
+
+[node name="FactoriesLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer/StatsRow/FactoriesBox/VBoxContainer" unique_id=1422748411]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "10 factories"
+horizontal_alignment = 1
+
+[node name="HappinessRow" type="VBoxContainer" parent="Panel/MarginContainer/VBoxContainer" unique_id=147142844]
+layout_mode = 2
+
+[node name="HappinessLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer/HappinessRow" unique_id=627572804]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.53333336, 0.53333336, 0.53333336, 1)
+theme_override_font_sizes/font_size = 12
+text = "73%"
+horizontal_alignment = 2
+
+[node name="HappinessBar" type="ProgressBar" parent="Panel/MarginContainer/VBoxContainer/HappinessRow" unique_id=2024793170]
+custom_maximum_size = Vector2(-1, 5)
+layout_mode = 2
+show_percentage = false
+
+[node name="HSeparator" type="HSeparator" parent="Panel/MarginContainer/VBoxContainer" unique_id=1576641455]
+layout_mode = 2
+
+[node name="ActionsRow" type="VBoxContainer" parent="Panel/MarginContainer/VBoxContainer" unique_id=523958937]
+layout_mode = 2
+
+[node name="RecruitButton" type="Button" parent="Panel/MarginContainer/VBoxContainer/ActionsRow" unique_id=121099447]
+modulate = Color(0.5312036, 0.8550829, 0.99999994, 1)
+layout_mode = 2
+offset_transform_enabled = true
+focus_mode = 0
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_iy337")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_ddf8l")
+theme_override_styles/hover = SubResource("StyleBoxFlat_kgwgh")
+text = "Recruit troops"
+icon = ExtResource("5_7oiae")
+alignment = 0
+expand_icon = true
+
+[node name="BuildFactoryButton" type="Button" parent="Panel/MarginContainer/VBoxContainer/ActionsRow" unique_id=744798989]
+modulate = Color(1, 0.8670949, 0.4712301, 1)
+layout_mode = 2
+focus_mode = 0
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_y5c12")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_7oiae")
+theme_override_styles/hover = SubResource("StyleBoxFlat_5cf6e")
+text = "Build a factory"
+icon = ExtResource("6_5cf6e")
+alignment = 0
+expand_icon = true
 
 [node name="RecruitSliderPanel" type="Panel" parent="." unique_id=281622795]
 visible = false
 layout_mode = 0
-offset_left = 74.0
-offset_top = 45.0
-offset_right = 274.0
-offset_bottom = 245.0
+offset_left = 305.0
+offset_top = 77.0
+offset_right = 505.0
+offset_bottom = 277.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_ehxlg")
 script = ExtResource("4_n6hjb")
 
@@ -131,4 +323,4 @@ offset_bottom = 194.0
 theme_override_font_sizes/font_size = 8
 text = "confirm"
 
-[connection signal="pressed" from="Panel/BuildFactoryButton" to="." method="_on_build_factory_button_pressed"]
+[connection signal="pressed" from="Panel/MarginContainer/VBoxContainer/ActionsRow/BuildFactoryButton" to="." method="_on_build_factory_button_pressed"]

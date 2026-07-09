@@ -11,7 +11,6 @@
 [ext_resource type="Texture2D" uid="uid://c1dlsstw2b8np" path="res://assets/icons_country_menu/worsen.svg" id="9_r840y"]
 [ext_resource type="Texture2D" uid="uid://cbf0bhufldiqs" path="res://assets/icons_country_menu/declare_war.svg" id="10_a3qja"]
 [ext_resource type="Texture2D" uid="uid://cdpnchr72vb42" path="res://assets/icons_country_menu/peace.svg" id="11_7su7u"]
-[ext_resource type="Texture2D" uid="uid://cxgtmyqws48pf" path="res://assets/icons_country_menu/change.svg" id="12_p7bm5"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hbrlp"]
 bg_color = Color(0.12156863, 0.12156863, 0.11764706, 1)
@@ -20,10 +19,10 @@ border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
 border_color = Color(0.35156286, 0.35156295, 0.35156265, 1)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
 corner_detail = 20
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_m3tma"]
@@ -71,36 +70,6 @@ corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
 corner_detail = 20
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_a3qja"]
-content_margin_left = 0.0
-content_margin_top = 4.0
-content_margin_right = 0.0
-content_margin_bottom = 0.0
-bg_color = Color(0.103743605, 0.103743516, 0.103743516, 1)
-border_color = Color(0.585062, 0.5850621, 0.5850618, 1)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
-corner_detail = 20
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_r840y"]
-content_margin_left = 0.0
-content_margin_top = 4.0
-content_margin_right = 0.0
-content_margin_bottom = 0.0
-bg_color = Color(0.14767182, 0.14767182, 0.14767176, 1)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.585062, 0.5850621, 0.5850618, 1)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
-corner_detail = 20
-
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dpeqq"]
 content_margin_top = 8.0
 bg_color = Color(0.24115619, 0.24115601, 0.24115604, 1)
@@ -108,19 +77,6 @@ border_width_left = 1
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
-border_color = Color(0.585062, 0.5850621, 0.5850618, 1)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
-corner_detail = 20
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7su7u"]
-content_margin_left = 0.0
-content_margin_top = 4.0
-content_margin_right = 0.0
-content_margin_bottom = 0.0
-bg_color = Color(0.103743605, 0.103743516, 0.103743516, 1)
 border_color = Color(0.585062, 0.5850621, 0.5850618, 1)
 corner_radius_top_left = 8
 corner_radius_top_right = 8
@@ -142,19 +98,6 @@ corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
 corner_detail = 20
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ru30x"]
-content_margin_left = 0.0
-content_margin_top = 4.0
-content_margin_right = 0.0
-content_margin_bottom = 0.0
-bg_color = Color(0.103743605, 0.103743516, 0.103743516, 1)
-border_color = Color(0.585062, 0.5850621, 0.5850618, 1)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
-corner_detail = 20
-
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_m4ayv"]
 content_margin_top = 8.0
 bg_color = Color(0.16924527, 0.16924533, 0.16924518, 1)
@@ -162,19 +105,6 @@ border_width_left = 1
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
-border_color = Color(0.585062, 0.5850621, 0.5850618, 1)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
-corner_detail = 20
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_u2c8u"]
-content_margin_left = 0.0
-content_margin_top = 4.0
-content_margin_right = 0.0
-content_margin_bottom = 0.0
-bg_color = Color(0.103743605, 0.103743516, 0.103743516, 1)
 border_color = Color(0.585062, 0.5850621, 0.5850618, 1)
 corner_radius_top_left = 8
 corner_radius_top_right = 8
@@ -218,41 +148,12 @@ anchors_preset = 0
 offset_right = 1920.0
 offset_bottom = 1080.0
 
-[node name="Panel" type="Panel" parent="." unique_id=135916731 node_paths=PackedStringArray("FlagRect", "CountryLabel", "ProvincesLabel", "PopulationLabel", "FactoriesLabel", "HappinessLabel", "HappinessBar", "WarExhaustionValueLabel", "WarExhaustionBar", "SanctionsValueLabel", "SanctionsBar", "RelationsRow", "RelationsValueLabel", "RelationsBarBox", "RelationsMarker", "DiplomacyActionsGrid", "ImproveBtn", "WorsenBtn", "SanctionBtn", "DeclareWarBtn", "NegotiationBtn", "IdeologyCard", "IdeologyLabel", "ChangeIdeologyBtn", "ideology_panel", "ideology_list", "change_btn", "close_btn")]
+[node name="Panel" type="Panel" parent="." unique_id=135916731]
 layout_mode = 1
 offset_right = 300.0
 offset_bottom = 433.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_hbrlp")
 script = ExtResource("1_e437t")
-settings = ExtResource("3_e437t")
-FlagRect = NodePath("HeaderRow/FlagRect")
-CountryLabel = NodePath("HeaderRow/TitleBox/CountryLabel")
-ProvincesLabel = NodePath("HeaderRow/TitleBox/ProvincesLabel")
-PopulationLabel = NodePath("StatsCardsRow/PopulationCard/VBoxContainer/PopulationLabel")
-FactoriesLabel = NodePath("StatsCardsRow/GDPCard/VBoxContainer/FactoriesLabel")
-HappinessLabel = NodePath("BarsContainer/HappinessRow/HappinessHeader/HappinessLabel")
-HappinessBar = NodePath("BarsContainer/HappinessRow/HappinessBar")
-WarExhaustionValueLabel = NodePath("BarsContainer/WarExhaustionRow/WarExhaustionHeader/WarExhaustionLabel")
-WarExhaustionBar = NodePath("BarsContainer/WarExhaustionRow/WarExhaustionBar")
-SanctionsValueLabel = NodePath("BarsContainer/SanctionsRow/SanctionsHeader/SanctionsLabel")
-SanctionsBar = NodePath("BarsContainer/SanctionsRow/SanctionsBar")
-RelationsRow = NodePath("RelationsRow")
-RelationsValueLabel = NodePath("RelationsRow/RelationsHeader/RelationsValueLabel")
-RelationsBarBox = NodePath("RelationsRow/RelationsBarBox")
-RelationsMarker = NodePath("RelationsRow/RelationsBarBox/Marker")
-DiplomacyActionsGrid = NodePath("DiplomacyActionsGrid")
-ImproveBtn = NodePath("DiplomacyActionsGrid/ImproveRelationsBtn")
-WorsenBtn = NodePath("DiplomacyActionsGrid/WorsenRelationsBtn")
-SanctionBtn = NodePath("DiplomacyActionsGrid/ImposeSanctionsBtn")
-DeclareWarBtn = NodePath("DiplomacyActionsGrid/WarSlot/DeclareWar")
-NegotiationBtn = NodePath("DiplomacyActionsGrid/WarSlot/Negotiation")
-IdeologyCard = NodePath("IdeologyCard")
-IdeologyLabel = NodePath("IdeologyCard/HBoxContainer/IdeologyInfo/IdeologyLabel")
-ChangeIdeologyBtn = NodePath("IdeologyCard/HBoxContainer/ChangeIdeologyBtn")
-ideology_panel = NodePath("IdeologySelectionPanel")
-ideology_list = NodePath("IdeologySelectionPanel/VBoxContainer/ScrollContainer/IdeologyList")
-change_btn = NodePath("IdeologySelectionPanel/VBoxContainer/HBoxContainer/ChangeBtn")
-close_btn = NodePath("IdeologySelectionPanel/VBoxContainer/HBoxContainer/CloseBtn")
 
 [node name="HeaderRow" type="HBoxContainer" parent="Panel" unique_id=1500502106]
 layout_mode = 0
@@ -282,7 +183,7 @@ text = "Germany"
 [node name="ProvincesLabel" type="Label" parent="Panel/HeaderRow/TitleBox" unique_id=1943410449]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.5330367, 0.5330367, 0.5330367, 1)
-theme_override_font_sizes/font_size = 10
+theme_override_font_sizes/font_size = 9
 text = "Provinces: 12"
 
 [node name="StatsCardsRow" type="HBoxContainer" parent="Panel" unique_id=1011465082]
@@ -349,8 +250,6 @@ theme_override_constants/separation = -2
 [node name="HappinessIcon" type="TextureRect" parent="Panel/BarsContainer/HappinessRow/HappinessHeader" unique_id=54076569]
 custom_maximum_size = Vector2(14, 14)
 layout_mode = 2
-size_flags_horizontal = 0
-size_flags_vertical = 4
 texture = ExtResource("5_qw2xt")
 
 [node name="HappinessCaption" type="Label" parent="Panel/BarsContainer/HappinessRow/HappinessHeader" unique_id=1552409562]
@@ -382,8 +281,6 @@ theme_override_constants/separation = -2
 custom_minimum_size = Vector2(14, 14)
 custom_maximum_size = Vector2(14, 14)
 layout_mode = 2
-size_flags_horizontal = 0
-size_flags_vertical = 4
 texture = ExtResource("6_l4hfs")
 
 [node name="WarExhaustionCaption" type="Label" parent="Panel/BarsContainer/WarExhaustionRow/WarExhaustionHeader" unique_id=1762915357]
@@ -414,8 +311,6 @@ theme_override_constants/separation = -2
 [node name="SanctionsIcon" type="TextureRect" parent="Panel/BarsContainer/SanctionsRow/SanctionsHeader" unique_id=1488823342]
 custom_maximum_size = Vector2(14, 14)
 layout_mode = 2
-size_flags_horizontal = 0
-size_flags_vertical = 4
 texture = ExtResource("7_w0v6l")
 
 [node name="SanctionsCaption" type="Label" parent="Panel/BarsContainer/SanctionsRow/SanctionsHeader" unique_id=2067944403]
@@ -437,6 +332,7 @@ theme_override_font_sizes/font_size = 9
 show_percentage = false
 
 [node name="RelationsRow" type="VBoxContainer" parent="Panel" unique_id=401075289]
+visible = false
 layout_mode = 0
 offset_left = 12.0
 offset_top = 230.0
@@ -498,8 +394,6 @@ tooltip_text = "Improve Relations
 focus_mode = 0
 theme_override_font_sizes/font_size = 11
 theme_override_styles/normal = SubResource("StyleBoxFlat_l4hfs")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_a3qja")
-theme_override_styles/hover = SubResource("StyleBoxFlat_r840y")
 text = "Impose"
 icon = ExtResource("8_p7bm5")
 icon_alignment = 1
@@ -515,8 +409,6 @@ tooltip_text = "Worsen Relations"
 focus_mode = 0
 theme_override_font_sizes/font_size = 11
 theme_override_styles/normal = SubResource("StyleBoxFlat_dpeqq")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_7su7u")
-theme_override_styles/hover = SubResource("StyleBoxFlat_r840y")
 text = "Worsen"
 icon = ExtResource("9_r840y")
 icon_alignment = 1
@@ -542,7 +434,6 @@ grow_vertical = 0
 focus_mode = 0
 theme_override_font_sizes/font_size = 11
 theme_override_styles/normal = SubResource("StyleBoxFlat_l4hfs")
-theme_override_styles/hover = SubResource("StyleBoxFlat_r840y")
 text = "Declare war"
 icon = ExtResource("10_a3qja")
 icon_alignment = 1
@@ -562,8 +453,6 @@ grow_vertical = 0
 focus_mode = 0
 theme_override_font_sizes/font_size = 11
 theme_override_styles/normal = SubResource("StyleBoxFlat_s1i0l")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_ru30x")
-theme_override_styles/hover = SubResource("StyleBoxFlat_r840y")
 text = "Make peace"
 icon = ExtResource("11_7su7u")
 icon_alignment = 1
@@ -579,15 +468,12 @@ size_flags_vertical = 5
 focus_mode = 0
 theme_override_font_sizes/font_size = 11
 theme_override_styles/normal = SubResource("StyleBoxFlat_m4ayv")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_u2c8u")
-theme_override_styles/hover = SubResource("StyleBoxFlat_r840y")
 text = "Sanctions"
 icon = ExtResource("7_w0v6l")
 icon_alignment = 1
 vertical_icon_alignment = 0
 
 [node name="IdeologyCard" type="PanelContainer" parent="Panel" unique_id=1726314955]
-visible = false
 layout_mode = 0
 offset_left = 12.0
 offset_top = 230.0
@@ -597,7 +483,7 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_l08fj")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="Panel/IdeologyCard" unique_id=1470832930]
 layout_mode = 2
-theme_override_constants/separation = 0
+theme_override_constants/separation = 137
 
 [node name="IdeologyInfo" type="VBoxContainer" parent="Panel/IdeologyCard/HBoxContainer" unique_id=791842711]
 layout_mode = 2
@@ -616,15 +502,13 @@ text = "Liberalism"
 
 [node name="ChangeIdeologyBtn" type="Button" parent="Panel/IdeologyCard/HBoxContainer" unique_id=1110016441]
 layout_mode = 2
-size_flags_horizontal = 10
+size_flags_horizontal = 8
 size_flags_vertical = 4
-offset_transform_enabled = true
 tooltip_text = "Change ideology"
 focus_mode = 0
 theme_override_font_sizes/font_size = 12
 theme_override_styles/normal = SubResource("StyleBoxFlat_p7bm5")
 text = "change"
-icon = ExtResource("12_p7bm5")
 
 [node name="IdeologySelectionPanel" type="Panel" parent="Panel" unique_id=1096770221]
 unique_name_in_owner = true

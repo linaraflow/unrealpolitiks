@@ -1,11 +1,11 @@
 extends Button
 @export var settings: GameSettings
 
-@onready var ProvinceMenu = get_node("/root/Game/CanvasLayer/ProvinceMenu")
-@onready var DivisionMenu = get_node("/root/Game/CanvasLayer/DivisionMenu")
+@onready var ProvinceMenu = get_node("/root/Game/CanvasLayer/VBoxContainer/ProvinceMenu")
+@onready var DivisionMenu = get_node("/root/Game/CanvasLayer/VBoxContainer/DivisionMenu")
 @onready var TopMenu = get_node("/root/Game/CanvasLayer/TopMenu")
-@onready var recruit_btn = get_node("/root/Game/CanvasLayer/ProvinceMenu/Panel/RecruitButton")
-@onready var CountryPanel = get_node("/root/Game/CanvasLayer/CountryMenu/Panel")
+@onready var recruit_btn = get_node("/root/Game/CanvasLayer/VBoxContainer/ProvinceMenu/Panel/RecruitButton")
+@onready var CountryPanel = get_node("/root/Game/CanvasLayer/VBoxContainer/CountryMenu/Panel")
 @onready var NotificationMenu = get_node("/root/Game/CanvasLayer/NotificationMenu")
 
 func _ready():
@@ -31,5 +31,5 @@ func _on_pressed():
         DivisionMenu.show()
         DivisionMenu.update_info(settings.province_data[str(settings.last_clicked_province_id)])
         ProvinceMenu.show()
+        ProvinceMenu.update_info(ProvinceRegistry.province_data[str(settings.last_clicked_province_id)])
         NotificationMenu.show()
-        recruit_btn.show()

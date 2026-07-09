@@ -58,24 +58,24 @@ script = ExtResource("5_x5p1p")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=2005519769]
 
-[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer" unique_id=1878594333]
-offset_left = 6.0
-offset_top = 56.0
-offset_right = 306.0
-offset_bottom = 935.0
-theme_override_constants/separation = 6
-
-[node name="CountryMenu" parent="CanvasLayer/VBoxContainer" unique_id=1494951920 instance=ExtResource("6_mfdv2")]
-layout_mode = 2
+[node name="CountryMenu" parent="CanvasLayer" unique_id=1494951920 instance=ExtResource("6_mfdv2")]
+offset_left = 12.0
+offset_top = 62.0
+offset_right = 12.0
+offset_bottom = 62.0
 size_flags_horizontal = 4
 
-[node name="ProvinceMenu" parent="CanvasLayer/VBoxContainer" unique_id=329358764 instance=ExtResource("8_j5wjh")]
-custom_minimum_size = Vector2(300, 245)
-layout_mode = 2
+[node name="ProvinceMenu" parent="CanvasLayer" unique_id=329358764 instance=ExtResource("8_j5wjh")]
+offset_left = 12.0
+offset_top = 504.0
+offset_right = 12.0
+offset_bottom = 504.0
 
-[node name="DivisionMenu" parent="CanvasLayer/VBoxContainer" unique_id=770860264 instance=ExtResource("7_80cx4")]
-custom_minimum_size = Vector2(300, 189)
-layout_mode = 2
+[node name="DivisionMenu" parent="CanvasLayer" unique_id=770860264 instance=ExtResource("7_80cx4")]
+offset_left = 12.0
+offset_top = 720.0
+offset_right = 12.0
+offset_bottom = 720.0
 
 [node name="DevMenu" parent="CanvasLayer" unique_id=1311671348 instance=ExtResource("9_80cx4")]
 anchors_preset = 1
@@ -116,9 +116,9 @@ offset_right = -1497.0
 
 [node name="NotificationMenu" parent="CanvasLayer" unique_id=1559544385 instance=ExtResource("14_rvswv")]
 offset_left = 1583.0
-offset_top = 56.0
+offset_top = 62.0
 offset_right = -337.0
-offset_bottom = -1024.0
+offset_bottom = -1018.0
 
 [node name="TopMenu" parent="CanvasLayer" unique_id=462479503 instance=ExtResource("16_rvswv")]
 anchors_preset = 0

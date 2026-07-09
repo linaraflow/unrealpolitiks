@@ -9,6 +9,9 @@
 [ext_resource type="Texture2D" uid="uid://due03bxc3mlaj" path="res://assets/minus_speed.png" id="6_p7twc"]
 [ext_resource type="Script" uid="uid://ctb4bvdw8phsl" path="res://scripts/products_label.gd" id="8_ym8ti"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_p7bm5"]
+bg_color = Color(0.12156863, 0.12156863, 0.11764706, 1)
+
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_kvvtr"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_pvj37"]
@@ -60,6 +63,7 @@ script = ExtResource("1_0l7yi")
 layout_mode = 0
 offset_right = 1920.0
 offset_bottom = 50.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_p7bm5")
 
 [node name="Flag" type="Button" parent="TopPanel" unique_id=462960174]
 layout_mode = 0
@@ -187,10 +191,10 @@ text = "x1"
 [node name="SellMenu" type="Panel" parent="." unique_id=1518076992]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 285.25
-offset_top = 62.0
-offset_right = 466.75
-offset_bottom = 139.0
+offset_left = 312.0
+offset_top = 56.0
+offset_right = 493.5
+offset_bottom = 133.0
 
 [node name="SellInput" type="SpinBox" parent="SellMenu" unique_id=1477380691]
 layout_mode = 0

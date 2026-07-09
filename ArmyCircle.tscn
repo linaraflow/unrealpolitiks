@@ -8,5 +8,6 @@ script = ExtResource("1_4alyp")
 [node name="Button" type="Button" parent="." unique_id=2082485376]
 offset_right = 8.0
 offset_bottom = 8.0
+focus_mode = 0
 
 [connection signal="pressed" from="Button" to="." method="_on_button_pressed"]

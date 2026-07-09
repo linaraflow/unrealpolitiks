@@ -21,7 +21,7 @@ var settings = preload("res://new_resource.tres")
 
 @onready var buttons = [$VBoxContainer/SelectAllButton, $VBoxContainer/WarReparationsButton, $VBoxContainer/ChangeIdeologyButton, $VBoxContainer/ControlButton]
 
-var menu_to_close: Array = ["CountryMenu", "ProvinceMenu", "DivisionMenu", "TopMenu", "NotificationMenu"]
+var menu_to_close: Array = []
 
 var _enemy: String = ""
 var _claimed: Array[int] = []
@@ -39,6 +39,12 @@ var _ideology_change_active: bool = false
 var _controller_set_active: bool = false
 
 func _ready():
+    menu_to_close = [get_node("/root/Game/CanvasLayer/VBoxContainer/CountryMenu"),
+                     get_node("/root/Game/CanvasLayer/VBoxContainer/ProvinceMenu"),
+                     get_node("/root/Game/CanvasLayer/VBoxContainer/DivisionMenu"),
+                     get_node("/root/Game/CanvasLayer/TopMenu"),
+                     get_node("/root/Game/CanvasLayer/NotificationMenu")]
+
     for b in buttons:
         b.pivot_offset = b.size / 2
         b.button_down.connect(_on_press.bind(b))
@@ -73,7 +79,7 @@ func open_negotiation(enemy: String) -> void:
     DivisionManager.set_negotiation_visibility([settings.active_country, enemy])
 
     for menu in menu_to_close:
-        get_node("/root/Game/CanvasLayer/" + menu).hide()
+        menu.hide()
         
     # НОВОЕ: Обновляем флаги и базовые цифры при открытии
     _update_country_info()
@@ -193,7 +199,7 @@ func _close() -> void:
     DivisionManager.set_negotiation_visibility([])
 
     for menu in menu_to_close:
-        get_node("/root/Game/CanvasLayer/" + menu).show()
+        menu.show()
     hide()
 
 

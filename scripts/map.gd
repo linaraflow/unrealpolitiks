@@ -19,12 +19,12 @@ var _highlight_elapsed: float = -1.0
 var _neg_enemy: String = ""
 var divisions_hidden: bool = false
 
-@onready var CountryMenu          = get_node("/root/Game/CanvasLayer/CountryMenu")
-@onready var CountryPanel         = get_node("/root/Game/CanvasLayer/CountryMenu/Panel")
-@onready var ProvinceMenu         = get_node("/root/Game/CanvasLayer/ProvinceMenu")
-@onready var DivisionMenu         = get_node("/root/Game/CanvasLayer/DivisionMenu")
-@onready var FlagRect             = get_node("/root/Game/CanvasLayer/CountryMenu/Panel/FlagRect")
-@onready var recruit_slider_panel = get_node("/root/Game/CanvasLayer/ProvinceMenu/RecruitSliderPanel")
+@onready var CountryMenu          = get_node("/root/Game/CanvasLayer/VBoxContainer/CountryMenu")
+@onready var CountryPanel         = get_node("/root/Game/CanvasLayer/VBoxContainer/CountryMenu/Panel")
+@onready var ProvinceMenu         = get_node("/root/Game/CanvasLayer/VBoxContainer/ProvinceMenu")
+@onready var DivisionMenu         = get_node("/root/Game/CanvasLayer/VBoxContainer/DivisionMenu")
+@onready var FlagRect             = get_node("/root/Game/CanvasLayer/VBoxContainer/CountryMenu/Panel/HeaderRow/FlagRect")
+@onready var recruit_slider_panel = get_node("/root/Game/CanvasLayer/VBoxContainer/ProvinceMenu/RecruitSliderPanel")
 
 const IGNORE_IDS = [15307124, 0]
 

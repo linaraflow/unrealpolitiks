@@ -3,6 +3,19 @@
 [ext_resource type="Script" uid="uid://bdxmg2pw1f4l7" path="res://scripts/division_menu.gd" id="1_myptv"]
 [ext_resource type="Resource" uid="uid://bhx1w7f44qx7h" path="res://new_resource.tres" id="2_gmcrd"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gmcrd"]
+bg_color = Color(0.12156863, 0.12156863, 0.11764706, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.35156286, 0.35156295, 0.35156265, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+corner_detail = 20
+
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_jtvnc"]
 
 [node name="DivisionMenu" type="Control" unique_id=770860264]
@@ -12,9 +25,11 @@ script = ExtResource("1_myptv")
 settings = ExtResource("2_gmcrd")
 
 [node name="Panel" type="Panel" parent="." unique_id=1985480761]
+custom_minimum_size = Vector2(300, 189)
 layout_mode = 1
-offset_right = 270.0
+offset_right = 300.0
 offset_bottom = 189.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_gmcrd")
 
 [node name="DivisionsLabel" type="Label" parent="Panel" unique_id=1028678123]
 layout_mode = 1

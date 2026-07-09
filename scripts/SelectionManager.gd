@@ -1,7 +1,7 @@
 extends Node
 
 var settings = preload("res://new_resource.tres")
-@onready var DivisionMenu = get_node("/root/Game/CanvasLayer/DivisionMenu")
+@onready var DivisionMenu = get_node("/root/Game/CanvasLayer/VBoxContainer/DivisionMenu")
 
 var selected_divisions: Array[Node] = []
 
