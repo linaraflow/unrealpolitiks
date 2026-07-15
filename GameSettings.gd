@@ -1,6 +1,6 @@
 extends Resource
 class_name GameSettings
-
+@export var province_centers: Dictionary = {}
 
 
 var active_country: String = ""
@@ -9,7 +9,7 @@ var last_clicked_province_color: Color
 var province_data: Dictionary
 var can_draw: bool = false
 var local_mouse: Vector2
-var province_centers: Dictionary
+#var province_centers: Dictionary
 var is_mouse_over_ui: bool = false
 var province_adjacency: Dictionary
 var can_select: bool = false

@@ -28,9 +28,33 @@ var target_destination_pos: Vector2 = Vector2.ZERO
 var current_target_province_id: int = -1 
 var distance_since_last_check: float = 0.0
 var target_owner: String = ""
+var _cached_path_length: float = 0.0
 
 var settings = preload("res://new_resource.tres")
 @onready var map_node = get_node("/root/Game/Map")
+
+# -----------------------------------------------------------------------------
+# ОПТИМИЗАЦИЯ: раньше _process() у КАЖДОЙ армии на КАЖДЫЙ кадр:
+#   1) вызывал _check_if_stranded() — ненужная работа, т.к. окружение армии
+#      меняется только при смене владельца территории, а не 60 раз в секунду;
+#   2) вызывал DivisionManager.reposition_armies_in_province() — эта функция
+#      перебирает ВСЕ армии в провинции, т.е. если в провинции N армий и
+#      каждая из них сама зовёт reposition каждый кадр — это O(N^2) в кадр
+#      на одну провинцию. При 300 провинциях N было маленьким и незаметным,
+#      при 10000 провинциях (и кратно выросшем числе армий) это давало
+#      просадку FPS каждый кадр — отсюда лаги камеры и выделения (они не
+#      виноваты сами по себе, просто общий FPS проседал).
+#
+# РЕШЕНИЕ:
+#   - stranded-проверка теперь идёт раз в STRANDED_CHECK_INTERVAL секунд,
+#     а не каждый кадр (снабжение не такая быстро меняющаяся вещь);
+#   - reposition_armies_in_province() убран из ежекадрового вызова: он и так
+#     вызывается в местах, где состав армий в провинции РЕАЛЬНО меняется —
+#     _transfer_data_to(), _arrive_at_destination(), _destroy_division().
+#     Вызывать его ещё и на каждом простаивающем юните каждый кадр было
+#     чистой лишней работой без изменения состояния.
+const STRANDED_CHECK_INTERVAL := 1.0
+var _stranded_check_accum: float = 0.0
 
 ## Пустой (прозрачный) стиль — нужен, чтобы Button не рисовал никакого фона
 ## под флагом (раньше здесь была цветная заливка-кружок)
@@ -56,12 +80,17 @@ func _update_flag_texture() -> void:
 func setup(p_id: int, name: String = "") -> void:
     province_id = p_id
     army_name   = name
-    division_owner = ProvinceRegistry.province_data[str(p_id)].get("owner", "")
+    division_owner = ProvinceRegistry.province_data[p_id].get("owner", "")
     _update_flag_texture()
 
 func _ready() -> void:
     z_index = 1 
     add_to_group("army_circles")
+
+    # Разброс фазы таймера: без этого все армии, созданные в одном кадре,
+    # проверяли бы stranded-статус синхронно в один и тот же кадр каждую
+    # секунду, давая периодический пик нагрузки вместо равномерной.
+    _stranded_check_accum = randf() * STRANDED_CHECK_INTERVAL
 
     var btn      = $Button
     btn.size     = Vector2(FLAG_WIDTH, FLAG_HEIGHT)
@@ -93,13 +122,38 @@ func _ready() -> void:
         if cam.has_signal("zoom_changed"):
             cam.zoom_changed.connect(func(new_zoom): scale = Vector2.ONE / new_zoom)
 
+    # -------------------------------------------------------------------------
+    # ОПТИМИЗАЦИЯ: при 10к провинциях одновременно может существовать много
+    # тысяч ArmyCircle. Каждый из них имеет Control (Button), а Godot делает
+    # обход дерева Control-нод при hit-test'е мыши (движение/клик) — чем
+    # больше видимых Button на экране, тем дороже каждое движение мыши,
+    # что и ощущается как лаги при выделении/наведении, особенно при
+    # отдалении камеры, когда на экран попадает сразу много юнитов.
+    #
+    # Юниты вне экрана визуально не нужны и не должны участвовать в hit-test —
+    # выключаем им mouse-обработку кнопки, когда они не видны. Игровая логика
+    # (движение, stranded-проверка) НЕ завязана на видимость и продолжает
+    # работать как обычно.
+    var notifier = VisibleOnScreenNotifier2D.new()
+    notifier.rect = Rect2(-FLAG_WIDTH / 2.0, -FLAG_HEIGHT / 2.0, FLAG_WIDTH, FLAG_HEIGHT)
+    add_child(notifier)
+    notifier.screen_entered.connect(func(): btn.mouse_filter = Control.MOUSE_FILTER_STOP)
+    notifier.screen_exited.connect(func(): btn.mouse_filter = Control.MOUSE_FILTER_IGNORE)
+
 func _process(delta: float) -> void:
     if is_moving:
         _process_movement(delta)
     elif province_id != -1:
-        _check_if_stranded(province_id)
-        if not is_queued_for_deletion():
-            DivisionManager.reposition_armies_in_province(province_id)
+        # Раз в секунду вместо каждого кадра — окружение армии (снабжение)
+        # не меняется 60 раз в секунду.
+        _stranded_check_accum += delta
+        if _stranded_check_accum >= STRANDED_CHECK_INTERVAL:
+            _stranded_check_accum = 0.0
+            _check_if_stranded(province_id)
+        # reposition_armies_in_province() убран отсюда — см. комментарий выше.
+        # Он уже вызывается в _transfer_data_to / _arrive_at_destination /
+        # _destroy_division ровно тогда, когда состав армий в провинции
+        # действительно меняется.
 
 func select() -> void:
     is_selected = true
@@ -144,7 +198,7 @@ func start_movement_to(target_province_id: int, target_pos: Vector2) -> void:
     # Откат цели
     while provinces_path.size() > 0:
         var check_p_id = provinces_path[-1]
-        var p_owner = ProvinceRegistry.province_data.get(str(check_p_id), {}).get("owner", "")
+        var p_owner = ProvinceRegistry.province_data.get(check_p_id, {}).get("owner", "")
         
         if _can_enter_territory(p_owner):
             break
@@ -153,7 +207,7 @@ func start_movement_to(target_province_id: int, target_pos: Vector2) -> void:
     # Если легального пути нет вообще
     if provinces_path.is_empty():
         print(army_name, ": легальный путь не найден.")
-        var current_owner = ProvinceRegistry.province_data.get(str(current_p_id), {}).get("owner", "")
+        var current_owner = ProvinceRegistry.province_data.get(current_p_id, {}).get("owner", "")
         
         if not _can_enter_territory(current_owner):
             _destroy_division()
@@ -166,7 +220,7 @@ func start_movement_to(target_province_id: int, target_pos: Vector2) -> void:
         print(army_name, ": маршрут скорректирован до доступной провинции ", target_province_id)
 
     current_target_province_id = target_province_id
-    target_owner = ProvinceRegistry.province_data.get(str(target_province_id), {}).get("owner", "")
+    target_owner = ProvinceRegistry.province_data.get(target_province_id, {}).get("owner", "")
     ProvinceRegistry.province_army_changed.emit(province_id, self)
 
     var points: Array[Vector2] = [position]
@@ -191,6 +245,7 @@ func start_movement_to(target_province_id: int, target_pos: Vector2) -> void:
     current_path_node.curve = curve
     map_node.add_child(current_path_node)
     current_baked_points = curve.get_baked_points()
+    _cached_path_length = curve.get_baked_length()
 
     var line = Line2D.new()
     line.width = 2.0
@@ -206,78 +261,84 @@ func start_movement_to(target_province_id: int, target_pos: Vector2) -> void:
     is_moving = true
 
 func _process_movement(delta: float) -> void:
-    if not is_instance_valid(current_curve): 
+    if not is_instance_valid(current_curve):
         _stop_current_movement()
         return
 
     var game_speed = 150.0 * GameClock.SPEEDS[GameClock.speed_index] if not GameClock.paused else 0.0
-    var move_step = game_speed * delta
-    
+    var move_step  = game_speed * delta
+
     current_movement_offset += move_step
     distance_since_last_check += move_step
-    var total_length = current_curve.get_baked_length()
+
+    var total_length := _cached_path_length  # кэшированная длина (O(1))
     position = current_curve.sample_baked(current_movement_offset)
 
+    # ── Обновление линии хвоста ─────────────────────────────────────────────
     if is_instance_valid(current_line_node) and current_baked_points.size() > 1:
-        var closest_index = 0
-        var min_dist = INF
-        for i in range(current_baked_points.size()):
-            var dist = position.distance_to(current_baked_points[i])
-            if dist < min_dist:
-                min_dist = dist
-                closest_index = i
-        
+        var t            = clamp(current_movement_offset / total_length, 0.0, 1.0)
+        var closest_index = clamp(
+            int(t * (current_baked_points.size() - 1)),
+            0, current_baked_points.size() - 1
+        )
+
         if total_length > 0:
             var growth_per_second = (500.0 * GameClock.SPEEDS[GameClock.speed_index]) / total_length
             line_growth = min(line_growth + growth_per_second * delta, 1.0)
-        
-        var end_index = clamp(int(current_baked_points.size() * line_growth), closest_index, current_baked_points.size())
-        var remaining_points = current_baked_points.slice(closest_index, end_index)
-        
+
+        var end_index = clamp(
+            int(current_baked_points.size() * line_growth),
+            closest_index,
+            current_baked_points.size()
+        )
+        var remaining_points := current_baked_points.slice(closest_index, end_index)
+
         if remaining_points.size() > 0:
             remaining_points[0] = position
         else:
             remaining_points = PackedVector2Array([position])
         current_line_node.points = remaining_points
 
+    # ── Проверка смены провинции ─────────────────────────────────────────────
     if not GameClock.paused and distance_since_last_check >= 10.0:
         distance_since_last_check = 0.0
-        var ground_p_id = _get_province_under_feet()
-        var ground_owner = ProvinceRegistry.province_data.get(str(ground_p_id), {}).get("owner", "")
+        var ground_p_id  := _get_province_under_feet()
+        var ground_owner = ProvinceRegistry.province_data.get(ground_p_id, {}).get("owner", "")
 
-        # ДИНАМИЧЕСКИЙ ПЕРЕРАСЧЕТ
         if current_target_province_id != -1:
-            var current_t_owner = ProvinceRegistry.province_data.get(str(current_target_province_id), {}).get("owner", "")
+            var current_t_owner = ProvinceRegistry.province_data.get(
+                current_target_province_id, {}
+            ).get("owner", "")
             if not _can_enter_territory(current_t_owner):
-                print(army_name, ": цель заблокирована нейтралом. Перестраиваем маршрут на лету...")
                 start_movement_to(current_target_province_id, target_destination_pos)
                 return
-        
+
         if ground_p_id != province_id and not ground_p_id in map_node.IGNORE_IDS:
             if _can_enter_territory(ground_owner):
-                var enemies_in_province = false
-                var has_access = _has_control_access(ground_owner)
-                
+                var has_access       := _has_control_access(ground_owner)
+                var enemies_in_province := false
                 for c in DivisionManager.armies.get(ground_p_id, []):
                     if is_instance_valid(c) and ProvinceRegistry.is_at_war(division_owner, c.division_owner) and not has_access:
                         enemies_in_province = true
                         break
-                
+
                 if not enemies_in_province:
                     if ground_owner != "" and ground_owner != division_owner and not has_access:
                         ProvinceRegistry.occupy_province(ground_p_id, division_owner)
-                        print(army_name, " оккупировал провинцию ", ground_p_id)
-                        ProvinceRegistry.province_army_changed.emit(ground_p_id) 
-                        
+                        ProvinceRegistry.province_army_changed.emit(ground_p_id)
+
                 _transfer_data_to(ground_p_id)
                 province_id = ground_p_id
 
                 if CombatManager.active_battles.has(ground_p_id):
                     _stop_current_movement()
+                    # ФИКС БАГА 1: Репозиционируем дивизии в провинции начала боя
+                    DivisionManager.reposition_armies_in_province(province_id)
                     return
             else:
-                print(army_name, " зашел на чужую провинцию ", ground_p_id, ". ТП назад.")
-                _stop_current_movement() 
+                _stop_current_movement()
+                # ФИКС БАГА 1: Репозиционируем, если движение прервано из-за потери доступа
+                DivisionManager.reposition_armies_in_province(province_id)
                 return
 
     if current_movement_offset >= total_length:
@@ -293,8 +354,8 @@ func _get_province_under_feet() -> int:
     return province_id if p_id in map_node.IGNORE_IDS else p_id
 
 func _transfer_data_to(new_p_id: int) -> void:
-    var old_key = str(province_id)
-    var new_key = str(new_p_id)
+    var old_key = province_id
+    var new_key = new_p_id
 
     if not ProvinceRegistry.province_data.has(old_key) or not ProvinceRegistry.province_data.has(new_key): return
 
@@ -328,6 +389,7 @@ func _stop_current_movement() -> void:
     current_curve = null
     current_target_province_id = -1
     is_moving = false
+    _cached_path_length = 0.0
 
 func _arrive_at_destination(target_pos: Vector2) -> void:
     is_moving = false
@@ -344,14 +406,14 @@ func _arrive_at_destination(target_pos: Vector2) -> void:
 # ─── ЛОГИКА ОКРУЖЕНИЯ И УНИЧТОЖЕНИЯ ─────────────────────────────────────────
 
 func _check_if_stranded(check_p_id: int) -> void:
-    var p_owner = ProvinceRegistry.province_data.get(str(check_p_id), {}).get("owner", "")
+    var p_owner = ProvinceRegistry.province_data.get(check_p_id, {}).get("owner", "")
     if not _can_enter_territory(p_owner):
         _destroy_division()
 
 func _destroy_division() -> void:
     print(army_name, ": осталась без снабжения и уничтожена в окружении!")
     
-    var current_key = str(province_id)
+    var current_key = province_id
     if ProvinceRegistry.province_data.has(current_key):
         var data = ProvinceRegistry.province_data[current_key]
         if data.has("army") and data["army"].has("land"):

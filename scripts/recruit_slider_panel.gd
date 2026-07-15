@@ -55,9 +55,9 @@ func _on_confirm_pressed():
         DivisionManager.recruit(current_province_id, local_pos, int(slider.value))
         ProvinceRegistry.countries_data[settings.active_country]["balance"] -= cost
         var happiness_drain = (float(slider.value) / 1000.0) * HAPPINESS_DRAIN_PER_1K_RECRUITS
-        var province_happiness = ProvinceRegistry.province_data[str(current_province_id)]["happiness"]
-        ProvinceRegistry.province_data[str(current_province_id)]["happiness"] = max(0.0, province_happiness - happiness_drain)
+        var province_happiness = ProvinceRegistry.province_data[current_province_id]["happiness"]
+        ProvinceRegistry.province_data[current_province_id]["happiness"] = max(0.0, province_happiness - happiness_drain)
         balance_label.balance_update()
         hide()
         # Вызываем обновление UI (например, в ProvinceMenu и DivisionMenu)
-        get_parent().update_info(ProvinceRegistry.province_data[str(current_province_id)])
+        get_parent().update_info(ProvinceRegistry.province_data[current_province_id])

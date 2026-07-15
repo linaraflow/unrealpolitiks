@@ -19,11 +19,15 @@ var _highlight_elapsed: float = -1.0
 var _neg_enemy: String = ""
 var divisions_hidden: bool = false
 
+# Сохраняем локальные координаты последнего физического клика мыши
+var _last_click_local_pos: Vector2 = Vector2.ZERO
+
 @onready var CountryMenu          = get_node("/root/Game/CanvasLayer/VBoxContainer/CountryMenu")
 @onready var CountryPanel         = get_node("/root/Game/CanvasLayer/VBoxContainer/CountryMenu/Panel")
 @onready var ProvinceMenu         = get_node("/root/Game/CanvasLayer/VBoxContainer/ProvinceMenu")
 @onready var DivisionMenu         = get_node("/root/Game/CanvasLayer/VBoxContainer/DivisionMenu")
 @onready var FlagRect             = get_node("/root/Game/CanvasLayer/VBoxContainer/CountryMenu/Panel/HeaderRow/FlagRect")
+@onready var ColorPanel           = get_node("/root/Game/CanvasLayer/VBoxContainer/CountryMenu/Panel/HeaderRow/FlagRect/ColorPanel")
 @onready var recruit_slider_panel = get_node("/root/Game/CanvasLayer/VBoxContainer/ProvinceMenu/RecruitSliderPanel")
 
 const IGNORE_IDS = [15307124, 0]
@@ -31,11 +35,29 @@ const IGNORE_IDS = [15307124, 0]
 var path1: String = "res://province_adjacency.json"
 var province_centers: Dictionary = {}
 
+# ─── ОБВОДКА СТОЛИЧНОЙ ПРОВИНЦИИ ──────────────────────────────────────────────
+## capital_texture: 256x256, индексируется так же, как data_texture/occup_texture
+## (по младшим 16 битам p_id = mask.r, mask.g). alpha > 0.5 → это провинция-столица.
+var capital_image: Image
+var capital_texture: ImageTexture
+
+## country -> p_id провинции, которая сейчас помечена как столица этой страны
+## (нужно, чтобы при переносе столицы снять метку со старой провинции).
+var capital_province_by_country: Dictionary = {}
+
 func _ready():
     child_entered_tree.connect(_on_child_entered_tree)
     
-    var tech_tex = load("res://TechMap_alpha_03.png")
+    var tech_tex = load("res://TechMap_alpha_06.png")
     tech_image = tech_tex.get_image()
+
+    # НОВОЕ: больше не используем вручную нарисованную визуальную карту.
+    # Вместо неё — сплошная заливка (цвет "моря"/фона), а вся суша красится
+    # шейдером через data_texture по данным из provinces.json.
+    var base_size = tech_image.get_size()
+    var base_img = Image.create(base_size.x, base_size.y, false, Image.FORMAT_RGB8)
+    base_img.fill(Color8(9, 20, 33))  # цвет моря/фона — подставь свой
+    texture = ImageTexture.create_from_image(base_img)
 
     await get_tree().process_frame
     var path: Array = PathCache.find_path_cached(129, 134, settings.active_country)
@@ -56,20 +78,39 @@ func _ready():
     neg_image.fill(Color(0, 0, 0, 0))
     neg_texture = ImageTexture.create_from_image(neg_image)
 
+    # capital_texture (обводка столичных провинций)
+    capital_image = Image.create(256, 256, false, Image.FORMAT_RGBA8)
+    capital_image.fill(Color(0, 0, 0, 0))
+    capital_texture = ImageTexture.create_from_image(capital_image)
+
     material.set_shader_parameter("tech_map",      tech_tex)
     material.set_shader_parameter("data_texture",  data_texture)
     material.set_shader_parameter("occup_texture", occup_texture)
     material.set_shader_parameter("neg_texture",   neg_texture)
+    material.set_shader_parameter("capital_texture", capital_texture)
     material.set_shader_parameter("country_colors", ProvinceRegistry.country_colors)
+
+    # НОВОЕ: разово красим ВСЕ ~10000 провинций владельцами из provinces.json.
+    # Пишем прямо в Image и обновляем текстуру ОДИН раз в конце —
+    # если вместо этого дергать capture_province() in цикле, это даст
+    # 10000 сигналов province_captured и 10000 отдельных data_texture.update(),
+    # что будет заметно тормозить старт игры.
+    _paint_all_provinces_from_data()
+
+    # Обводка столичных провинций: заполняем capital_texture по текущим
+    # "capital" всех стран из countries_data (один проход, без сигналов).
+    _init_capital_borders()
 
     ProvinceRegistry.province_captured.connect(_on_province_captured)
     ProvinceRegistry.province_army_changed.connect(_on_province_army_changed)
     ProvinceRegistry.province_occupied.connect(_on_province_occupied)
+    ProvinceRegistry.country_color_changed.connect(_on_country_color_changed)
+    ProvinceRegistry.capital_changed.connect(_on_capital_changed)
 
     CountryMenu.visible = false
 
     DivisionManager.map_node = self
-    _build_province_centers()
+    province_centers = settings.province_centers
 
     CombatManager.battle_ended.connect(_on_battle_ended)
 
@@ -98,7 +139,18 @@ func _input(event: InputEvent):
         divisions_hidden = not divisions_hidden
         _update_divisions_visibility()
         return
-    
+
+    # Enter — сделать последнюю нажатую провинцию столицей её владельца
+    if event is InputEventKey and event.pressed and not event.is_echo() \
+            and (event.keycode == KEY_ENTER or event.keycode == KEY_KP_ENTER):
+        var p_id = settings.last_clicked_province_id
+        var owner = ProvinceRegistry.province_data.get(p_id, {}).get("owner", "")
+        if owner != "":
+            ProvinceRegistry.set_capital(owner, p_id)
+        else:
+            print("[Map] Enter: у последней нажатой провинции нет владельца")
+        return
+
     if not event is InputEventMouseButton or event.pressed:
         return
     if get_viewport().gui_get_hovered_control() != null:
@@ -112,9 +164,6 @@ func _input(event: InputEvent):
     var p_id = _px_to_id(px)
     settings.last_clicked_province_color = Color(px.r, px.g, px.b)
 
-    var visual_image = texture.get_image()
-    var px_visual = visual_image.get_pixelv(coords)
-    var visual_rgb = [int(px_visual.r * 255), int(px_visual.g * 255), int(px_visual.b * 255)]
 
     if p_id in IGNORE_IDS:
         return
@@ -123,15 +172,19 @@ func _input(event: InputEvent):
     if settings.negotiation_mode and not _is_province_visible_in_negotiation(p_id):
         return
 
-    var province_info = ProvinceRegistry.province_data.get(str(p_id), {})
+    # Запоминаем точную локальную позицию клика
+    _last_click_local_pos = get_local_mouse_position()
+
+    var province_info = ProvinceRegistry.province_data.get(p_id, {})
     var current_owner = province_info.get("owner", "")
 
     print("Clicked Province ID: ", p_id, " Owner: ", current_owner,
           " Occupant: ", ProvinceRegistry.get_occupant(p_id),
-          visual_rgb, "  coords:", get_local_mouse_position())
+           "  coords:", get_local_mouse_position())
 
     if event.button_index == MOUSE_BUTTON_LEFT or event.button_index == MOUSE_BUTTON_RIGHT:
         recruit_slider_panel.hide()
+        ColorPanel.hide()
         
     if event.button_index == MOUSE_BUTTON_LEFT:
         _handle_left_click(p_id, px, province_info, current_owner)
@@ -163,8 +216,6 @@ func _handle_left_click(p_id, px, province_info, current_owner):
             return
         else:
             ProvinceMenu.show()
-
-    
 
 
 func _handle_right_click(p_id, px, province_info, current_owner):
@@ -228,7 +279,7 @@ func exit_negotiation_mode() -> void:
 
 ## Проверить видима ли провинция в режиме переговоров (для блокировки кликов).
 func _is_province_visible_in_negotiation(p_id: int) -> bool:
-    var p = ProvinceRegistry.province_data.get(str(p_id), {})
+    var p = ProvinceRegistry.province_data.get(p_id, {})
     var owner = p.get("owner", "")
     return owner == settings.active_country or owner == _neg_enemy
 
@@ -242,8 +293,8 @@ func _on_province_captured(p_id: int, new_owner: String):
     data_image.set_pixel(r, g, Color(idx / 255.0, 0, 0, 1))
     data_texture.update(data_image)
 
-    if ui_menu and ProvinceRegistry.province_data.has(str(p_id)):
-        ui_menu.update_info(ProvinceRegistry.province_data[str(p_id)])
+    if ui_menu and ProvinceRegistry.province_data.has(p_id):
+        ui_menu.update_info(ProvinceRegistry.province_data[p_id])
 
 
 func _on_province_occupied(p_id: int, occupier: String):
@@ -266,7 +317,7 @@ func _on_province_occupied(p_id: int, occupier: String):
 
 func _on_province_army_changed(changed_p_id: int, division = null):
     if changed_p_id == settings.last_clicked_province_id:
-        var p_data = ProvinceRegistry.province_data.get(str(changed_p_id), {})
+        var p_data = ProvinceRegistry.province_data.get(changed_p_id, {})
         DivisionMenu.update_info(p_data)
     CountryPanel.update_info()
     FlagRect.update()
@@ -276,13 +327,14 @@ func _on_battle_ended(province_id: int, winner: String) -> void:
     if winner == "":
         return
 
-    var current_owner = ProvinceRegistry.province_data.get(str(province_id), {}).get("owner", "")
+    var current_owner = ProvinceRegistry.province_data.get(province_id, {}).get("owner", "")
 
     print("=== BATTLE ENDED === province:", province_id, " winner:", winner, " owner:", current_owner)
 
     if current_owner != winner:
         ProvinceRegistry.occupy_province(province_id, winner)
-        print("=== OCCUPY CALLED ===")
+    
+    print("=== OCCUPY CALLED ===")
 
     CountryPanel.update_info()
     FlagRect.update()
@@ -295,6 +347,37 @@ func _clear_occup_pixel(p_id: int) -> void:
     var g = (p_id >> 8) & 0xFF
     occup_image.set_pixel(r, g, Color(0, 0, 0, 0))
     occup_texture.update(occup_image)
+
+
+## Красит все провинции их владельцами из province_data за один проход.
+## В отличие от вызова capture_province()/occupy_province() в цикле,
+## тут НЕТ сигналов и НЕТ texture.update() на каждую провинцию —
+## только один update() в самом конце.
+## Для ~10000 провинций это разница
+## между "мгновенно" и "заметная пауза/лаги при старте".
+func _paint_all_provinces_from_data() -> void:
+    for key in ProvinceRegistry.province_data:
+        var p_id = int(key)
+        if p_id in IGNORE_IDS:
+            continue
+
+        var p = ProvinceRegistry.province_data[key]
+        var owner = p.get("owner", "")
+
+        # Пустой owner ("" — ничья/неосвоенная земля) красим индексом 0.
+        # Убедись, что country_colors[0] в countries.json — это нужный
+        # тебе нейтральный цвet, а не случайно первая настоящая страна.
+        var idx = ProvinceRegistry.country_index.get(owner, 0)
+
+        var r = p_id & 0xFF
+        var g = (p_id >> 8) & 0xFF
+        data_image.set_pixel(r, g, Color(idx / 255.0, 0, 0, 1))
+
+        # province_owners нужен для ProvinceRegistry.capture() (переход всех
+        # провинций страны), поэтому синхронизируем и его — без сигналов.
+        ProvinceRegistry.province_owners[p_id] = owner
+
+    data_texture.update(data_image)
 
 
 func _restore_occupation_from_data() -> void:
@@ -350,6 +433,9 @@ func _on_child_entered_tree(node: Node) -> void:
     if node.has_method("setup") or node is Path2D:
         node.visible = not divisions_hidden
 
+func _on_country_color_changed() -> void:
+    material.set_shader_parameter("country_colors", ProvinceRegistry.country_colors)
+
 func _build_province_centers():
     var img_size = tech_image.get_size()
     var sums: Dictionary = {}
@@ -375,15 +461,44 @@ func _build_province_centers():
         province_centers[p_id] = local_pos
 
     # V-образные провинции
-    province_centers[17]  = Vector2(-633,  865)
-    province_centers[67]  = Vector2(-154,  183)
-    province_centers[189] = Vector2( 713, -553)
-    province_centers[190] = Vector2( 569, -345)
-    province_centers[149] = Vector2(-109, -784)
-    province_centers[101] = Vector2( 252,  924)
-    province_centers[319] = Vector2( 226, -212)
-    province_centers[54]  = Vector2(-517,  211)
-    province_centers[339] = Vector2( 572,  463)
-    province_centers[115] = Vector2(  15,  387)
-    province_centers[33]  = Vector2(-400,  620)
     settings.province_centers = province_centers
+
+
+## Заполняет capital_texture по текущим "capital" всех стран (один проход,
+## без отдельного texture.update() на каждую страну — только в конце).
+func _init_capital_borders() -> void:
+    capital_province_by_country.clear()
+    for country in ProvinceRegistry.countries_data:
+        var cap_id = int(ProvinceRegistry.countries_data[country].get("capital", 0))
+        if cap_id <= 0:
+            continue
+        var r = cap_id & 0xFF
+        var g = (cap_id >> 8) & 0xFF
+        capital_image.set_pixel(r, g, Color(1, 1, 1, 1))
+        capital_province_by_country[country] = cap_id
+
+    capital_texture.update(capital_image)
+
+
+## Снимает метку "столица" с указанной провинции в capital_image (без update()).
+func _clear_capital_pixel(p_id: int) -> void:
+    var r = p_id & 0xFF
+    var g = (p_id >> 8) & 0xFF
+    capital_image.set_pixel(r, g, Color(0, 0, 0, 0))
+
+
+## Реакция на ProvinceRegistry.capital_changed — переставляем метку столицы
+## в capital_texture: снимаем со старой провинции страны, ставим на новую.
+## province_id == -1 → страна потеряла все провинции, просто снимаем метку.
+func _on_capital_changed(country: String, province_id: int) -> void:
+    if capital_province_by_country.has(country):
+        _clear_capital_pixel(capital_province_by_country[country])
+        capital_province_by_country.erase(country)
+
+    if province_id >= 0:
+        var r = province_id & 0xFF
+        var g = (province_id >> 8) & 0xFF
+        capital_image.set_pixel(r, g, Color(1, 1, 1, 1))
+        capital_province_by_country[country] = province_id
+
+    capital_texture.update(capital_image)

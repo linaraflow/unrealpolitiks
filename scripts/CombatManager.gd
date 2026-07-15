@@ -339,7 +339,7 @@ func _destroy_circle(circle: Node) -> void:
 
 ## Пересчитывает province_data["army"]["land"] по реальным кружкам в DivisionManager
 func _sync_province_land(p_id: int) -> void:
-    var p_data = ProvinceRegistry.province_data.get(str(p_id), {})
+    var p_data = ProvinceRegistry.province_data.get(p_id, {})
     if not p_data.has("army"):
         return
     var total := 0

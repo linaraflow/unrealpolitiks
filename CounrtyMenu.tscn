@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://uh1sd1fvacpa"]
 
 [ext_resource type="Script" uid="uid://d061sein83pwj" path="res://scripts/panel.gd" id="1_e437t"]
-[ext_resource type="Resource" uid="uid://bhx1w7f44qx7h" path="res://new_resource.tres" id="3_e437t"]
+[ext_resource type="Resource" uid="uid://duwodqh5ow0tn" path="res://new_resource.tres" id="3_e437t"]
 [ext_resource type="Texture2D" uid="uid://cax3w4hq1ih2k" path="res://assets/flags/Germany.png" id="3_l08fj"]
 [ext_resource type="Script" uid="uid://rs2yte7mkhc7" path="res://scripts/flag_rect.gd" id="4_xs2co"]
 [ext_resource type="Texture2D" uid="uid://cqy3mllueh8u4" path="res://assets/icons_country_menu/stability.svg" id="5_qw2xt"]
@@ -14,6 +14,19 @@
 [ext_resource type="Texture2D" uid="uid://cxgtmyqws48pf" path="res://assets/icons_country_menu/change.svg" id="12_p7bm5"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hbrlp"]
+bg_color = Color(0.12156863, 0.12156863, 0.11764706, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.35156286, 0.35156295, 0.35156265, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+corner_detail = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7fbel"]
 bg_color = Color(0.12156863, 0.12156863, 0.11764706, 1)
 border_width_left = 1
 border_width_top = 1
@@ -265,10 +278,28 @@ theme_override_constants/separation = 6
 [node name="FlagRect" type="TextureRect" parent="Panel/HeaderRow" unique_id=1307867362]
 custom_minimum_size = Vector2(56, 0)
 layout_mode = 2
+mouse_filter = 0
 texture = ExtResource("3_l08fj")
 expand_mode = 1
 script = ExtResource("4_xs2co")
 settings = ExtResource("3_e437t")
+
+[node name="ColorPanel" type="Panel" parent="Panel/HeaderRow/FlagRect" unique_id=1622753563]
+layout_mode = 0
+offset_left = 294.0
+offset_top = -13.0
+offset_right = 600.0
+offset_bottom = 502.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_7fbel")
+
+[node name="ColorPicker" type="ColorPicker" parent="Panel/HeaderRow/FlagRect/ColorPanel" unique_id=273830029]
+layout_mode = 0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = 302.0
+offset_bottom = 506.0
+edit_alpha = false
+presets_visible = false
 
 [node name="TitleBox" type="VBoxContainer" parent="Panel/HeaderRow" unique_id=1916471191]
 layout_mode = 2
@@ -628,6 +659,7 @@ icon = ExtResource("12_p7bm5")
 
 [node name="IdeologySelectionPanel" type="Panel" parent="Panel" unique_id=1096770221]
 unique_name_in_owner = true
+visible = false
 layout_mode = 1
 offset_left = 306.0
 offset_top = 171.0

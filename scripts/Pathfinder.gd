@@ -26,7 +26,7 @@ func find_path(start_id: int, goal_id: int, country: String) -> Array:
                 continue
 
             if n != goal_id:
-                var owner = settings.province_data[str(n)].get("owner", "")
+                var owner = settings.province_data[n].get("owner", "")
                 var owner_data = ProvinceRegistry.countries_data[owner]
                 if country == "":
                     continue

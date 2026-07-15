@@ -31,6 +31,35 @@ var factory_cooldowns: Dictionary = {}
 ## Кулдаун найма войск: country -> дней до следующего найма
 var recruitment_cooldowns: Dictionary = {}
 
+# -----------------------------------------------------------------------------
+# ОПТИМИЗАЦИЯ: ежедневные кэши
+# -----------------------------------------------------------------------------
+# ПРОБЛЕМА: _get_country_provinces() раньше сканировал ВЕСЬ province_data
+# (сейчас ~10000 записей) на каждый вызов, а вызывается он по 3-5 раз на
+# КАЖДУЮ страну КАЖДЫЙ день (экономика, рекрутинг, армия, движение войск,
+# поиск соседей). Итого O(countries * provinces) вместо O(provinces).
+# При 300 провинциях это было незаметно, при 10000 — фризы каждый тик.
+#
+# РЕШЕНИЕ: один раз в день (O(provinces)) строим индекс "страна -> её
+# провинции" и множество "безопасных" провинций (без боёв/оккупации),
+# дальше весь день читаем из кэша за O(1)/O(k).
+
+## country -> Array[int] провинций страны. Пересобирается в _rebuild_daily_caches().
+var country_provinces_cache: Dictionary = {}
+
+# Переменные для разделения нагрузки обсчета населения (чангинг)
+var pop_chunks: Array = []
+var pop_chunk_index: int = 0
+const POP_CHUNKS_COUNT = 10
+
+## p_id(int) -> true для провинций без активных боёв и без оккупации.
+## Используется для быстрого поиска "безопасной" провинции беженцами.
+var safe_provinces_cache: Dictionary = {}
+
+## Плоский список ключей safe_provinces_cache — для быстрого pick_random()
+## без BFS, когда рядом безопасной провинции не нашлось.
+var safe_provinces_list: Array = []
+
 # Минимальный баланс-резерв, который ИИ НЕ тратит на фабрики (чтобы не уходить в ноль)
 const RESERVE_RATIO        = 0.05   # 5% резерва сверх стоимости
 const FACTORY_COOLDOWN_DAYS = 30    # раз в 30 дней строим завод
@@ -56,9 +85,24 @@ const ARMY_LIMIT_GDP_RATIO = 0.0000714
 func _ready() -> void:
     GameClock.on_day_passed.connect(_on_day_passed)
     GameClock.on_month_passed.connect(_on_month_passed)
+    
+    # Следим за захватом провинций, чтобы сразу обновлять кэш, а не пересчитывать его с нуля
+    ProvinceRegistry.province_captured.connect(_on_province_captured)
 
-    # Считаем доход при старте, не ждём первого месяца
-    for country in ProvinceRegistry.countries_data.keys():
+    # Строим стартовый кэш провинций для ИИ
+    _build_initial_country_cache()
+
+    # Разбиваем массив провинций на 10 частей для оптимизации населения
+    for i in range(POP_CHUNKS_COUNT):
+        pop_chunks.append([])
+    
+    var idx = 0
+    for p_id_str in ProvinceRegistry.province_data:
+        pop_chunks[idx % POP_CHUNKS_COUNT].append(p_id_str)
+        idx += 1
+
+    # Считаем доход при старте
+    for country in ProvinceRegistry.countries_data:
         _update_monthly_income(country)
 
 func _process(delta: float) -> void:
@@ -66,32 +110,52 @@ func _process(delta: float) -> void:
         return
     _tick_income(delta)
 
-# ── Ежедневный тик ────────────────────────────────────────────────────────────
+# ── Ежедневный тик (Максимально разгруженный) ──────────────────────────────────
 func _on_day_passed(_date: Dictionary) -> void:
-    for country in ProvinceRegistry.countries_data.keys():
-        # Пропускаем игрока
+    # Принудительно приводим день к int
+    var current_day: int = int(_date.get("day", 1))
+
+    for country in ProvinceRegistry.countries_data:
         if country == settings.active_country:
             continue
+            
+        var c_data = ProvinceRegistry.countries_data[country]
+        
+        # 0. Начисляем дневной доход ИИ
+        var monthly = c_data.get("monthly_income", 100000.0)
+        c_data["balance"] = c_data.get("balance", 0.0) + (monthly / 30.0)
 
+        # Принудительно приводим индекс страны к int, даже если он прилетел как float
+        var country_index: int = int(ProvinceRegistry.country_index.get(country, 0))
+        
+        # 1. Быстрые кулдауны и торговля
         _tick_recruitment_cooldown(country)
         _tick_factory_cooldown(country)
-
         _process_trade(country)
-        _process_economy(country)              # сначала строим фабрики
-        _process_recruitment(country)          # потом нанимаем (30% бюджета)
-        _process_military_movement(country)    # теперь – каждый день планируем наступление
 
+        # 2. Экономика — раз в 5 дней
+        if (current_day + country_index) % 5 == 0:
+            _process_economy(country)              
+
+        # 3. Рекрутинг — раз в 3 дня
+        if (current_day + country_index) % 3 == 0:
+            _process_recruitment(country)          
+
+        # 4. ДВИЖЕНИЕ ВОЙСК — раз в 4 дня
+        if (current_day + country_index) % 4 == 0:
+            _process_military_movement(country)    
+
+    # 5. Обсчет населения
     _process_population()
 
 # ── Ежемесячный тик ───────────────────────────────────────────────────────────
 func _on_month_passed(_date: Dictionary) -> void:
-    for country in ProvinceRegistry.countries_data.keys():
+    for country in ProvinceRegistry.countries_data:
         _update_monthly_income(country)
 
-    for country in ProvinceRegistry.countries_data.keys():
+    for country in ProvinceRegistry.countries_data:
         if country == settings.active_country:
             continue
-        # Дипломатия и дрейф отношений – только раз в месяц
         _process_diplomacy(country)
         _process_relations_drift(country)
 
@@ -139,7 +203,7 @@ func _get_safe_buildable_provinces(country: String) -> Array:
             continue
         if ProvinceRegistry.is_occupied(p_id):
             continue
-        var p_data = ProvinceRegistry.province_data.get(str(p_id), {})
+        var p_data = ProvinceRegistry.province_data.get(p_id, {})
         if p_data.get("factory_queue", []).size() < 5:
             result.append(p_id)
     return result
@@ -177,7 +241,7 @@ func _process_recruitment(country: String) -> void:
     if best_p_id == -1:
         return
 
-    var p_data = ProvinceRegistry.province_data[str(best_p_id)]
+    var p_data = ProvinceRegistry.province_data[best_p_id]
     var pop    = p_data.get("population", 0)
     var province_happiness = float(p_data.get("happiness", 50.0))
 
@@ -224,7 +288,7 @@ func _get_best_recruitment_province(country: String) -> int:
         if ProvinceRegistry.is_occupied(p_id):
             continue
 
-        var p_data = ProvinceRegistry.province_data.get(str(p_id), {})
+        var p_data = ProvinceRegistry.province_data.get(p_id, {})
         var province_happiness = float(p_data.get("happiness", 50.0))
 
         # Если счастье провинции отстаёт от среднего по стране на 10+ - она больше не "лучшая",
@@ -297,7 +361,7 @@ func _process_military_movement(country: String) -> void:
             if not frontier_targets.is_empty():
                 # Приграничные вражеские провинции, соседствующие именно с этой армией
                 var adjacent_targets = []
-                for adj_id in ProvinceRegistry.province_adjacency.get(str(p_id), []):
+                for adj_id in ProvinceRegistry.province_adjacency.get(p_id, []):
                     var t_id = int(adj_id)
                     if frontier_targets.has(t_id):
                         adjacent_targets.append(t_id)
@@ -323,7 +387,7 @@ func _process_military_movement(country: String) -> void:
 ## марионеток. Используется для военных передвижений: армии могут находиться
 ## и перемещаться по территории обеих сторон вассальных отношений.
 func _get_allied_territory_provinces(country: String) -> Array:
-    var result: Array = _get_country_provinces(country)
+    var result: Array = _get_country_provinces(country).duplicate()
     var seen: Dictionary = {}
     for p in result:
         seen[p] = true
@@ -349,15 +413,22 @@ func _get_allied_territory_provinces(country: String) -> Array:
 
 ## Вражеские провинции, граничащие хотя бы с одной нашей провинцией
 func _get_frontier_enemy_provinces(enemies: Array, own_set: Dictionary) -> Array:
+    # enemies.has(owner) внутри цикла по всем соседям всех своих провинций
+    # был O(n) поиском по массиву — при многосторонних войнах заметно.
+    # Множество на Dictionary даёт O(1) проверку.
+    var enemy_set: Dictionary = {}
+    for e in enemies:
+        enemy_set[e] = true
+
     var result = []
     var seen: Dictionary = {}
-    for p_id in own_set.keys():
-        for adj_id in ProvinceRegistry.province_adjacency.get(str(p_id), []):
+    for p_id in own_set:
+        for adj_id in ProvinceRegistry.province_adjacency.get(p_id, []):
             var t_id = int(adj_id)
             if seen.has(t_id):
                 continue
-            var owner = ProvinceRegistry.province_data.get(str(t_id), {}).get("owner", "")
-            if owner != "" and enemies.has(owner):
+            var owner = ProvinceRegistry.province_data.get(t_id, {}).get("owner", "")
+            if owner != "" and enemy_set.has(owner):
                 seen[t_id] = true
                 result.append(t_id)
     return result
@@ -441,7 +512,7 @@ func _process_sanctions(country: String) -> void:
     if sanctioned_by.is_empty():
         return
 
-    for attacker in sanctioned_by.keys():
+    for attacker in sanctioned_by:
         var attacker_data = ProvinceRegistry.countries_data.get(attacker, {})
         if not attacker_data.get("sanctioned_by", {}).has(country):
             var sanction_cost = 150000.0
@@ -462,66 +533,86 @@ func _process_relations_drift(country: String) -> void:
     DiplomacyManager.change_relation(country, neighbor, drift)
 
 # -----------------------------------------------------------------------------
-# 6. НАСЕЛЕНИЕ — рост, потери, беженцы
+# 6. НАСЕЛЕНИЕ — рост, потери, беженцы (Оптимизация чанками)
 # -----------------------------------------------------------------------------
 
 func _process_population() -> void:
+    var chunk = pop_chunks[pop_chunk_index]
+    pop_chunk_index = (pop_chunk_index + 1) % POP_CHUNKS_COUNT
+    
     var migration: Dictionary = {}
 
-    for p_id_str in ProvinceRegistry.province_data.keys():
-        var p_id      = int(p_id_str)
-        var p_data    = ProvinceRegistry.province_data[p_id_str]
-        var current   = int(p_data.get("population", 0))
-        if current <= 0:
-            continue
+    for p_id_str in chunk:
+        var p_id = int(p_id_str)
+        var p_data = ProvinceRegistry.province_data[p_id_str]
+        var current = int(p_data.get("population", 0))
+        
+        if current > 0:
+            if CombatManager.active_battles.has(p_id):
+                # Коэффициент увеличен, так как провинция обсчитывается раз в 10 дней
+                var loss = int(current * 0.05) 
+                if loss > 0:
+                    migration[p_id_str] = migration.get(p_id_str, 0) - loss
+                    _distribute_refugees(p_id, loss, migration)
+            elif ProvinceRegistry.is_occupied(p_id):
+                var loss = int(current * 0.003)
+                if loss > 0:
+                    migration[p_id_str] = migration.get(p_id_str, 0) - loss
+                    _distribute_refugees(p_id, loss, migration)
+            else:
+                var growth = int(current * 0.001)
+                if growth > 0:
+                    migration[p_id_str] = migration.get(p_id_str, 0) + growth
 
-        if CombatManager.active_battles.has(p_id):
-            var loss = int(current * 0.005)
-            if loss > 0:
-                migration[p_id] = migration.get(p_id, 0) - loss
-                _distribute_refugees(p_id, loss, migration)
-
-        elif ProvinceRegistry.is_occupied(p_id):
-            var loss = int(current * 0.0003)
-            if loss > 0:
-                migration[p_id] = migration.get(p_id, 0) - loss
-                _distribute_refugees(p_id, loss, migration)
-
-        else:
-            var growth = int(current * 0.0001)
-            if growth > 0:
-                migration[p_id] = migration.get(p_id, 0) + growth
-
-    for p_id in migration:
-        var key = str(p_id)
-        if ProvinceRegistry.province_data.has(key):
-            var new_pop = int(ProvinceRegistry.province_data[key].get("population", 0)) \
-                        + migration[p_id]
-            ProvinceRegistry.province_data[key]["population"] = max(0, new_pop)
-
-    ProvinceRegistry._recalculate_all_populations()
+    # Применяем изменения населения только для выбранного чанка
+    for p_id_str in migration:
+        if ProvinceRegistry.province_data.has(p_id_str):
+            var new_pop = int(ProvinceRegistry.province_data[p_id_str].get("population", 0)) + migration[p_id_str]
+            ProvinceRegistry.province_data[p_id_str]["population"] = max(0, new_pop)
 
 func _distribute_refugees(from_p_id: int, amount: int, migration_dict: Dictionary) -> void:
     var safe_p_id = _find_nearest_safe_province(from_p_id)
     if safe_p_id != -1:
-        migration_dict[safe_p_id] = migration_dict.get(safe_p_id, 0) + amount
+        var safe_key = safe_p_id
+        migration_dict[safe_key] = migration_dict.get(safe_key, 0) + amount
+
+func _is_province_safe(p_id: int) -> bool:
+    return not CombatManager.active_battles.has(p_id) and not ProvinceRegistry.is_occupied(p_id)
+
+const MAX_REFUGEE_SEARCH_HOPS = 3
 
 func _find_nearest_safe_province(start_p_id: int) -> int:
-    var queue   = [start_p_id]
+    var queue = [start_p_id]
     var visited = { start_p_id: true }
+    var hops = 0
+    var q_idx = 0
 
-    while not queue.is_empty():
-        var current_id = queue.pop_front()
-        if current_id != start_p_id:
-            if not CombatManager.active_battles.has(current_id) \
-            and not ProvinceRegistry.is_occupied(current_id):
+    while q_idx < queue.size() and hops < MAX_REFUGEE_SEARCH_HOPS:
+        var level_size = queue.size() - q_idx
+        for i in range(level_size):
+            var current_id = queue[q_idx]
+            q_idx += 1
+
+            if current_id != start_p_id and _is_province_safe(current_id):
                 return current_id
 
-        for adj_id in ProvinceRegistry.province_adjacency.get(str(current_id), []):
-            var next_id = int(adj_id)
-            if not visited.has(next_id):
-                visited[next_id] = true
-                queue.append(next_id)
+            for adj_id in ProvinceRegistry.province_adjacency.get(current_id, []):
+                var next_id = int(adj_id)
+                if not visited.has(next_id):
+                    visited[next_id] = true
+                    queue.append(next_id)
+        hops += 1
+
+    # Если рядом безопасной провинции нет, ищем её рандомом (максимум 15 попыток)
+    var all_keys = ProvinceRegistry.province_data.keys()  # ← Array, а не Dictionary
+    if all_keys.is_empty():
+        return -1
+
+    for i in range(15):
+        var rand_key = all_keys.pick_random()             # ← теперь pick_random() работает
+        var rand_id = int(rand_key)
+        if _is_province_safe(rand_id):
+            return rand_id
 
     return -1
 
@@ -533,7 +624,7 @@ func _process_trade(country: String) -> void:
     var c_data  = ProvinceRegistry.countries_data[country]
     var stock   = c_data.get("products", 0.0)
     if stock <= 0.0:
-        return
+        return 
 
     var sanctions    = c_data.get("sanctions", 0.0)
     var actual_price = settings.product_cost * (1.0 - (sanctions / 100.0))
@@ -547,13 +638,15 @@ func _process_trade(country: String) -> void:
 
 func _tick_income(delta: float) -> void:
     var seconds_per_month = 30.0 * GameClock.SECONDS_PER_DAY
-    var speed             = GameClock.SPEEDS[GameClock.speed_index]
+    var speed = GameClock.SPEEDS[GameClock.speed_index]
+    var inc = (delta * speed) / seconds_per_month
 
-    for country in ProvinceRegistry.countries_data.keys():
-        var c_data  = ProvinceRegistry.countries_data[country]
+    # Плавный доход только для игрока
+    var active = settings.active_country
+    if ProvinceRegistry.countries_data.has(active):
+        var c_data = ProvinceRegistry.countries_data[active]
         var monthly = c_data.get("monthly_income", 100000.0)
-        c_data["balance"] = c_data.get("balance", 0.0) \
-                          + (monthly / seconds_per_month) * delta * speed
+        c_data["balance"] = c_data.get("balance", 0.0) + (monthly * inc)
 
     if is_instance_valid(balance_label) and settings.can_draw:
         balance_label.balance_update()
@@ -575,7 +668,7 @@ func _calculate_monthly_income(country: String) -> float:
 func _get_country_population(country: String) -> int:
     var total = 0
     for p_id in _get_country_provinces(country):
-        total += int(ProvinceRegistry.province_data.get(str(p_id), {}).get("population", 0))
+        total += int(ProvinceRegistry.province_data.get(p_id, {}).get("population", 0))
     return total
 
 ## Суммарная численность войск страны (по всем её провинциям)
@@ -587,18 +680,39 @@ func _get_country_total_soldiers(country: String) -> int:
                 total += circle.soldiers
     return total
 
+## O(1) — читает готовый индекс, собранный в _rebuild_daily_caches().
 func _get_country_provinces(country: String) -> Array:
-    var result = []
-    for p_id in ProvinceRegistry.province_data.keys():
-        if ProvinceRegistry.province_data[p_id].get("owner", "") == country:
-            result.append(int(p_id))
-    return result
+    return country_provinces_cache.get(country, [])
+
+
+## Собирает базовое распределение провинций при старте игры
+func _build_initial_country_cache() -> void:
+    country_provinces_cache.clear()
+    for p_id_str in ProvinceRegistry.province_data:
+        var p_id = int(p_id_str)
+        var owner = ProvinceRegistry.province_data[p_id_str].get("owner", "")
+        if owner != "":
+            if not country_provinces_cache.has(owner):
+                country_provinces_cache[owner] = []
+            country_provinces_cache[owner].append(p_id)
+
+## Вызывается только когда провинция РЕАЛЬНО меняет владельца (быстродействие O(1))
+func _on_province_captured(p_id: int, new_owner: String) -> void:
+    # Убираем провинцию у старого хозяина
+    for country in country_provinces_cache:
+        country_provinces_cache[country].erase(p_id)
+    
+    # Добавляем новому
+    if new_owner != "":
+        if not country_provinces_cache.has(new_owner):
+            country_provinces_cache[new_owner] = []
+        country_provinces_cache[new_owner].append(p_id)
 
 func _get_random_neighbor_country(country: String) -> String:
     var neighbors = []
     for p_id in _get_country_provinces(country):
-        for adj_id in ProvinceRegistry.province_adjacency.get(str(p_id), []):
-            var clean_id = str(int(adj_id))
+        for adj_id in ProvinceRegistry.province_adjacency.get(p_id, []):
+            var clean_id = int(adj_id)
             var owner    = ProvinceRegistry.province_data.get(clean_id, {}).get("owner", "")
             if owner != "" and owner != country and not neighbors.has(owner):
                 neighbors.append(owner)

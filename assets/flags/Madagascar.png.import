@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dcl142yu6upwg"
-path="res://.godot/imported/Tunisia.png-bdd7a67743f1e2b453b9981cdeb0af07.ctex"
+uid="uid://bk5chlagpt8e8"
+path="res://.godot/imported/Madagascar.png-806b9fa865005211885ea491a460336e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/flags/Tunisia.png"
-dest_files=["res://.godot/imported/Tunisia.png-bdd7a67743f1e2b453b9981cdeb0af07.ctex"]
+source_file="res://assets/flags/Madagascar.png"
+dest_files=["res://.godot/imported/Madagascar.png-806b9fa865005211885ea491a460336e.ctex"]
 
 [params]
 

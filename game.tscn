@@ -5,7 +5,7 @@
 [ext_resource type="Script" uid="uid://mxtsm64ad2jr" path="res://scripts/map.gd" id="3_hb5m1"]
 [ext_resource type="Script" uid="uid://s5wqfaaqwfp" path="res://scripts/selection_box.gd" id="5_x5p1p"]
 [ext_resource type="PackedScene" uid="uid://uh1sd1fvacpa" path="res://CounrtyMenu.tscn" id="6_mfdv2"]
-[ext_resource type="Resource" uid="uid://bhx1w7f44qx7h" path="res://new_resource.tres" id="6_ryrav"]
+[ext_resource type="Resource" uid="uid://duwodqh5ow0tn" path="res://new_resource.tres" id="6_ryrav"]
 [ext_resource type="PackedScene" uid="uid://b50l3xjltcm0l" path="res://DivisionMenu.tscn" id="7_80cx4"]
 [ext_resource type="PackedScene" uid="uid://cbj0ixihecpff" path="res://ProvinceMenu.tscn" id="8_j5wjh"]
 [ext_resource type="PackedScene" uid="uid://d1sj147vs04l7" path="res://Exit_menu.tscn" id="8_mfdv2"]
@@ -31,6 +31,55 @@ shader_parameter/texture_size = Vector2(1, 1)
 shader_parameter/stripe_width = 5.0
 shader_parameter/stripe_opacity = 0.45
 shader_parameter/negotiation_mode = false
+shader_parameter/draw_borders = true
+shader_parameter/draw_coast_border = false
+shader_parameter/province_border_color = Color(0, 0, 0, 0.35)
+shader_parameter/province_border_width = 1.0
+shader_parameter/country_border_color = Color(0, 0, 0, 0.85)
+shader_parameter/country_border_width = 2.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_e8heu"]
+bg_color = Color(0.16924527, 0.16924533, 0.16924518, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.585062, 0.5850621, 0.5850618, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+corner_detail = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rvswv"]
+content_margin_left = 0.0
+content_margin_top = 4.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+bg_color = Color(0.103743605, 0.103743516, 0.103743516, 1)
+border_color = Color(0.585062, 0.5850621, 0.5850618, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+corner_detail = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_boyg6"]
+content_margin_left = 0.0
+content_margin_top = 4.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+bg_color = Color(0.14767182, 0.14767182, 0.14767176, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.585062, 0.5850621, 0.5850618, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+corner_detail = 20
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_215e1"]
 bg_color = Color(1, 0.21568628, 0.11372549, 1)
@@ -102,6 +151,9 @@ grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 4
 size_flags_vertical = 0
+theme_override_styles/normal = SubResource("StyleBoxFlat_e8heu")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_rvswv")
+theme_override_styles/hover = SubResource("StyleBoxFlat_boyg6")
 text = "Choose Country"
 script = ExtResource("13_i2p71")
 settings = ExtResource("6_ryrav")

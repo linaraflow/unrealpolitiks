@@ -94,7 +94,7 @@ func on_province_clicked(p_id: int) -> void:
         # Передумали — возвращаем полосы
         _claimed.erase(p_id)
         var original_owner = _occupied_snapshot[p_id]
-        ProvinceRegistry.province_data[str(p_id)]["against_occupation"] = original_owner
+        ProvinceRegistry.province_data[p_id]["against_occupation"] = original_owner
         ProvinceRegistry.province_occupants[p_id] = original_owner
         ProvinceRegistry.province_occupied.emit(p_id, original_owner)
         
@@ -104,7 +104,7 @@ func on_province_clicked(p_id: int) -> void:
     else:
         # Забираем — убираем полосы визуально
         _claimed.append(p_id)
-        ProvinceRegistry.province_data[str(p_id)]["against_occupation"] = ""
+        ProvinceRegistry.province_data[p_id]["against_occupation"] = ""
         ProvinceRegistry.province_occupants.erase(p_id)
         ProvinceRegistry.province_occupied.emit(p_id, "")
         print("[Negotiation] Провинция %d добавлена в требования" % p_id)
@@ -115,14 +115,14 @@ func on_province_clicked(p_id: int) -> void:
 func _on_send_demands_pressed() -> void:
     # 1. Обработка провинций, которые игрок захватил у врага (оставляем без изменений)
     for p_id in _claimed:
-        ProvinceRegistry.province_data[str(p_id)]["against_occupation"] = ""
+        ProvinceRegistry.province_data[p_id]["against_occupation"] = ""
         ProvinceRegistry.province_occupants.erase(p_id)
-        ProvinceRegistry.province_data[str(p_id)]["core_owner"] = settings.active_country
+        ProvinceRegistry.province_data[p_id]["core_owner"] = settings.active_country
 
     for p_id in _occupied_snapshot:
         if not p_id in _claimed:
             var original_owner = _occupied_snapshot[p_id]
-            ProvinceRegistry.province_data[str(p_id)]["against_occupation"] = ""
+            ProvinceRegistry.province_data[p_id]["against_occupation"] = ""
             ProvinceRegistry.province_occupants.erase(p_id)
             ProvinceRegistry.capture_province(p_id, original_owner)
             ProvinceRegistry.province_occupied.emit(p_id, "")
@@ -177,7 +177,7 @@ func _on_close_button_pressed() -> void:
     # Откатываем визуальные изменения — возвращаем полосы на claimed провинции
     for p_id in _claimed:
         var original_owner = _occupied_snapshot[p_id]
-        ProvinceRegistry.province_data[str(p_id)]["against_occupation"] = original_owner
+        ProvinceRegistry.province_data[p_id]["against_occupation"] = original_owner
         ProvinceRegistry.province_occupants[p_id] = original_owner
         ProvinceRegistry.province_occupied.emit(p_id, original_owner)
 
@@ -246,7 +246,7 @@ func _on_select_all_button_pressed() -> void:
         # Кнопка работает как "Сбросить всё"
         for p_id in _claimed.duplicate():
             var original_owner = _occupied_snapshot[p_id]
-            ProvinceRegistry.province_data[str(p_id)]["against_occupation"] = original_owner
+            ProvinceRegistry.province_data[p_id]["against_occupation"] = original_owner
             ProvinceRegistry.province_occupants[p_id] = original_owner
             ProvinceRegistry.province_occupied.emit(p_id, original_owner)
         _claimed.clear()
@@ -258,7 +258,7 @@ func _on_select_all_button_pressed() -> void:
         for p_id in _occupied_snapshot:
             if not p_id in _claimed:
                 _claimed.append(p_id)
-                ProvinceRegistry.province_data[str(p_id)]["against_occupation"] = ""
+                ProvinceRegistry.province_data[p_id]["against_occupation"] = ""
                 ProvinceRegistry.province_occupants.erase(p_id)
                 ProvinceRegistry.province_occupied.emit(p_id, "")
         print("[Negotiation] Все оккупированные провинции выбраны: ", _claimed.size())

@@ -13,13 +13,13 @@ func _input(_event: InputEvent):
     if settings.last_clicked_province_id == 0:
         hide()
         return
-    var owner = ProvinceRegistry.province_data.get(str(settings.last_clicked_province_id), {}).get("owner", "")
+    var owner = ProvinceRegistry.province_data.get(settings.last_clicked_province_id, {}).get("owner", "")
     var at_war = ProvinceRegistry.is_at_war(settings.active_country, owner)
     if settings.can_draw == true:
         visible = owner != "" and owner != settings.active_country and not at_war
 
 func _on_pressed() -> void:
-    var target_owner = ProvinceRegistry.province_data.get(str(settings.last_clicked_province_id), {}).get("owner", "")
+    var target_owner = ProvinceRegistry.province_data.get(settings.last_clicked_province_id, {}).get("owner", "")
     if target_owner != "" and target_owner != settings.active_country:
         ProvinceRegistry.declare_war(settings.active_country, target_owner)
         CountryMenu.update_info()

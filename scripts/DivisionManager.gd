@@ -7,11 +7,39 @@ const ArmyScene = preload("res://ArmyCircle.tscn")
 
 # Теперь структура СТРОГО: { province_id(int): [кружок1, кружок2, ...] }
 var armies: Dictionary = {}
-var map_node: Node2D = null
 var army_counters: Dictionary = {}
 
+var _cached_cam_factor: float = 1.0
+
+# ФИКС БАГА 2: Автоматически подписываемся на камеру при инициализации карты
+var map_node: Node2D = null:
+    set(value):
+        map_node = value
+        if map_node:
+            call_deferred("_connect_camera_signals")
+
+func _connect_camera_signals() -> void:
+    var cam = get_viewport().get_camera_2d()
+    if cam:
+        _cached_cam_factor = 1.0 / cam.zoom.x
+        if cam.has_signal("zoom_changed"):
+            if cam.zoom_changed.is_connected(_on_viewport_zoom_changed):
+                cam.zoom_changed.disconnect(_on_viewport_zoom_changed)
+            cam.zoom_changed.connect(_on_viewport_zoom_changed)
+
+func _on_viewport_zoom_changed(new_zoom: Vector2) -> void:
+    _cached_cam_factor = 1.0 / new_zoom.x
+    reposition_all_armies()
+
+# ФИКС БАГА 2: Масштабируем зазор между армиями на лету при изменении зума
+func reposition_all_armies() -> void:
+    if not is_instance_valid(map_node):
+        return
+    for p_id in armies:
+        reposition_armies_in_province(p_id, _cached_cam_factor)
+
 func recruit(province_id: int, local_pos: Vector2, recruit_amount: int):
-    var p_data = ProvinceRegistry.province_data[str(province_id)]
+    var p_data = ProvinceRegistry.province_data[province_id]
     var owner_id = p_data.get("owner", "")
     
     if p_data.get("against_occupation", "") != "":
@@ -19,13 +47,6 @@ func recruit(province_id: int, local_pos: Vector2, recruit_amount: int):
     
     if recruit_amount < 100:
         return
-        
-    # УДАЛЯЕМ проверку и списание баланса
-    # var cost_per_soldier = settings.COST_PER_SOLDIER
-    # var total_cost = int(recruit_amount * cost_per_soldier)
-    # if ProvinceRegistry.countries_data[owner_id]["balance"] < total_cost:
-    #     return
-    # ProvinceRegistry.countries_data[owner_id]["balance"] -= total_cost
     
     if not p_data.has("army"):
         p_data["army"] = {"land": 0, "uav": 0, "air": 0}
@@ -50,7 +71,7 @@ func recruit(province_id: int, local_pos: Vector2, recruit_amount: int):
                 _refresh_combat_hp_manually(province_id, owner_id)
     else:
         army_counters[owner_id] = army_counters.get(owner_id, 0) + 1
-        var army_name = str(army_counters[owner_id]) + " " + owner_id + " army"
+        var army_name = str(army_counters[owner_id]) + " " + str(owner_id) + " army"
         
         var army = ArmyScene.instantiate()
         map_node.add_child(army)
@@ -63,7 +84,6 @@ func recruit(province_id: int, local_pos: Vector2, recruit_amount: int):
     ProvinceRegistry.province_army_changed.emit(province_id)
     reposition_armies_in_province(province_id)
 
-# Вспомогательный метод для быстрого обновления здоровья в бою при призыве
 func _refresh_combat_hp_manually(province_id: int, owner_id: String):
     var battle = CombatManager.active_battles[province_id]
     var total_soldiers = 0
@@ -74,18 +94,23 @@ func _refresh_combat_hp_manually(province_id: int, owner_id: String):
     if total_soldiers > battle["sides"][owner_id]["max_hp"]:
         battle["sides"][owner_id]["max_hp"] = total_soldiers
 
-# Шеренга работает моментально, потому что массив под рукой!
-func reposition_armies_in_province(p_id: int) -> void:
+# ФИКС БАГА 2: Оптимизированное позиционирование с использованием кэшированного cam_factor
+func reposition_armies_in_province(p_id: int, cam_factor: float = -1.0) -> void:
+    if not is_instance_valid(map_node):
+        return
+
     var center_pos = map_node.settings.province_centers.get(p_id, Vector2.ZERO)
-    var cam_factor = 1.0
-    var cam = get_viewport().get_camera_2d()
-    if cam:
-        cam_factor = 1.0 / cam.zoom.x
+    
+    if cam_factor < 0.0:
+        if _cached_cam_factor == 1.0:
+            var cam = get_viewport().get_camera_2d()
+            if cam:
+                _cached_cam_factor = 1.0 / cam.zoom.x
+        cam_factor = _cached_cam_factor
     
     var base_spacing = 22.0
     var spacing = base_spacing * cam_factor
     
-    # Позиционируем только армии (логика заводов полностью удалена)
     if armies.has(p_id) and not armies[p_id].is_empty():
         var province_armies = armies[p_id]
         var total_width = (province_armies.size() - 1) * spacing
@@ -96,14 +121,9 @@ func reposition_armies_in_province(p_id: int) -> void:
             if is_instance_valid(army) and not army.is_moving:
                 army.position = Vector2(start_x + (i * spacing), center_pos.y)
         
-        
-## Скрывает/показывает дивизии в зависимости от режима переговоров.
-## countries — массив из двух стран-участников, например ["Germany", "France"].
-## Передай пустой массив [] чтобы показать всех обратно.
 func set_negotiation_visibility(countries: Array) -> void:
     for p_id in armies:
-        # Чья земля эта провинция?
-        var province_owner = ProvinceRegistry.province_data.get(str(p_id), {}).get("owner", "")
+        var province_owner = ProvinceRegistry.province_data.get(p_id, {}).get("owner", "")
         var on_negotiation_territory = countries.size() > 0 and (province_owner in countries)
 
         for circle in armies[p_id]:

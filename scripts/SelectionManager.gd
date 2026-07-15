@@ -20,8 +20,8 @@ func on_division_clicked(division: Node) -> void:
             selected_divisions.clear()
         _select_division(division)
 
-    if ProvinceRegistry.province_data.has(str(settings.last_clicked_province_id)):
-        DivisionMenu.update_info(ProvinceRegistry.province_data[str(settings.last_clicked_province_id)])
+    if ProvinceRegistry.province_data.has(settings.last_clicked_province_id):
+        DivisionMenu.update_info(ProvinceRegistry.province_data[settings.last_clicked_province_id])
 
 func _select_division(division: Node) -> void:
     if not is_instance_valid(division) or division.is_selected:

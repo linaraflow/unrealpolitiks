@@ -3,8 +3,8 @@ extends Control
 @export var settings: Resource
 @onready var map_node = get_node("/root/Game/Map")
 
-@onready var DivisionMenu = get_node("/root/Game/CanvasLayer/DivisionMenu")
-@onready var ProvinceMenu = get_node("/root/Game/CanvasLayer/ProvinceMenu")
+@onready var DivisionMenu = get_node("/root/Game/CanvasLayer/VBoxContainer/DivisionMenu")
+@onready var ProvinceMenu = get_node("/root/Game/CanvasLayer/VBoxContainer/ProvinceMenu")
 @onready var left_country: OptionButton = $Panel/VBoxContainer/HBoxContainer/LeftCountry
 @onready var right_country: OptionButton = $Panel/VBoxContainer/HBoxContainer/RightCountry
 @onready var balance_label = get_node_or_null("/root/Game/CanvasLayer/TopMenu/TopPanel/BalanceLabel")
@@ -45,7 +45,7 @@ func _on_dev_recruit_button_pressed() -> void:
     if _province_id == -1:
         return
         
-    var p_data = ProvinceRegistry.province_data[str(_province_id)]
+    var p_data = ProvinceRegistry.province_data[_province_id]
     var owner = p_data.get("owner", "")
     
     # Дебаг-логика: добавим денег, чтобы призыв точно сработал
@@ -67,7 +67,7 @@ func _on_dev_recruit_button_pressed() -> void:
 func update_army_info():
     if not settings.can_draw:
         return
-    var p_data = ProvinceRegistry.province_data.get(str(settings.last_clicked_province_id), {})
+    var p_data = ProvinceRegistry.province_data.get(settings.last_clicked_province_id, {})
     ProvinceMenu.update_info(p_data)
     DivisionMenu.update_info(p_data)
 

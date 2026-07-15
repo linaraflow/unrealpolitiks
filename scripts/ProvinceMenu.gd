@@ -56,7 +56,7 @@ func _set_stat_bar(bar: ProgressBar, value: float) -> void:
 
 func _on_day_passed(_date: Dictionary) -> void:
     if visible and settings.last_clicked_province_id != -1:
-        var data = ProvinceRegistry.province_data.get(str(settings.last_clicked_province_id), {})
+        var data = ProvinceRegistry.province_data.get(settings.last_clicked_province_id, {})
         update_info(data)
 
 # --- info display ----------------------------------------------------------
@@ -112,7 +112,7 @@ func get_happiness(happiness) -> String:
 
 func _on_build_factory_button_pressed() -> void:
     var p_id = settings.last_clicked_province_id
-    var p_data = ProvinceRegistry.province_data.get(str(p_id), {})
+    var p_data = ProvinceRegistry.province_data.get(p_id, {})
 
     if p_data.get("against_occupation", "") != "":
         print("Нельзя строить в оккупированной провинции!")
@@ -134,7 +134,7 @@ func _on_recruit_button_pressed() -> void:
     if province_id == -1:
         return
 
-    var p_data = ProvinceRegistry.province_data.get(str(province_id), {})
+    var p_data = ProvinceRegistry.province_data.get(province_id, {})
     var pop = p_data.get("population", 0)
     var owner = p_data.get("owner", "")
     var balance = ProvinceRegistry.countries_data[owner]["balance"]
@@ -142,7 +142,7 @@ func _on_recruit_button_pressed() -> void:
     recruit_slider_panel.open_menu(province_id, local_pos, pop, balance)
 
 func update_army_info():
-    var p_data = ProvinceRegistry.province_data.get(str(settings.last_clicked_province_id), {})
+    var p_data = ProvinceRegistry.province_data.get(settings.last_clicked_province_id, {})
     update_info(p_data)
     if division_menu:
         division_menu.update_info(p_data)

@@ -162,7 +162,7 @@ func _update_relations_bar(value: int) -> void:
 # ---------------- Main update ----------------
 
 func update_info():
-    owner_name = ProvinceRegistry.province_data[str(settings.last_clicked_province_id)].get("owner", "unknown")
+    owner_name = ProvinceRegistry.province_data[settings.last_clicked_province_id].get("owner", "unknown")
     var data = ProvinceRegistry.countries_data[owner_name]
 
     CountryLabel.text = owner_name

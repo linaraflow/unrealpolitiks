@@ -11,6 +11,12 @@ signal province_occupied(province_id: int, occupier: String)   # occupier="" →
 signal war_declared(attacker: String, defender: String)
 signal war_ended(country_a: String, country_b: String)
 
+signal country_color_changed
+
+## Эмитится при установке/переносе столицы страны.
+## province_id == -1 значит "у страны больше нет провинций" (столицу ставить некуда).
+signal capital_changed(country: String, province_id: int)
+
 # province_id -> country_id (строка типа "Germany", "France")
 var province_owners: Dictionary = {}
 
@@ -28,6 +34,10 @@ var war_relations: Dictionary = {}
 
 var countries_data: Dictionary = {}
 
+var _factories_dirty: bool = true
+var _production_by_country: Dictionary = {}
+var active_constructions: Dictionary = {}
+
 # ─── УСТАЛОСТЬ ОТ ВОЙНЫ ────────────────────────────────────────────────────────
 const WAR_EXHAUSTION_MAX          := 100.0
 const WAR_EXHAUSTION_DECAY_PER_DAY := 1.0   # снижение в день, только если страна ни с кем не воюет
@@ -37,15 +47,18 @@ func _ready():
     _load_province_data()
     _load_province_adjacency()
     GameClock.on_day_passed.connect(_on_day_passed)
+    GameClock.on_month_passed.connect(_on_month_passed)
     _recalculate_all_populations()
     _recalculate_all_happiness()
     _recalculate_all_factories() # Первичный расчет фабрик при старте игры
 
 func _on_day_passed(_date: Dictionary) -> void:
-    _recalculate_all_populations()
-    _recalculate_all_happiness()
     _process_economy()
     _decay_war_exhaustion()
+    
+func _on_month_passed(_date: Dictionary) -> void:
+    # Переносим сюда, чтобы фриз (если он останется) был только раз в месяц
+    _recalculate_daily_stats()
 
 ## Получить текущую усталость страны от войны (0..100)
 func get_war_exhaustion(country: String) -> float:
@@ -112,6 +125,26 @@ func _recalculate_all_happiness() -> void:
     for country in countries_data:
         var cnt = counts.get(country, 0)
         countries_data[country]["happiness"] = (totals.get(country, 0.0) / cnt) if cnt > 0 else 0.0
+        
+func _recalculate_daily_stats() -> void:
+    var pop_totals: Dictionary = {}
+    var happ_totals: Dictionary = {}
+    var happ_counts: Dictionary = {}
+
+    for key in province_data:
+        var p = province_data[key]
+        var owner = p.get("owner", "")
+        if owner == "":
+            continue
+        
+        pop_totals[owner] = pop_totals.get(owner, 0) + int(p.get("population", 0))
+        happ_totals[owner] = happ_totals.get(owner, 0.0) + float(p.get("happiness", 50.0))
+        happ_counts[owner] = happ_counts.get(owner, 0) + 1
+
+    for country in countries_data:
+        countries_data[country]["population"] = pop_totals.get(country, 0)
+        var cnt = happ_counts.get(country, 0)
+        countries_data[country]["happiness"] = (happ_totals.get(country, 0.0) / cnt) if cnt > 0 else 0.0
 
 ## Среднее счастье страны (0..100), уже посчитанное, обновляется раз в игровой день
 func get_country_happiness(country: String) -> float:
@@ -119,30 +152,36 @@ func get_country_happiness(country: String) -> float:
 
 ## Население одной провинции
 func get_province_population(province_id: int) -> int:
-    return int(province_data.get(str(province_id), {}).get("population", 0))
+    return int(province_data.get(province_id, {}).get("population", 0))
 
 ## Население страны (уже посчитанное, обновляется раз в игровой день)
 func get_country_population(country: String) -> int:
     return int(countries_data.get(country, {}).get("population", 0))
 
 func _load_province_data():
-    if not FileAccess.file_exists("res://scripts/provinces.json"):
+    if not FileAccess.file_exists("res://scripts/provinces.json"): 
         return
     var file = FileAccess.open("res://scripts/provinces.json", FileAccess.READ)
     var json = JSON.new()
     json.parse(file.get_as_text())
-    province_data = json.data
-    settings.province_data = province_data
-
-    # Восстанавливаем оккупацию из JSON при загрузке
-    for key in province_data:
-        var p = province_data[key]
-        var occ = p.get("against_occupation", "")
+    
+    province_data.clear()
+    
+    # Объединяем конвертацию ключей и поиск оккупации в один быстрый цикл
+    for key_str in json.data:
+        var p_id = int(key_str)
+        var p_info = json.data[key_str]
+        
+        province_data[p_id] = p_info
+        
+        # Восстанавливаем оккупацию сразу же
+        var occ = p_info.get("against_occupation", "")
         if occ != "":
-            var p_id = int(key)
             province_occupants[p_id] = occ
-
+            
+    settings.province_data = province_data
     _rebuild_count_cache()
+
 
 func _load_province_adjacency():
     if not FileAccess.file_exists("res://scripts/province_adjacency.json"):
@@ -150,7 +189,20 @@ func _load_province_adjacency():
     var file = FileAccess.open("res://scripts/province_adjacency.json", FileAccess.READ)
     var json = JSON.new()
     json.parse(file.get_as_text())
-    province_adjacency = json.data
+    
+    province_adjacency.clear()
+    
+    # Конвертируем ключи в int, а массивы соседей в Array[int]
+    for key_str in json.data:
+        var p_id = int(key_str)
+        var raw_neighbors = json.data[key_str]
+        
+        var neighbors: Array[int] = []
+        for neighbor in raw_neighbors:
+            neighbors.append(int(neighbor))
+            
+        province_adjacency[p_id] = neighbors
+        
     settings.province_adjacency = province_adjacency
 
 func _rebuild_count_cache():
@@ -195,7 +247,7 @@ func capture(from_country: String, to_country: String) -> void:
             _set_owner(p_id, to_country)
 
 func capture_province(province_id: int, new_owner: String) -> void:
-    var old_owner = province_data[str(province_id)].get("owner", "")
+    var old_owner = province_data[province_id].get("owner", "")
     if old_owner != "":
         owner_province_count[old_owner] = owner_province_count.get(old_owner, 1) - 1
         
@@ -204,7 +256,7 @@ func capture_province(province_id: int, new_owner: String) -> void:
         
     owner_province_count[new_owner] = owner_province_count.get(new_owner, 0) + 1
     _set_owner(province_id, new_owner)
-    province_data[str(province_id)]["owner"] = new_owner
+    province_data[province_id]["owner"] = new_owner
 
 func _set_owner(p_id: int, new_owner: String) -> void:
     province_owners[p_id] = new_owner
@@ -214,7 +266,7 @@ func _set_owner(p_id: int, new_owner: String) -> void:
 
 ## Оккупировать провинцию
 func occupy_province(province_id: int, occupier: String) -> void:
-    var key = str(province_id)
+    var key = province_id
     if not province_data.has(key):
         return
 
@@ -249,7 +301,7 @@ func occupy_province(province_id: int, occupier: String) -> void:
 
 ## Снять оккупацию (например при освобождении провинции)
 func liberate_province(province_id: int) -> void:
-    var key = str(province_id)
+    var key = province_id
     if not province_data.has(key):
         return
 
@@ -268,14 +320,14 @@ func annex_all_occupied_by(occupier: String) -> void:
     var to_annex: Array[int] = []
     for p_id in province_occupants:
         if province_occupants[p_id] != "":
-            var current_owner = province_data[str(p_id)].get("owner", "")
+            var current_owner = province_data[p_id].get("owner", "")
             print("p_id:", p_id, " owner:", current_owner)
             if current_owner == occupier:
                 to_annex.append(p_id)
 
     for p_id in to_annex:
-        province_data[str(p_id)]["against_occupation"] = ""
-        province_data[str(p_id)]["core_owner"] = occupier   # аннексия узаконивает нового владельца
+        province_data[p_id]["against_occupation"] = ""
+        province_data[p_id]["core_owner"] = occupier   # аннексия узаконивает нового владельца
         province_occupants.erase(p_id)
         province_occupied.emit(p_id, "")
 
@@ -333,7 +385,7 @@ func end_war(country_a: String, country_b: String) -> void:
     # === Белый мир: провинции возвращаются своим корам ===
     var provinces_to_liberate = []
     for p_id in province_occupants.keys():
-        var key = str(p_id)
+        var key = p_id
         var core = province_data[key].get("core_owner", province_occupants[p_id])
         var current_owner = province_data[key].get("owner", "")
 
@@ -351,7 +403,7 @@ func end_war(country_a: String, country_b: String) -> void:
             provinces_to_liberate.append(p_id)
 
     for p_id in provinces_to_liberate:
-        var key = str(p_id)
+        var key = p_id
         var core = province_data[key].get("core_owner", "")
 
         province_data[key]["against_occupation"] = ""
@@ -362,6 +414,51 @@ func end_war(country_a: String, country_b: String) -> void:
     print("[Registry] Война завершена: %s и %s (возвращено провинций: %d)" % [country_a, country_b, provinces_to_liberate.size()])
     war_ended.emit(country_a, country_b)
     
+## Установить столицу страны и сохранить ТОЛЬКО поле "capital" в countries.json
+## (остальные данные в файле не трогаем — читаем файл заново перед записью,
+## чтобы не затереть то, что могло измениться помимо памяти рантайма).
+func set_capital(country: String, province_id: int) -> void:
+    if country == "" or not countries_data.has(country):
+        print("[Registry] set_capital: нет такой страны: ", country)
+        return
+
+    countries_data[country]["capital"] = province_id
+    print("[Registry] Столица %s установлена вручную: %d" % [country, province_id])
+
+    _save_capital_to_file(country, province_id)
+    capital_changed.emit(country, province_id)
+
+
+func _save_capital_to_file(country: String, province_id: int) -> void:
+    var path = "res://scripts/countries.json"
+    if not FileAccess.file_exists(path):
+        print("[Registry] _save_capital_to_file: файл не найден: ", path)
+        return
+
+    var read_file = FileAccess.open(path, FileAccess.READ)
+    var json = JSON.new()
+    var parse_err = json.parse(read_file.get_as_text())
+    read_file.close()
+
+    if parse_err != OK:
+        print("[Registry] _save_capital_to_file: ошибка парсинга JSON")
+        return
+
+    var data: Dictionary = json.data
+    if not data.has(country):
+        print("[Registry] _save_capital_to_file: страны нет в файле: ", country)
+        return
+
+    # Меняем на диске ТОЛЬКО поле capital, всё остальное в файле остаётся как было
+    data[country]["capital"] = province_id
+
+    var write_file = FileAccess.open(path, FileAccess.WRITE)
+    write_file.store_string(JSON.stringify(data, "\t"))
+    write_file.close()
+
+    print("[Registry] countries.json обновлён: capital[%s] = %d" % [country, province_id])
+
+
 func _check_capital_transfer(captured_p_id: int, old_owner: String) -> void:
     if not countries_data.has(old_owner):
         return
@@ -382,43 +479,47 @@ func _check_capital_transfer(captured_p_id: int, old_owner: String) -> void:
             var new_capital = available_provinces.pick_random()
             countries_data[old_owner]["capital"] = new_capital
             print("[Registry] Столица %s перенесена в провинцию %d" % [old_owner, new_capital])
+            capital_changed.emit(old_owner, new_capital)
         else:
             print("[Registry] Страна %s потеряла последнюю провинцию (столицу)" % old_owner)
+            # Сигналим -1, чтобы карта убрала звёздочку столицы у уничтоженной страны
+            capital_changed.emit(old_owner, -1)
 
 
 # ЭКОНОМИКА
 func _process_economy() -> void:
-    var production_by_country: Dictionary = {}
+    var to_remove = []
     
-    # Обнуляем количество фабрик у всех стран перед подсчетом
-    for country in countries_data:
-        countries_data[country]["factories"] = 0
-    
-    for key in province_data:
+    # 1. Продвигаем ТОЛЬКО активные стройки (быстрый цикл)
+    for p_id in active_constructions:
+        var key = p_id
         var p = province_data[key]
         
-        # 1. Просчет очереди строительства
         if p.has("factory_queue") and p["factory_queue"].size() > 0:
             p["factory_queue"][0] += 1
-            
             if p["factory_queue"][0] >= 15:
                 p["factory_queue"].pop_front()
                 p["factories"] = p.get("factories", 0) + 1
+
+                # Инкрементируем фабрику напрямую, не трогая остальные 9999 провинций
+                var owner = p.get("owner", "")
+                if owner != "" and p.get("against_occupation", "") == "" and countries_data.has(owner):
+                    countries_data[owner]["factories"] = countries_data[owner].get("factories", 0) + 1
                 
-        # 2. Подсчет готовых заводов (только в неоккупированных)
-        var owner = p.get("owner", "")
-        if owner != "" and p.get("against_occupation", "") == "":
-            var f_count = p.get("factories", 0)
-            if f_count > 0:
-                production_by_country[owner] = production_by_country.get(owner, 0) + f_count
-                
-    # 3. Начисление продуктов и запись количества фабрик в данные страны
+                if p["factory_queue"].is_empty():
+                    to_remove.append(p_id)
+        else:
+            to_remove.append(p_id)
+            
+    # Чистим завершенные стройки
+    for p_id in to_remove:
+        active_constructions.erase(p_id)
+
+    # 3. Начисляем продукты
     for country in countries_data:
-        var total_factories = production_by_country.get(country, 0)
-        countries_data[country]["factories"] = total_factories
-        
+        var total_factories: int = countries_data[country].get("factories", 0)
         if total_factories > 0:
-            var daily_product = total_factories / 30.0
+            var daily_product := total_factories / 30.0
             countries_data[country]["products"] = countries_data[country].get("products", 0.0) + daily_product
 
 ## Приблизительный ВВП страны за год:
@@ -430,13 +531,11 @@ func get_gdp(country: String) -> float:
     var monthly_income = float(data.get("monthly_income", 0))
     return (factories * product_cost + monthly_income) * 12.0
 
+# Вызывать при постройке завода (в start_factory_construction):
 func start_factory_construction(p_id: int, country: String) -> bool:
-    var p = province_data[str(p_id)]
-    
-    # ПРОВЕРКА 1: Ограничение очереди в 5 заводов
-    if p.has("factory_queue") and p["factory_queue"].size() >= 5:
+    var p = province_data[p_id]
+    if p.get("factory_queue", []).size() >= 5:
         return false
-        
     var cost = settings.factory_cost
     if countries_data[country].get("balance", 0.0) < cost:
         return false
@@ -446,9 +545,10 @@ func start_factory_construction(p_id: int, country: String) -> bool:
         
     countries_data[country]["balance"] -= cost
     p["factory_queue"].append(0)
-
+    
+    active_constructions[p_id] = true # <-- ДОБАВЛЕНО: запоминаем, где идет стройка
+    _factories_dirty = true
     return true
-
     
 # ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
 # Универсальная функция для разделения разрядов
@@ -466,3 +566,25 @@ func _format_number(value: Variant, separator: String = " ") -> String:
     if n < 0:
         res = "-" + res
     return res
+
+# СМЕНИТЬ ЦВЕТ СТРАНЫ
+func change_country_color(country: String, new_color: Color) -> void:
+    if not countries_data.has(country):
+        return
+        
+    # 1. Получаем индекс страны
+    var idx = country_index.get(country, 0)
+    
+    # 2. Обновляем массив для шейдера
+    country_colors[idx] = new_color
+    
+    # 3. Обновляем словарь для будущих сохранений игры
+    countries_data[country]["color"] = [
+        int(new_color.r * 255), 
+        int(new_color.g * 255), 
+        int(new_color.b * 255), 
+        255
+    ]
+    
+    # 4. Сообщаем карте, что нужно обновить шейдер
+    country_color_changed.emit()

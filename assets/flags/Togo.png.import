@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://7byryhuhjkyl"
-path="res://.godot/imported/Macedonia.png-51fc38620fce6067219a81881dee4929.ctex"
+uid="uid://drii7g4subl1"
+path="res://.godot/imported/Togo.png-647a866bc94a88f63374e96410fa5dc6.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/flags/Macedonia.png"
-dest_files=["res://.godot/imported/Macedonia.png-51fc38620fce6067219a81881dee4929.ctex"]
+source_file="res://assets/flags/Togo.png"
+dest_files=["res://.godot/imported/Togo.png-647a866bc94a88f63374e96410fa5dc6.ctex"]
 
 [params]
 

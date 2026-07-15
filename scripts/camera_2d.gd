@@ -2,7 +2,7 @@ extends Camera2D
 
 var settings = preload("res://new_resource.tres")
 
-@export var zoom_speed: float = 0.06
+@export var zoom_speed: float = 0.1
 @export var max_zoom: float = 10.0
 
 signal zoom_changed(new_zoom: Vector2)
