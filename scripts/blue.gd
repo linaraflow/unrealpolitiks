@@ -17,7 +17,7 @@ func _ready():
     
 
 func _on_pressed():
-    if text != "Choose Country":
+    if text != "Choose Country" and ProvinceRegistry.province_data[settings.last_clicked_province_id].get("owner", "") != "sea":
         if settings:
             settings.active_country = text
             settings.can_draw = true

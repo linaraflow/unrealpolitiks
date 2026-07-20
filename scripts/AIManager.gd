@@ -350,6 +350,16 @@ func _process_military_movement(country: String) -> void:
     for p_id in own_provinces:
         if CombatManager.active_battles.has(p_id):
             continue
+
+        # Если в провинции скопилось слишком много дивизий страны — объединяем их
+        # в одну, чтобы не таскать по фронту толпу мелких армий
+        var own_division_count = 0
+        for army_check in DivisionManager.armies.get(p_id, []):
+            if is_instance_valid(army_check) and army_check.division_owner == country:
+                own_division_count += 1
+        if own_division_count > 4:
+            DivisionManager.merge_divisions(p_id)
+
         # Двигаем именно армии страны country — они могут физически находиться
         # на территории своего контролёра или марионетки, а не только "дома"
         for army in DivisionManager.armies.get(p_id, []):
@@ -428,7 +438,7 @@ func _get_frontier_enemy_provinces(enemies: Array, own_set: Dictionary) -> Array
             if seen.has(t_id):
                 continue
             var owner = ProvinceRegistry.province_data.get(t_id, {}).get("owner", "")
-            if owner != "" and enemy_set.has(owner):
+            if owner != "" and owner != ProvinceRegistry.SEA_OWNER and enemy_set.has(owner):
                 seen[t_id] = true
                 result.append(t_id)
     return result
@@ -691,7 +701,7 @@ func _build_initial_country_cache() -> void:
     for p_id_str in ProvinceRegistry.province_data:
         var p_id = int(p_id_str)
         var owner = ProvinceRegistry.province_data[p_id_str].get("owner", "")
-        if owner != "":
+        if owner != "" and owner != ProvinceRegistry.SEA_OWNER:
             if not country_provinces_cache.has(owner):
                 country_provinces_cache[owner] = []
             country_provinces_cache[owner].append(p_id)
@@ -714,7 +724,11 @@ func _get_random_neighbor_country(country: String) -> String:
         for adj_id in ProvinceRegistry.province_adjacency.get(p_id, []):
             var clean_id = int(adj_id)
             var owner    = ProvinceRegistry.province_data.get(clean_id, {}).get("owner", "")
-            if owner != "" and owner != country and not neighbors.has(owner):
+            # ВАЖНО: проверяем countries_data.has(owner), а не просто owner != "" —
+            # иначе owner == "sea" (морские провинции) может попасть сюда как
+            # "страна-сосед", а её нет в countries_data → падение при обращении
+            # к ProvinceRegistry.countries_data[neighbor] в _try_declare_war/_process_relations_drift.
+            if owner != "" and owner != country and ProvinceRegistry.countries_data.has(owner) and not neighbors.has(owner):
                 neighbors.append(owner)
 
     return "" if neighbors.is_empty() else neighbors.pick_random()

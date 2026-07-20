@@ -163,6 +163,16 @@ func _update_relations_bar(value: int) -> void:
 
 func update_info():
     owner_name = ProvinceRegistry.province_data[settings.last_clicked_province_id].get("owner", "unknown")
+
+    # Провинция моря (owner == "sea") или ничья земля (owner == "") — это не
+    # страна, в countries_data такого ключа нет. Раньше здесь падало на
+    # ProvinceRegistry.countries_data[owner_name] (возвращало null, а
+    # следующий data.get(...) кидал ошибку). Показывать тут нечего — просто
+    # прячем панель и выходим.
+    if not ProvinceRegistry.countries_data.has(owner_name):
+        hide()
+        return
+
     var data = ProvinceRegistry.countries_data[owner_name]
 
     CountryLabel.text = owner_name

@@ -94,6 +94,63 @@ func _refresh_combat_hp_manually(province_id: int, owner_id: String):
     if total_soldiers > battle["sides"][owner_id]["max_hp"]:
         battle["sides"][owner_id]["max_hp"] = total_soldiers
 
+# Объединяет все дивизии одного владельца в провинции в одну (первую) дивизию.
+# Остальные дивизии удаляются, все солдаты переносятся в первую.
+func merge_divisions(province_id: int) -> void:
+    if not armies.has(province_id):
+        return
+
+    var province_armies = armies[province_id]
+
+    # Группируем валидные (не уничтоженные, не в движении) дивизии по владельцу
+    var groups: Dictionary = {} # owner_id -> Array[circle]
+    for circle in province_armies:
+        if not is_instance_valid(circle):
+            continue
+        if circle.is_moving:
+            continue # не трогаем дивизии, которые сейчас в пути
+
+        var owner_id = circle.division_owner
+        if not groups.has(owner_id):
+            groups[owner_id] = []
+        groups[owner_id].append(circle)
+
+    var affected_owners: Array = []
+
+    for owner_id in groups:
+        var group: Array = groups[owner_id]
+        if group.size() <= 1:
+            continue # объединять нечего
+
+        var main_circle = group[0]
+        var total_soldiers = 0
+        for circle in group:
+            total_soldiers += circle.soldiers
+
+        main_circle.soldiers = total_soldiers
+
+        # Удаляем все остальные дивизии этого владельца
+        for i in range(1, group.size()):
+            var circle_to_remove = group[i]
+            province_armies.erase(circle_to_remove)
+            if is_instance_valid(circle_to_remove.current_path_node):
+                circle_to_remove._stop_current_movement()
+            circle_to_remove.queue_free()
+
+        affected_owners.append(owner_id)
+
+    if affected_owners.is_empty():
+        return
+
+    for owner_id in affected_owners:
+        if CombatManager.active_battles.has(province_id):
+            var sides = CombatManager.active_battles[province_id]["sides"]
+            if sides.has(owner_id):
+                _refresh_combat_hp_manually(province_id, owner_id)
+
+    ProvinceRegistry.province_army_changed.emit(province_id)
+    reposition_armies_in_province(province_id)
+
 # ФИКС БАГА 2: Оптимизированное позиционирование с использованием кэшированного cam_factor
 func reposition_armies_in_province(p_id: int, cam_factor: float = -1.0) -> void:
     if not is_instance_valid(map_node):

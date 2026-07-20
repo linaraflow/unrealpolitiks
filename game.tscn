@@ -28,6 +28,10 @@ shader_parameter/selected_province_color = Vector3(-1, -1, -1)
 shader_parameter/highlight_time = -1.0
 shader_parameter/camera_pos = Vector2(0, 0)
 shader_parameter/texture_size = Vector2(1, 1)
+shader_parameter/flash_ids = PackedVector3Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+shader_parameter/flash_starts = PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0)
+shader_parameter/game_time = 0.0
+shader_parameter/flash_color = Color(0.15, 1, 0.25, 1)
 shader_parameter/stripe_width = 5.0
 shader_parameter/stripe_opacity = 0.45
 shader_parameter/negotiation_mode = false
@@ -37,6 +41,7 @@ shader_parameter/province_border_color = Color(0, 0, 0, 0.35)
 shader_parameter/province_border_width = 1.0
 shader_parameter/country_border_color = Color(0, 0, 0, 0.85)
 shader_parameter/country_border_width = 2.0
+shader_parameter/capital_border_width = 3.0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_e8heu"]
 bg_color = Color(0.16924527, 0.16924533, 0.16924518, 1)

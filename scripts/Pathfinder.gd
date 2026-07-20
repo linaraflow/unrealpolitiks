@@ -27,14 +27,32 @@ func find_path(start_id: int, goal_id: int, country: String) -> Array:
 
             if n != goal_id:
                 var owner = settings.province_data[n].get("owner", "")
-                var owner_data = ProvinceRegistry.countries_data[owner]
+
                 if country == "":
                     continue
-                var province_owner_data = ProvinceRegistry.countries_data[country]
-                var check_control = owner in province_owner_data["control"] or country in owner_data["control"]
-                # Своя провинция — проходим, враг — проходим, нейтрал — нет
-                if owner != country and not ProvinceRegistry.is_at_war(country, owner) and not check_control:
+
+                # Провинции моря (owner == "sea") — это не страна, наземные
+                # армии по ним не ходят (согласовано с
+                # army_circle.gd::_can_enter_territory). Раньше тут сразу
+                # шло ProvinceRegistry.countries_data[owner] — для "sea"
+                # (и вообще для owner, которого нет в countries_data) это
+                # падало с ошибкой, т.к. такого ключа не существует.
+                if owner == ProvinceRegistry.SEA_OWNER:
                     continue
+
+                if owner != "":
+                    if not ProvinceRegistry.countries_data.has(owner):
+                        # Неизвестный/битый owner — не пускаем путь, но и не падаем
+                        continue
+
+                    var owner_data = ProvinceRegistry.countries_data[owner]
+                    var province_owner_data = ProvinceRegistry.countries_data[country]
+                    var check_control = owner in province_owner_data["control"] or country in owner_data["control"]
+                    # Своя провинция — проходим, враг — проходим, нейтрал — нет
+                    if owner != country and not ProvinceRegistry.is_at_war(country, owner) and not check_control:
+                        continue
+                # owner == "" (ничья/неосвоенная земля) — пропускаем свободно,
+                # блокировать тут нечем, это не чужая страна.
 
             visited[n] = true
             previous[n] = current

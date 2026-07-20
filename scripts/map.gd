@@ -16,6 +16,13 @@ var neg_texture: ImageTexture
 
 var _highlight_elapsed: float = -1.0
 
+# ─── ЗЕЛЁНАЯ ВСПЫШКА "ЗАВОД ПОСТРОЕН" ────────────────────────────────────────
+const FLASH_SLOTS: int = 8
+var _game_time: float = 0.0
+var _flash_ids: Array = []      # Array[Vector3], размер FLASH_SLOTS
+var _flash_starts: Array = []   # Array[float],  размер FLASH_SLOTS
+var _flash_next_slot: int = 0
+
 var _neg_enemy: String = ""
 var divisions_hidden: bool = false
 
@@ -90,6 +97,16 @@ func _ready():
     material.set_shader_parameter("capital_texture", capital_texture)
     material.set_shader_parameter("country_colors", ProvinceRegistry.country_colors)
 
+    # Буфер вспышек "завод построен" — изначально все слоты пустые (id 0,0,0)
+    _flash_ids.resize(FLASH_SLOTS)
+    _flash_starts.resize(FLASH_SLOTS)
+    for i in FLASH_SLOTS:
+        _flash_ids[i] = Vector3.ZERO
+        _flash_starts[i] = -1000.0
+    material.set_shader_parameter("flash_ids", _flash_ids)
+    material.set_shader_parameter("flash_starts", _flash_starts)
+    material.set_shader_parameter("game_time", 0.0)
+
     # НОВОЕ: разово красим ВСЕ ~10000 провинций владельцами из provinces.json.
     # Пишем прямо в Image и обновляем текстуру ОДИН раз в конце —
     # если вместо этого дергать capture_province() in цикле, это даст
@@ -106,6 +123,7 @@ func _ready():
     ProvinceRegistry.province_occupied.connect(_on_province_occupied)
     ProvinceRegistry.country_color_changed.connect(_on_country_color_changed)
     ProvinceRegistry.capital_changed.connect(_on_capital_changed)
+    ProvinceRegistry.factory_built.connect(_on_factory_built)
 
     CountryMenu.visible = false
 
@@ -132,6 +150,9 @@ func _process(delta: float) -> void:
     if _highlight_elapsed >= 0.0:
         _highlight_elapsed += delta
         material.set_shader_parameter("highlight_time", _highlight_elapsed)
+
+    _game_time += delta
+    material.set_shader_parameter("game_time", _game_time)
 
 
 func _input(event: InputEvent):
@@ -211,10 +232,10 @@ func _handle_left_click(p_id, px, province_info, current_owner):
         DivisionMenu.update_info(province_info)
 
         if not settings.can_draw:
-            get_node("../CanvasLayer/BLUE").text = current_owner
+            get_node("../CanvasLayer/BLUE").text = current_owner if current_owner != "sea" else "Choose Country"
             CountryMenu.show()
             return
-        else:
+        elif current_owner != "sea":
             ProvinceMenu.show()
 
 
@@ -364,9 +385,17 @@ func _paint_all_provinces_from_data() -> void:
         var p = ProvinceRegistry.province_data[key]
         var owner = p.get("owner", "")
 
+        # Морские провинции (owner == "sea") намеренно НЕ пишем в data_texture:
+        # пиксель остаётся с alpha=0, поэтому шейдер покажет фоновый цвет
+        # (цвет моря) вместо country_colors, и границы тоже не будут
+        # рисоваться относительно них (см. game.gdshader: own_is_sea/n*_is_sea).
+        if owner == ProvinceRegistry.SEA_OWNER:
+            ProvinceRegistry.province_owners[p_id] = owner
+            continue
+
         # Пустой owner ("" — ничья/неосвоенная земля) красим индексом 0.
         # Убедись, что country_colors[0] в countries.json — это нужный
-        # тебе нейтральный цвet, а не случайно первая настоящая страна.
+        # тебе нейтральный цвет, а не случайно первая настоящая страна.
         var idx = ProvinceRegistry.country_index.get(owner, 0)
 
         var r = p_id & 0xFF
@@ -415,6 +444,33 @@ func _select_province(px: Color) -> void:
     material.set_shader_parameter("selected_province_color", Vector3(px.r, px.g, px.b))
     material.set_shader_parameter("highlight_time", 0.0)
     _highlight_elapsed = 0.0
+
+
+## Реакция на ProvinceRegistry.factory_built — подсвечиваем провинцию
+## своей страны зелёным, когда в ней достроился завод.
+func _on_factory_built(p_id: int, country: String) -> void:
+    if country != settings.active_country:
+        return
+    _flash_province_green(p_id)
+
+
+## Запускает плавную зелёную вспышку на провинции p_id.
+## Использует кольцевой буфер слотов, поэтому несколько вспышек
+## могут идти одновременно (например, если построилось сразу
+## несколько заводов в один день).
+func _flash_province_green(p_id: int) -> void:
+    var r = (p_id & 0xFF) / 255.0
+    var g = ((p_id >> 8) & 0xFF) / 255.0
+    var b = ((p_id >> 16) & 0xFF) / 255.0
+
+    var slot = _flash_next_slot
+    _flash_next_slot = (_flash_next_slot + 1) % FLASH_SLOTS
+
+    _flash_ids[slot] = Vector3(r, g, b)
+    _flash_starts[slot] = _game_time
+
+    material.set_shader_parameter("flash_ids", _flash_ids)
+    material.set_shader_parameter("flash_starts", _flash_starts)
 
 
 func _deselect_province() -> void:

@@ -16,6 +16,7 @@ signal country_color_changed
 ## Эмитится при установке/переносе столицы страны.
 ## province_id == -1 значит "у страны больше нет провинций" (столицу ставить некуда).
 signal capital_changed(country: String, province_id: int)
+signal factory_built(province_id: int, country: String)
 
 # province_id -> country_id (строка типа "Germany", "France")
 var province_owners: Dictionary = {}
@@ -33,6 +34,17 @@ var owner_province_count: Dictionary = {}  # "Germany" -> 3
 var war_relations: Dictionary = {}
 
 var countries_data: Dictionary = {}
+
+# Зарезервированное значение owner для морских провинций.
+# "sea" НЕ является страной и НЕ должно попадать в countries.json —
+# это просто маркер, который код явно распознаёт и исключает
+# из экономики/дипломатии/ИИ (см. _is_real_country_owner).
+const SEA_OWNER := "sea"
+
+## true, если owner принадлежит реальной играбельной стране
+## (не пустой, не "sea", и присутствует в countries_data)
+func _is_real_country_owner(owner: String) -> bool:
+    return owner != "" and owner != SEA_OWNER
 
 var _factories_dirty: bool = true
 var _production_by_country: Dictionary = {}
@@ -87,7 +99,7 @@ func _recalculate_all_populations() -> void:
     for key in province_data:
         var p = province_data[key]
         var owner = p.get("owner", "")
-        if owner == "":
+        if not _is_real_country_owner(owner):
             continue
         var pop = int(p.get("population", 0))
         totals[owner] = totals.get(owner, 0) + pop
@@ -104,7 +116,7 @@ func _recalculate_all_factories() -> void:
         var p = province_data[key]
         var owner = p.get("owner", "")
         # Считаем готовые заводы только в неоккупированных провинциях, как в экономике
-        if owner != "" and p.get("against_occupation", "") == "":
+        if _is_real_country_owner(owner) and p.get("against_occupation", "") == "":
             var f_count = int(p.get("factories", 0))
             if countries_data.has(owner):
                 countries_data[owner]["factories"] += f_count
@@ -116,7 +128,7 @@ func _recalculate_all_happiness() -> void:
     for key in province_data:
         var p = province_data[key]
         var owner = p.get("owner", "")
-        if owner == "":
+        if not _is_real_country_owner(owner):
             continue
         var happ = float(p.get("happiness", 50.0))
         totals[owner] = totals.get(owner, 0.0) + happ
@@ -134,7 +146,7 @@ func _recalculate_daily_stats() -> void:
     for key in province_data:
         var p = province_data[key]
         var owner = p.get("owner", "")
-        if owner == "":
+        if not _is_real_country_owner(owner):
             continue
         
         pop_totals[owner] = pop_totals.get(owner, 0) + int(p.get("population", 0))
@@ -209,6 +221,8 @@ func _rebuild_count_cache():
     owner_province_count.clear()
     for key in province_data:
         var owner = province_data[key].get("owner", "")
+        if owner == SEA_OWNER:
+            continue
         owner_province_count[owner] = owner_province_count.get(owner, 0) + 1
 
 func _load_countries():
@@ -505,7 +519,11 @@ func _process_economy() -> void:
                 var owner = p.get("owner", "")
                 if owner != "" and p.get("against_occupation", "") == "" and countries_data.has(owner):
                     countries_data[owner]["factories"] = countries_data[owner].get("factories", 0) + 1
-                
+
+                # Сигналим карте, что в этой провинции достроился завод
+                # (owner может быть "" — тогда просто некому подсвечивать)
+                factory_built.emit(p_id, owner)
+
                 if p["factory_queue"].is_empty():
                     to_remove.append(p_id)
         else:

@@ -12,6 +12,17 @@ uniform float highlight_time = -1.0;
 uniform vec2  camera_pos = vec2(0.0);
 uniform vec2  texture_size = vec2(1.0);
 
+// ── Зелёная вспышка "завод построен" ─────────────────────────────────────────
+// Кольцевой буфер из FLASH_SLOTS одновременных подсветок. Незанятый слот
+// имеет flash_ids[i] == vec3(0.0), что соответствует id=0 (море/игнор),
+// поэтому он никогда не совпадёт с реальной провинцией.
+const int FLASH_SLOTS = 8;
+const float FLASH_DURATION = 2.5; // сек: время полного цикла вспышки
+uniform vec3  flash_ids[FLASH_SLOTS];
+uniform float flash_starts[FLASH_SLOTS];
+uniform float game_time = 0.0;
+uniform vec4  flash_color : source_color = vec4(0.15, 1.0, 0.25, 1.0);
+
 uniform float stripe_width   : hint_range(2.0, 20.0) = 5.0;
 uniform float stripe_opacity : hint_range(0.0, 1.0)  = 0.45;
 
@@ -48,6 +59,75 @@ void fragment() {
         base_color = tex.rgb;
     }
 
+    // ── Границы провинций/стран: считаем ЗАРАНЕЕ ──────────────────────────────
+    // (нужно ещё до подсветок, чтобы они не закрашивали саму линию границы)
+    bool is_province_edge = false;
+    bool is_country_edge  = false;
+    if (draw_borders) {
+        vec2 texel = 1.0 / vec2(textureSize(tech_map, 0));
+
+        // own_is_sea = пиксель НЕ закрашен в data_texture: это либо старый фон (id 0),
+        // либо новая провинция-море (owner == "sea" — её мы намеренно не пишем
+        // в data_texture в map.gd, см. _paint_all_provinces_from_data).
+        bool own_is_sea = status.a <= 0.5;
+
+        // ── Тонкая граница провинций (любое различие id соседа) ───────────────
+        // Для столичной провинции берём увеличенную ширину — та же линия, но толще,
+        // и теперь это СПЛОШНАЯ полоса (сканируем каждый тексель от границы вглубь,
+        // а не проверяем только одну точку на фиксированном расстоянии).
+        {
+            float used_width = is_capital_province ? capital_border_width : province_border_width;
+            int steps = int(ceil(used_width));
+
+            for (int i = 1; i <= 12; i++) {
+                if (i > steps) break;
+
+                vec2 pw = texel * float(i);
+                vec4 n0 = texture(tech_map, UV + vec2( pw.x, 0.0));
+                vec4 n1 = texture(tech_map, UV + vec2(-pw.x, 0.0));
+                vec4 n2 = texture(tech_map, UV + vec2(0.0,  pw.y));
+                vec4 n3 = texture(tech_map, UV + vec2(0.0, -pw.y));
+
+                // Раньше тут была грубая проверка "n.r+n.g+n.b > 0.0" (проверяла
+                // только старый фон id==0). Теперь смотрим напрямую в data_texture:
+                // это правильно исключает и фон, и провинции-море из соседей.
+                bool n0_is_sea = texture(data_texture, vec2(n0.r, n0.g)).a <= 0.5;
+                bool n1_is_sea = texture(data_texture, vec2(n1.r, n1.g)).a <= 0.5;
+                bool n2_is_sea = texture(data_texture, vec2(n2.r, n2.g)).a <= 0.5;
+                bool n3_is_sea = texture(data_texture, vec2(n3.r, n3.g)).a <= 0.5;
+
+                if (any(notEqual(mask.rgb, n0.rgb)) && (draw_coast_border || (!own_is_sea && !n0_is_sea))) is_province_edge = true;
+                if (any(notEqual(mask.rgb, n1.rgb)) && (draw_coast_border || (!own_is_sea && !n1_is_sea))) is_province_edge = true;
+                if (any(notEqual(mask.rgb, n2.rgb)) && (draw_coast_border || (!own_is_sea && !n2_is_sea))) is_province_edge = true;
+                if (any(notEqual(mask.rgb, n3.rgb)) && (draw_coast_border || (!own_is_sea && !n3_is_sea))) is_province_edge = true;
+
+                if (is_province_edge) break;
+            }
+        }
+
+        // ── Толстая граница стран (сосед принадлежит другому владельцу) ───────
+        {
+            vec2 cw = texel * country_border_width;
+            vec4 n0 = texture(tech_map, UV + vec2( cw.x, 0.0));
+            vec4 n1 = texture(tech_map, UV + vec2(-cw.x, 0.0));
+            vec4 n2 = texture(tech_map, UV + vec2(0.0,  cw.y));
+            vec4 n3 = texture(tech_map, UV + vec2(0.0, -cw.y));
+
+            if (status.a > 0.5) {
+                vec4 s0 = texture(data_texture, vec2(n0.r, n0.g));
+                vec4 s1 = texture(data_texture, vec2(n1.r, n1.g));
+                vec4 s2 = texture(data_texture, vec2(n2.r, n2.g));
+                vec4 s3 = texture(data_texture, vec2(n3.r, n3.g));
+
+                if (any(notEqual(mask.rgb, n0.rgb)) && s0.a > 0.5 && int(s0.r * 255.0 + 0.5) != owner_idx_for_border) is_country_edge = true;
+                if (any(notEqual(mask.rgb, n1.rgb)) && s1.a > 0.5 && int(s1.r * 255.0 + 0.5) != owner_idx_for_border) is_country_edge = true;
+                if (any(notEqual(mask.rgb, n2.rgb)) && s2.a > 0.5 && int(s2.r * 255.0 + 0.5) != owner_idx_for_border) is_country_edge = true;
+                if (any(notEqual(mask.rgb, n3.rgb)) && s3.a > 0.5 && int(s3.r * 255.0 + 0.5) != owner_idx_for_border) is_country_edge = true;
+            }
+        }
+    }
+    bool is_border_pixel = is_province_edge || is_country_edge;
+
     // ── Оккупация: теперь используются stripe_width и stripe_opacity ────────
     if (occup.a > 0.5) {
         vec2 world_uv = UV * texture_size + camera_pos;
@@ -76,7 +156,31 @@ void fragment() {
         }
         base_color = mix(base_color, vec3(0.0), alpha);
     }
-    
+
+    // ── Зелёная вспышка "завод построен" ──────────────────────────────────────
+    // is_border_pixel исключает саму линию границы, чтобы подсветка
+    // не "вылезала" за пределы провинции и не просвечивала сквозь неё.
+    if (!is_border_pixel) {
+        for (int i = 0; i < FLASH_SLOTS; i++) {
+            int flash_r = int(flash_ids[i].r * 255.0 + 0.5);
+            int flash_g = int(flash_ids[i].g * 255.0 + 0.5);
+            int flash_b = int(flash_ids[i].b * 255.0 + 0.5);
+
+            bool id_match = (flash_r != 0 || flash_g != 0 || flash_b != 0)
+                && flash_r == mask_r && flash_g == mask_g && flash_b == mask_b;
+
+            if (id_match) {
+                float t = game_time - flash_starts[i];
+                if (t >= 0.0 && t < FLASH_DURATION) {
+                    // Быстрый плавный подъём и такое же плавное угасание
+                    float progress = t / FLASH_DURATION;
+                    float envelope = sin(progress * 3.14159265);
+                    base_color = mix(base_color, flash_color.rgb, envelope * flash_color.a);
+                }
+            }
+        }
+    }
+
     // ── Режим переговоров: затемняем чужие провинции ─────────────────────────
     if (negotiation_mode) {
         vec4 neg = texture(neg_texture, data_uv);
@@ -85,62 +189,8 @@ void fragment() {
         }
     }
 
-    // ── Границы провинций/стран ──────────────────────────────────────────────
+    // ── Границы провинций/стран: применяем цвет ───────────────────────────────
     if (draw_borders) {
-        vec2 texel = 1.0 / vec2(textureSize(tech_map, 0));
-
-        int own_id = int(mask.r * 255.0 + 0.5) | (int(mask.g * 255.0 + 0.5) << 8) | (int(mask.b * 255.0 + 0.5) << 16);
-        bool own_is_sea = (own_id == 0);
-
-        // ── Тонкая граница провинций (любое различие id соседа) ───────────────
-        // Для столичной провинции берём увеличенную ширину — та же линия, но толще,
-        // и теперь это СПЛОШНАЯ полоса (сканируем каждый тексель от границы вглубь,
-        // а не проверяем только одну точку на фиксированном расстоянии).
-        bool is_province_edge = false;
-        {
-            float used_width = is_capital_province ? capital_border_width : province_border_width;
-            int steps = int(ceil(used_width));
-
-            for (int i = 1; i <= 12; i++) {
-                if (i > steps) break;
-
-                vec2 pw = texel * float(i);
-                vec4 n0 = texture(tech_map, UV + vec2( pw.x, 0.0));
-                vec4 n1 = texture(tech_map, UV + vec2(-pw.x, 0.0));
-                vec4 n2 = texture(tech_map, UV + vec2(0.0,  pw.y));
-                vec4 n3 = texture(tech_map, UV + vec2(0.0, -pw.y));
-
-                if (any(notEqual(mask.rgb, n0.rgb)) && (draw_coast_border || (!own_is_sea && n0.r + n0.g + n0.b > 0.0))) is_province_edge = true;
-                if (any(notEqual(mask.rgb, n1.rgb)) && (draw_coast_border || (!own_is_sea && n1.r + n1.g + n1.b > 0.0))) is_province_edge = true;
-                if (any(notEqual(mask.rgb, n2.rgb)) && (draw_coast_border || (!own_is_sea && n2.r + n2.g + n2.b > 0.0))) is_province_edge = true;
-                if (any(notEqual(mask.rgb, n3.rgb)) && (draw_coast_border || (!own_is_sea && n3.r + n3.g + n3.b > 0.0))) is_province_edge = true;
-
-                if (is_province_edge) break;
-            }
-        }
-
-        // ── Толстая граница стран (сосед принадлежит другому владельцу) ───────
-        bool is_country_edge = false;
-        {
-            vec2 cw = texel * country_border_width;
-            vec4 n0 = texture(tech_map, UV + vec2( cw.x, 0.0));
-            vec4 n1 = texture(tech_map, UV + vec2(-cw.x, 0.0));
-            vec4 n2 = texture(tech_map, UV + vec2(0.0,  cw.y));
-            vec4 n3 = texture(tech_map, UV + vec2(0.0, -cw.y));
-
-            if (status.a > 0.5) {
-                vec4 s0 = texture(data_texture, vec2(n0.r, n0.g));
-                vec4 s1 = texture(data_texture, vec2(n1.r, n1.g));
-                vec4 s2 = texture(data_texture, vec2(n2.r, n2.g));
-                vec4 s3 = texture(data_texture, vec2(n3.r, n3.g));
-
-                if (any(notEqual(mask.rgb, n0.rgb)) && s0.a > 0.5 && int(s0.r * 255.0 + 0.5) != owner_idx_for_border) is_country_edge = true;
-                if (any(notEqual(mask.rgb, n1.rgb)) && s1.a > 0.5 && int(s1.r * 255.0 + 0.5) != owner_idx_for_border) is_country_edge = true;
-                if (any(notEqual(mask.rgb, n2.rgb)) && s2.a > 0.5 && int(s2.r * 255.0 + 0.5) != owner_idx_for_border) is_country_edge = true;
-                if (any(notEqual(mask.rgb, n3.rgb)) && s3.a > 0.5 && int(s3.r * 255.0 + 0.5) != owner_idx_for_border) is_country_edge = true;
-            }
-        }
-
         if (is_country_edge) {
             base_color = mix(base_color, country_border_color.rgb, country_border_color.a);
         } else if (is_province_edge) {
