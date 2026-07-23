@@ -24,6 +24,14 @@ uniform float flash_starts[FLASH_SLOTS];
 uniform float game_time = 0.0;
 uniform vec4  flash_color : source_color = vec4(0.15, 1.0, 0.25, 1.0);
 
+// ── Красная вспышка "удар ракетой / БПЛА" ─────────────────────────────────────
+// Работает точно так же, как зелёная вспышка выше, но со своим отдельным
+// кольцевым буфером слотов и цветом — чтобы обе вспышки могли идти
+// одновременно и не конфликтовали друг с другом.
+uniform vec3  red_flash_ids[FLASH_SLOTS];
+uniform float red_flash_starts[FLASH_SLOTS];
+uniform vec4  red_flash_color : source_color = vec4(1.0, 0.15, 0.1, 1.0);
+
 uniform float stripe_width   : hint_range(2.0, 20.0) = 5.0;
 uniform float stripe_opacity : hint_range(0.0, 1.0)  = 0.45;
 
@@ -178,6 +186,30 @@ void fragment() {
                     float progress = t / FLASH_DURATION;
                     float envelope = sin(progress * 3.14159265);
                     base_color = mix(base_color, flash_color.rgb, envelope * flash_color.a);
+                }
+            }
+        }
+    }
+
+    // ── Красная вспышка "удар ракетой / БПЛА" ──────────────────────────────────
+    // Полностью аналогична зелёной вспышке выше, но со своим буфером слотов
+    // и своим цветом — благодаря этому подсветки удара и постройки завода
+    // могут идти на разных (или даже на одной) провинциях одновременно.
+    if (!is_border_pixel) {
+        for (int i = 0; i < FLASH_SLOTS; i++) {
+            int flash_r = int(red_flash_ids[i].r * 255.0 + 0.5);
+            int flash_g = int(red_flash_ids[i].g * 255.0 + 0.5);
+            int flash_b = int(red_flash_ids[i].b * 255.0 + 0.5);
+
+            bool id_match = (flash_r != 0 || flash_g != 0 || flash_b != 0)
+                && flash_r == mask_r && flash_g == mask_g && flash_b == mask_b;
+
+            if (id_match) {
+                float t = game_time - red_flash_starts[i];
+                if (t >= 0.0 && t < FLASH_DURATION) {
+                    float progress = t / FLASH_DURATION;
+                    float envelope = sin(progress * 3.14159265);
+                    base_color = mix(base_color, red_flash_color.rgb, envelope * red_flash_color.a);
                 }
             }
         }

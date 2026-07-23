@@ -23,6 +23,12 @@ var _flash_ids: Array = []      # Array[Vector3], размер FLASH_SLOTS
 var _flash_starts: Array = []   # Array[float],  размер FLASH_SLOTS
 var _flash_next_slot: int = 0
 
+# ─── КРАСНАЯ ВСПЫШКА "УДАР РАКЕТОЙ / БПЛА" ───────────────────────────────────
+const RED_FLASH_SLOTS: int = 8
+var _red_flash_ids: Array = []
+var _red_flash_starts: Array = []
+var _red_flash_next_slot: int = 0
+
 var _neg_enemy: String = ""
 var divisions_hidden: bool = false
 
@@ -143,6 +149,15 @@ func _ready():
     material.set_shader_parameter("flash_ids", _flash_ids)
     material.set_shader_parameter("flash_starts", _flash_starts)
     material.set_shader_parameter("game_time", 0.0)
+    
+    # Буфер красных вспышек "удар ракетой/БПЛА" — изначально все слоты пустые
+    _red_flash_ids.resize(RED_FLASH_SLOTS)
+    _red_flash_starts.resize(RED_FLASH_SLOTS)
+    for i in RED_FLASH_SLOTS:
+        _red_flash_ids[i] = Vector3.ZERO
+        _red_flash_starts[i] = -1000.0
+    material.set_shader_parameter("red_flash_ids", _red_flash_ids)
+    material.set_shader_parameter("red_flash_starts", _red_flash_starts)
 
     # НОВОЕ: разово красим ВСЕ ~10000 провинций владельцами из provinces.json.
     # Пишем прямо в Image и обновляем текстуру ОДИН раз в конце —
@@ -161,6 +176,8 @@ func _ready():
     ProvinceRegistry.country_color_changed.connect(_on_country_color_changed)
     ProvinceRegistry.capital_changed.connect(_on_capital_changed)
     ProvinceRegistry.factory_built.connect(_on_factory_built)
+    ProvinceRegistry.missile_strike_landed.connect(_on_missile_strike_landed)   # <-- НОВОЕ
+    ProvinceRegistry.uav_strike_landed.connect(_on_uav_strike_landed)
 
     CountryMenu.visible = false
 
@@ -416,6 +433,34 @@ func _apply_targeting_mask(enemies: Array) -> void:
 
     uav_texture.update(uav_image)
     material.set_shader_parameter("uav_mode", true)
+    
+
+## Реакция на удар ракетой — подсвечиваем провинцию красным.
+func _on_missile_strike_landed(p_id: int) -> void:
+    _flash_province_red(p_id)
+
+
+## Реакция на удар БПЛА — подсвечиваем провинцию красным.
+func _on_uav_strike_landed(p_id: int) -> void:
+    _flash_province_red(p_id)
+    
+## Запускает плавную красную вспышку на провинции p_id
+## (аналог _flash_province_green, но со своим кольцевым буфером
+## red_flash_ids/red_flash_starts, чтобы не конфликтовать с зелёной вспышкой
+## завода — у них разные цвета и потенциально разное время срабатывания).
+func _flash_province_red(p_id: int) -> void:
+    var r = (p_id & 0xFF) / 255.0
+    var g = ((p_id >> 8) & 0xFF) / 255.0
+    var b = ((p_id >> 16) & 0xFF) / 255.0
+
+    var slot = _red_flash_next_slot
+    _red_flash_next_slot = (_red_flash_next_slot + 1) % RED_FLASH_SLOTS
+
+    _red_flash_ids[slot] = Vector3(r, g, b)
+    _red_flash_starts[slot] = _game_time
+
+    material.set_shader_parameter("red_flash_ids", _red_flash_ids)
+    material.set_shader_parameter("red_flash_starts", _red_flash_starts)
 
 
 ## УНИВЕРСАЛЬНАЯ функция снятия затемнения карты (общая для БПЛА и ракет).

@@ -18,6 +18,12 @@ signal country_color_changed
 signal capital_changed(country: String, province_id: int)
 signal factory_built(province_id: int, country: String)
 
+## Эмитится, когда БПЛА долетел и ударил по провинции
+signal uav_strike_landed(province_id: int)
+
+## Эмитится, когда ракета долетела и ударила по провинции
+signal missile_strike_landed(province_id: int)
+
 ## Эмитится при старте заказа БПЛА, при ежедневном производстве и при завершении заказа
 signal uav_order_changed(country: String)
 
@@ -796,6 +802,8 @@ func destroy_factory(p_id: int, amount: int = 1) -> void:
         p["population"] -= kill_pop
         if countries_data.has(owner):
                 countries_data[owner]["population"] -= kill_pop
+                
+    uav_strike_landed.emit(p_id)
     
 func missile_strike(province_id: int) -> void:
     if not province_data.has(province_id):
@@ -815,7 +823,9 @@ func missile_strike(province_id: int) -> void:
 
     # ДИВИЗИИ — уничтожение 90% личного состава в провинции
     DivisionManager.kill_percent_in_province(province_id, MISSILE_KILL_RATIO)
-
+    
+    missile_strike_landed.emit(province_id)
+    
     print("[Registry] Ракетный удар по провинции ", province_id, " завершён")
     
     

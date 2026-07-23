@@ -74,3 +74,51 @@ func find_distance(start_id: int, goal_id: int, country: String) -> int:
     if path.is_empty():
         return -1
     return path.size() - 1
+
+## Проверяет, что ВСЕ провинции страны имеют путь до столицы
+## ТОЛЬКО через свои провинции (owner == country) или через море.
+## В отличие от find_path(), тут враги и нейтралы вообще не проходимы —
+## это проверка "нормальной", мирной связности территории.
+func is_capital_connected(country: String) -> bool:
+    if country == "":
+        return true
+
+    var c_data = ProvinceRegistry.countries_data.get(country, {})
+    var cap_id: int = int(c_data.get("capital", -1))
+    if cap_id == -1 or not ProvinceMap.adjacency.has(cap_id):
+        # Нет данных о столице — не блокируем мир из-за рассинхрона данных.
+        return true
+
+    var own_provinces: Array = AIManager.get_country_provinces(country)
+    if own_provinces.is_empty():
+        return true
+
+    var visited: Dictionary = {cap_id: true}
+    var queue: Array = [cap_id]
+
+    while not queue.is_empty():
+        var current: int = queue.pop_front()
+        if not ProvinceMap.adjacency.has(current):
+            continue
+        for neighbor in ProvinceMap.adjacency[current]:
+            var n: int = int(neighbor)
+            if visited.has(n):
+                continue
+            if not ProvinceMap.adjacency.has(n):
+                continue
+            if not settings.province_data.has(n):
+                continue
+
+            var owner = settings.province_data[n].get("owner", "")
+            # Проходимо только через свои провинции или море — никаких чужих/ничьих.
+            if owner != country and owner != ProvinceRegistry.SEA_OWNER:
+                continue
+
+            visited[n] = true
+            queue.append(n)
+
+    for p_id in own_provinces:
+        if not visited.has(p_id):
+            return false
+
+    return true

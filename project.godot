@@ -26,7 +26,7 @@ GameClock="*uid://ba72rx5pt8d71"
 DivisionManager="*uid://cimrrui40bvkb"
 SelectionManager="*uid://bbt7e01fvpxsn"
 CombatManager="*uid://bwb4w72r5ooxs"
-AiManager="*uid://bmbwfaixh8rv8"
+AIManager="*uid://bmbwfaixh8rv8"
 DiplomacyManager="*uid://b1flbgjeri3ew"
 DiscordRPCLoader="*uid://dn1sfm0vrbeah"
 
