@@ -5,7 +5,7 @@
 [ext_resource type="Script" uid="uid://mxtsm64ad2jr" path="res://scripts/map.gd" id="3_hb5m1"]
 [ext_resource type="Script" uid="uid://s5wqfaaqwfp" path="res://scripts/selection_box.gd" id="5_x5p1p"]
 [ext_resource type="PackedScene" uid="uid://uh1sd1fvacpa" path="res://CounrtyMenu.tscn" id="6_mfdv2"]
-[ext_resource type="Resource" uid="uid://duwodqh5ow0tn" path="res://new_resource.tres" id="6_ryrav"]
+[ext_resource type="Resource" uid="uid://dpsywpq1i1i6j" path="res://new_resource.tres" id="6_ryrav"]
 [ext_resource type="PackedScene" uid="uid://b50l3xjltcm0l" path="res://DivisionMenu.tscn" id="7_80cx4"]
 [ext_resource type="PackedScene" uid="uid://cbj0ixihecpff" path="res://ProvinceMenu.tscn" id="8_j5wjh"]
 [ext_resource type="PackedScene" uid="uid://d1sj147vs04l7" path="res://Exit_menu.tscn" id="8_mfdv2"]
@@ -13,7 +13,7 @@
 [ext_resource type="Script" uid="uid://dx01a1dmagols" path="res://scripts/blue.gd" id="13_i2p71"]
 [ext_resource type="PackedScene" uid="uid://byyy3krch8deb" path="res://NegotiationMenu.tscn" id="14_e8heu"]
 [ext_resource type="PackedScene" uid="uid://drqgjjt2yw2oq" path="res://NotificationMenu.tscn" id="14_rvswv"]
-[ext_resource type="Texture2D" uid="uid://bke6tc75ceti" path="res://relief-Photoroom.png" id="16_80cx4"]
+[ext_resource type="PackedScene" uid="uid://bci06whudyu82" path="res://UAVMenu.tscn" id="15_e8heu"]
 [ext_resource type="PackedScene" uid="uid://bcohuv24brb7r" path="res://TopMenu.tscn" id="16_rvswv"]
 [ext_resource type="Script" uid="uid://vkd6brrqe1wh" path="res://scripts/war_banner.gd" id="20_36jdj"]
 [ext_resource type="Script" uid="uid://4krs8r4ah56r" path="res://scripts/camera_2d.gd" id="21_xfvwf"]
@@ -35,6 +35,7 @@ shader_parameter/flash_color = Color(0.15, 1, 0.25, 1)
 shader_parameter/stripe_width = 5.0
 shader_parameter/stripe_opacity = 0.45
 shader_parameter/negotiation_mode = false
+shader_parameter/uav_mode = false
 shader_parameter/draw_borders = true
 shader_parameter/draw_coast_border = false
 shader_parameter/province_border_color = Color(0, 0, 0, 0.35)
@@ -184,6 +185,10 @@ anchor_bottom = 0.0
 grow_horizontal = 1
 grow_vertical = 1
 
+[node name="UAVMenu" parent="CanvasLayer" unique_id=147817782 instance=ExtResource("15_e8heu")]
+offset_right = -1920.0
+offset_bottom = -1080.0
+
 [node name="WarBanner" type="CanvasLayer" parent="." unique_id=317580348]
 script = ExtResource("20_36jdj")
 
@@ -285,12 +290,5 @@ horizontal_alignment = 1
 [node name="Camera2D" type="Camera2D" parent="." unique_id=436452401]
 position = Vector2(1076.65, 605.93)
 script = ExtResource("21_xfvwf")
-
-[node name="ReliefPhotoroom" type="Sprite2D" parent="." unique_id=1627876475]
-visible = false
-modulate = Color(1, 1, 1, 0.18039216)
-position = Vector2(1081, 607.5)
-scale = Vector2(1.7975001, 1.7948147)
-texture = ExtResource("16_80cx4")
 
 [connection signal="pressed" from="CanvasLayer/BLUE" to="CanvasLayer/BLUE" method="_on_pressed"]

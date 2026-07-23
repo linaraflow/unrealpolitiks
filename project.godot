@@ -28,6 +28,7 @@ SelectionManager="*uid://bbt7e01fvpxsn"
 CombatManager="*uid://bwb4w72r5ooxs"
 AiManager="*uid://bmbwfaixh8rv8"
 DiplomacyManager="*uid://b1flbgjeri3ew"
+DiscordRPCLoader="*uid://dn1sfm0vrbeah"
 
 [display]
 
@@ -35,6 +36,10 @@ window/size/viewport_width=1920
 window/size/viewport_height=1080
 window/size/mode=3
 window/stretch/mode="canvas_items"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/discord-rpc-gd/plugin.cfg")
 
 [gui]
 

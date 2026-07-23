@@ -17,3 +17,7 @@ var negotiation_mode: bool = false
 var COST_PER_SOLDIER: float = 2000
 var product_cost: int = 500000
 var factory_cost: int = 10000000
+var UAV_COMPANY_COST: int = 10000000
+var uav_cost: int = 10000000
+var UAV_SPEED: float = 40.0
+var KILLS_PER_DRONE: int = 100

@@ -18,6 +18,9 @@ signal country_color_changed
 signal capital_changed(country: String, province_id: int)
 signal factory_built(province_id: int, country: String)
 
+## Эмитится при старте заказа БПЛА, при ежедневном производстве и при завершении заказа
+signal uav_order_changed(country: String)
+
 # province_id -> country_id (строка типа "Germany", "France")
 var province_owners: Dictionary = {}
 
@@ -50,6 +53,14 @@ var _factories_dirty: bool = true
 var _production_by_country: Dictionary = {}
 var active_constructions: Dictionary = {}
 
+# ─── ЗАКАЗ БПЛА ────────────────────────────────────────────────────────────────
+# country -> {"total": int, "remaining": float, "per_day": float}
+# "per_day" фиксируется в момент оформления заказа (скорость на основе ВВП на тот момент)
+var active_uav_orders: Dictionary = {}
+
+# Делитель ВВП для расчёта скорости производства БПЛА (БПЛА/день)
+const UAV_SPEED_GDP_DIVISOR := 500_000_000.0
+
 # ─── УСТАЛОСТЬ ОТ ВОЙНЫ ────────────────────────────────────────────────────────
 const WAR_EXHAUSTION_MAX          := 100.0
 const WAR_EXHAUSTION_DECAY_PER_DAY := 1.0   # снижение в день, только если страна ни с кем не воюет
@@ -63,9 +74,21 @@ func _ready():
     _recalculate_all_populations()
     _recalculate_all_happiness()
     _recalculate_all_factories() # Первичный расчет фабрик при старте игры
+    
+    # ==== DISCORD ====
+    DiscordRPC.app_id = 1518316614397853736  # ваш Application ID
+    DiscordRPC.details = "Playing"
+    DiscordRPC.state = "Taking over the world"
+    DiscordRPC.large_image = "logo"
+    DiscordRPC.start_timestamp = int(Time.get_unix_time_from_system())
+    DiscordRPC.refresh()  # обязательно вызывать после каждого изменения полей
+    
+func _process(delta: float) -> void:
+    DiscordRPC.run_callbacks()
 
 func _on_day_passed(_date: Dictionary) -> void:
     _process_economy()
+    _process_uav_orders()
     _decay_war_exhaustion()
     
 func _on_month_passed(_date: Dictionary) -> void:
@@ -262,6 +285,9 @@ func capture(from_country: String, to_country: String) -> void:
 
 func capture_province(province_id: int, new_owner: String) -> void:
     var old_owner = province_data[province_id].get("owner", "")
+    if old_owner == SEA_OWNER:
+        return
+
     if old_owner != "":
         owner_province_count[old_owner] = owner_province_count.get(old_owner, 1) - 1
         
@@ -286,6 +312,10 @@ func occupy_province(province_id: int, occupier: String) -> void:
 
     var current_owner = province_data[key].get("owner", "")
     if current_owner == occupier:
+        return
+
+    # Морские провинции никогда не оккупируются и не меняют владельца
+    if current_owner == SEA_OWNER:
         return
 
     # Фиксируем истинного владельца ОДИН раз — при первом захвате провинции
@@ -549,6 +579,80 @@ func get_gdp(country: String) -> float:
     var monthly_income = float(data.get("monthly_income", 0))
     return (factories * product_cost + monthly_income) * 12.0
 
+# ─── ЗАКАЗ БПЛА ────────────────────────────────────────────────────────────────
+
+## Скорость производства БПЛА (шт/день) исходя из текущего ВВП страны
+func get_uav_production_speed(country: String) -> float:
+    var gdp = get_gdp(country)
+    return gdp / UAV_SPEED_GDP_DIVISOR
+
+## Есть ли у страны активный заказ БПЛА в производстве
+func has_active_uav_order(country: String) -> bool:
+    return active_uav_orders.has(country)
+
+## Инфо по активному заказу: {"total", "remaining", "per_day"} (пустой Dictionary если заказа нет)
+func get_uav_order_info(country: String) -> Dictionary:
+    return active_uav_orders.get(country, {})
+
+## Оформить заказ на amount БПЛА. Списывает всю стоимость сразу.
+## Возвращает false, если нельзя оформить (уже есть заказ / не хватает денег / amount некорректен).
+func start_uav_order(country: String, amount: int) -> bool:
+    if amount <= 0:
+        return false
+    if has_active_uav_order(country):
+        return false
+    if not countries_data.has(country):
+        return false
+
+    var uav_cost: float = settings.uav_cost
+    var cost: float = uav_cost * amount
+
+    if countries_data[country].get("balance", 0.0) < cost:
+        return false
+
+    var speed = get_uav_production_speed(country)
+    if speed <= 0.0:
+        return false  # нет производственных мощностей — заказ невозможен
+
+    countries_data[country]["balance"] -= cost
+
+    active_uav_orders[country] = {
+        "total": amount,
+        "remaining": float(amount),
+        "per_day": speed,
+    }
+
+    print("[Registry] %s заказал %d БПЛА (скорость %.2f/день)" % [country, amount, speed])
+    uav_order_changed.emit(country)
+    return true
+
+## Раз в игровой день: продвигаем все активные заказы БПЛА,
+## постепенно добавляя произведённые дроны в country_data["uav"]
+func _process_uav_orders() -> void:
+    if active_uav_orders.is_empty():
+        return
+
+    var finished: Array[String] = []
+
+    for country in active_uav_orders:
+        var order: Dictionary = active_uav_orders[country]
+        var per_day: float = order["per_day"]
+        var deliver: float = min(per_day, order["remaining"])
+
+        if deliver > 0.0 and countries_data.has(country):
+            countries_data[country]["uav"] = countries_data[country].get("uav", 0.0) + deliver
+            order["remaining"] -= deliver
+
+        if order["remaining"] <= 0.0001:
+            finished.append(country)
+
+        uav_order_changed.emit(country)
+
+    for country in finished:
+        active_uav_orders.erase(country)
+        print("[Registry] Заказ БПЛА страны %s завершён" % country)
+        uav_order_changed.emit(country)
+
 # Вызывать при постройке завода (в start_factory_construction):
 func start_factory_construction(p_id: int, country: String) -> bool:
     var p = province_data[p_id]
@@ -567,6 +671,38 @@ func start_factory_construction(p_id: int, country: String) -> bool:
     active_constructions[p_id] = true # <-- ДОБАВЛЕНО: запоминаем, где идет стройка
     _factories_dirty = true
     return true
+    
+    
+# ДРОНЫ / РАКЕТЫ
+func destroy_factory(p_id: int, amount: int = 1) -> void:
+    if not province_data.has(p_id): 
+        return
+        
+    var p = province_data[p_id]
+    var owner = p.get("owner", "")
+    var current_factories = p.get("factories", 0)
+    var current_population = p.get("population", 0)
+    
+    # ФАБРИКИ
+    if current_factories > 0:
+        # Уничтожаем не больше фабрик, чем там есть
+        var destroyed = min(current_factories, amount)
+        p["factories"] -= destroyed
+        
+        if _is_real_country_owner(owner) and p.get("against_occupation", "") == "":
+            if countries_data.has(owner):
+                countries_data[owner]["factories"] = max(0, countries_data[owner].get("factories", 0) - destroyed)
+                
+        print("[Registry] Фабрик уничтожено: ", destroyed, " в провинции ", p_id)
+        
+    # НАСЕЛЕНИЕ
+    var kill_pop = settings.KILLS_PER_DRONE * amount
+    if current_population >= kill_pop:
+        p["population"] -= kill_pop
+        if countries_data.has(owner):
+                countries_data[owner]["population"] -= kill_pop
+    
+    
     
 # ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
 # Универсальная функция для разделения разрядов

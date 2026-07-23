@@ -4,6 +4,7 @@ uniform sampler2D tech_map       : filter_nearest;
 uniform sampler2D data_texture   : filter_nearest;   // r=owner_idx, a>0.5 = owned
 uniform sampler2D occup_texture  : filter_nearest;   // r=occupier_idx, a>0.5 = occupied
 uniform sampler2D neg_texture : filter_nearest;
+uniform sampler2D uav_texture : filter_nearest;
 uniform sampler2D capital_texture : filter_nearest;  // a>0.5 = провинция является столицей
 
 uniform vec4  country_colors[256];
@@ -27,6 +28,7 @@ uniform float stripe_width   : hint_range(2.0, 20.0) = 5.0;
 uniform float stripe_opacity : hint_range(0.0, 1.0)  = 0.45;
 
 uniform bool negotiation_mode = false;
+uniform bool uav_mode = false;
 
 // ── Границы провинций/стран ──────────────────────────────────────────────────
 uniform bool  draw_borders          = true;
@@ -185,6 +187,14 @@ void fragment() {
     if (negotiation_mode) {
         vec4 neg = texture(neg_texture, data_uv);
         if (neg.a < 0.5) {
+            base_color = base_color * 0.25;
+        }
+    }
+
+    // ── Режим запуска БПЛА: затемняем всё, кроме своих провинций и провинций врагов ──
+    if (uav_mode) {
+        vec4 uav = texture(uav_texture, data_uv);
+        if (uav.a < 0.5) {
             base_color = base_color * 0.25;
         }
     }

@@ -21,6 +21,11 @@ var settings = preload("res://new_resource.tres")
     "/root/Game/CanvasLayer/TopMenu/TopPanel/BalanceLabel"
 )
 
+## Нужен, чтобы визуально запускать спрайты дронов (как это делает uav_menu.gd)
+@onready var Map = get_node_or_null("/root/Game/Map")
+
+const UAVDroneScript = preload("res://scripts/uav_drone.gd")
+
 # -----------------------------------------------------------------------------
 # 1. СОСТОЯНИЕ И КОНСТАНТЫ
 # -----------------------------------------------------------------------------
@@ -30,6 +35,9 @@ var factory_cooldowns: Dictionary = {}
 
 ## Кулдаун найма войск: country -> дней до следующего найма
 var recruitment_cooldowns: Dictionary = {}
+
+## Кулдаун ударов БПЛА: country -> дней до следующего залпа
+var uav_launch_cooldowns: Dictionary = {}
 
 # -----------------------------------------------------------------------------
 # ОПТИМИЗАЦИЯ: ежедневные кэши
@@ -67,16 +75,22 @@ const RECRUIT_COOLDOWN_DAYS = 5     # раз в 5 дней нанимаем во
 const MIN_RECRUIT_SIZE      = 50    # минимальный размер призыва
 const RECRUIT_BUDGET_FRACTION = 0.3 # тратим на армию 30% текущего баланса
 
-# УСТАРЕЛО: лимит зависел от счастья, теперь рассчитывается от ВВП
-# const AI_ARMY_CAP_MIN = 500000
-# const AI_ARMY_CAP_MAX = 1000000
-
 # На сколько падает счастье провинции за каждую 1000 набранных солдат
 const HAPPINESS_DRAIN_PER_1K_RECRUITS = 0.1
 
 # --- НОВЫЙ ЛИМИТ АРМИИ НА ОСНОВЕ ВВП ---
 # Коэффициент пересчёта ВВП в лимит армии (1 солдат на ~14 000 ВВП)
 const ARMY_LIMIT_GDP_RATIO = 0.0000714
+
+# --- БПЛА-ПРОГРАММА ИИ ---
+# Доля баланса, которую ИИ тратит на заказ дронов в мирное и военное время
+const UAV_BUDGET_PEACETIME = 0.05   # 5% баланса в мирное время
+const UAV_BUDGET_WARTIME   = 0.15   # 15% баланса во время войны
+
+const UAV_LAUNCH_COOLDOWN_DAYS  = 4   # раз в 4 дня — новый залп
+const UAV_MIN_BATCH_PER_TARGET  = 5   # меньше этого по одной цели не бьём (не распыляемся)
+const UAV_MAX_PER_TARGET        = 20  # не тратим на одну провинцию весь запас разом
+const UAV_MAX_TARGETS_PER_STRIKE = 3  # бьём максимум по стольким провинциям за раз
 
 # -----------------------------------------------------------------------------
 # 2. ИНИЦИАЛИЗАЦИЯ И ТИКИ
@@ -131,6 +145,7 @@ func _on_day_passed(_date: Dictionary) -> void:
         # 1. Быстрые кулдауны и торговля
         _tick_recruitment_cooldown(country)
         _tick_factory_cooldown(country)
+        _tick_uav_launch_cooldown(country)
         _process_trade(country)
 
         # 2. Экономика — раз в 5 дней
@@ -144,6 +159,14 @@ func _on_day_passed(_date: Dictionary) -> void:
         # 4. ДВИЖЕНИЕ ВОЙСК — раз в 4 дня
         if (current_day + country_index) % 4 == 0:
             _process_military_movement(country)    
+
+        # 5. БПЛА-программа (покупка компании + заказ дронов) — раз в 6 дней
+        if (current_day + country_index) % 6 == 0:
+            _process_uav_program(country)
+
+        # 6. Запуск БПЛА по врагу — раз в 2 дня (сам залп ограничен кулдауном выше)
+        if (current_day + country_index) % 2 == 0:
+            _process_uav_strikes(country)
 
     # 5. Обсчет населения
     _process_population()
@@ -206,6 +229,132 @@ func _get_safe_buildable_provinces(country: String) -> Array:
         var p_data = ProvinceRegistry.province_data.get(p_id, {})
         if p_data.get("factory_queue", []).size() < 5:
             result.append(p_id)
+    return result
+
+# -----------------------------------------------------------------------------
+# 3.5 БПЛА — своя компания дронов, закупка и удары по фабрикам врага
+# -----------------------------------------------------------------------------
+
+func _tick_uav_launch_cooldown(country: String) -> void:
+    if uav_launch_cooldowns.has(country):
+        uav_launch_cooldowns[country] -= 1
+        if uav_launch_cooldowns[country] <= 0:
+            uav_launch_cooldowns.erase(country)
+
+## Покупка компании БПЛА (один раз) + регулярный заказ дронов на процент от баланса.
+## В мирное время тратим UAV_BUDGET_PEACETIME (5%) баланса, во время войны —
+## UAV_BUDGET_WARTIME (15%), как и у игрока — через ProvinceRegistry.start_uav_order().
+func _process_uav_program(country: String) -> void:
+    var c_data  = ProvinceRegistry.countries_data[country]
+    var balance = c_data.get("balance", 0.0)
+
+    # 1. Если компании ещё нет — покупаем её, если хватает денег + резерв
+    if not c_data.get("uav_company", false):
+        var company_cost = settings.UAV_COMPANY_COST
+        if balance >= company_cost * (1.0 + RESERVE_RATIO):
+            c_data["balance"] -= company_cost
+            c_data["uav_company"] = true
+        # В день покупки заказ дронов не оформляем — баланс уже потрачен,
+        # снова попробуем через 6 дней на свежем балансе
+        return
+
+    # 2. Компания уже есть — заказываем дроны, если сейчас нет активного заказа
+    if ProvinceRegistry.has_active_uav_order(country):
+        return
+
+    var uav_cost = settings.uav_cost
+    if uav_cost <= 0.0:
+        return
+
+    var is_at_war       = not ProvinceRegistry.war_relations.get(country, []).is_empty()
+    var budget_fraction = UAV_BUDGET_WARTIME if is_at_war else UAV_BUDGET_PEACETIME
+    var uav_budget      = balance * budget_fraction
+
+    var amount = int(uav_budget / uav_cost)
+    if amount <= 0:
+        return
+
+    ProvinceRegistry.start_uav_order(country, amount)
+
+## Удары БПЛА по самым "жирным" (по числу фабрик) провинциям врага.
+## Работает только во время войны и только если накоплено достаточно дронов.
+func _process_uav_strikes(country: String) -> void:
+    if uav_launch_cooldowns.has(country):
+        return
+
+    var enemies = ProvinceRegistry.war_relations.get(country, [])
+    if enemies.is_empty():
+        return
+
+    var c_data   = ProvinceRegistry.countries_data[country]
+    var available = int(c_data.get("uav", 0))
+    if available < UAV_MIN_BATCH_PER_TARGET:
+        return
+
+    var targets = _get_richest_enemy_factory_provinces(enemies, UAV_MAX_TARGETS_PER_STRIKE)
+    if targets.is_empty():
+        return
+
+    var drones_per_target = min(UAV_MAX_PER_TARGET, available / targets.size())
+    if drones_per_target < UAV_MIN_BATCH_PER_TARGET:
+        # На все выбранные цели дронов не хватает — бьём только по самой жирной
+        targets = [targets[0]]
+        drones_per_target = min(UAV_MAX_PER_TARGET, available)
+        if drones_per_target < UAV_MIN_BATCH_PER_TARGET:
+            return
+
+    var cap_id = int(c_data.get("capital", 0))
+    if not settings.province_centers.has(cap_id):
+        return
+    var start_pos: Vector2 = settings.province_centers[cap_id]
+
+    var total_used = 0
+    for target_id in targets:
+        if not settings.province_centers.has(target_id):
+            continue
+        _launch_uav_wave(start_pos, target_id, drones_per_target)
+        total_used += drones_per_target
+
+    if total_used > 0:
+        c_data["uav"] = available - total_used
+        ProvinceRegistry.uav_order_changed.emit(country)
+        uav_launch_cooldowns[country] = UAV_LAUNCH_COOLDOWN_DAYS
+
+## Спавнит один "залп" дронов (тот же visual-скрипт, что и у игрока в uav_menu.gd),
+## который долетает до цели и сам вызывает ProvinceRegistry.destroy_factory().
+func _launch_uav_wave(start_pos: Vector2, target_id: int, amount: int) -> void:
+    if not is_instance_valid(Map):
+        return
+
+    var drone = Sprite2D.new()
+    drone.set_script(UAVDroneScript)
+    drone.position    = start_pos
+    drone.target_pos  = settings.province_centers[target_id]
+    drone.target_p_id = target_id
+    drone.amount      = amount
+
+    Map.add_child(drone)
+
+## Вражеские провинции (по всем врагам страны), отсортированные по убыванию
+## количества фабрик — то есть самые "жирные" промышленные цели.
+## Возвращает список province_id длиной не более max_count.
+func _get_richest_enemy_factory_provinces(enemies: Array, max_count: int) -> Array:
+    var candidates: Array = []  # [{"id": p_id, "factories": n}]
+
+    for enemy in enemies:
+        for p_id in _get_country_provinces(enemy):
+            var p_data   = ProvinceRegistry.province_data.get(p_id, {})
+            var factories = int(p_data.get("factories", 0))
+            if factories > 0:
+                candidates.append({"id": p_id, "factories": factories})
+
+    candidates.sort_custom(func(a, b): return a["factories"] > b["factories"])
+
+    var result: Array = []
+    for entry in candidates:
+        result.append(entry["id"])
+        if result.size() >= max_count:
+            break
     return result
 
 # -----------------------------------------------------------------------------
@@ -314,10 +463,13 @@ func _get_army_limit(country: String) -> int:
     var limit_float = gdp * ARMY_LIMIT_GDP_RATIO * mil_mult
     return int(limit_float)
 
-## Движение армий во время войны (теперь вызывается ежедневно)
+## Движение армий во время войны (вызывается ежедневно)
 ## Атакуем только пограничные провинции врага (соседствующие с нашей территорией)
 ## и равномерно распределяем удары по всей линии фронта, чтобы наступление
 ## продвигалось не в одну точку, а по всему фронту сразу.
+## Дивизии страны двигаются по этим же правилам независимо от того, стоят они
+## на суше или в морской провинции (например, после высадки или отступления) —
+## никакого отдельного "морского" поведения нет.
 func _process_military_movement(country: String) -> void:
     var enemies = ProvinceRegistry.war_relations.get(country, [])
     if enemies.is_empty():
@@ -334,20 +486,33 @@ func _process_military_movement(country: String) -> void:
     # Линия фронта: вражеские провинции, граничащие с нашей территорией
     # (включая территорию контролёра/марионеток)
     var frontier_targets = _get_frontier_enemy_provinces(enemies, own_set)
-
-    # Резервный вариант (старое поведение) — если фронта нет вообще
-    # (например, армия оказалась в анклаве без прямых соседей-врагов)
-    var fallback_targets = []
+    
+    # ФИКС: Если сухопутной границы нет, добавляем все провинции врагов 
+    # для морских атак/высадок
     if frontier_targets.is_empty():
-        for e in enemies:
-            fallback_targets.append_array(_get_country_provinces(e))
-        if fallback_targets.is_empty():
+        for enemy in enemies:
+            frontier_targets.append_array(_get_country_provinces(enemy))
+            
+        if frontier_targets.is_empty():
             return
+
+    # Провинции, где физически стоят дивизии страны — это своя территория ПЛЮС
+    # любая другая провинция (включая море), где сейчас есть её дивизии.
+    # Так дивизия, оказавшаяся в море, обрабатывается точно так же, как обычная
+    # армия на суше, без отдельных функций и кулдаунов.
+    var provinces_with_armies: Dictionary = {}
+    for p in own_provinces:
+        provinces_with_armies[p] = true
+    for p_id in DivisionManager.armies.keys():
+        for army in DivisionManager.armies[p_id]:
+            if is_instance_valid(army) and army.division_owner == country:
+                provinces_with_armies[p_id] = true
+                break
 
     # Счётчик уже назначенных в этом тике целей — для равномерного распределения удара
     var assigned_count: Dictionary = {}
 
-    for p_id in own_provinces:
+    for p_id in provinces_with_armies:
         if CombatManager.active_battles.has(p_id):
             continue
 
@@ -360,30 +525,27 @@ func _process_military_movement(country: String) -> void:
         if own_division_count > 4:
             DivisionManager.merge_divisions(p_id)
 
-        # Двигаем именно армии страны country — они могут физически находиться
-        # на территории своего контролёра или марионетки, а не только "дома"
+        # Двигаем армии страны country — они могут физически находиться
+        # на своей территории, территории контролёра/марионетки или в море
         for army in DivisionManager.armies.get(p_id, []):
             if not is_instance_valid(army) or army.division_owner != country or army.is_moving:
                 continue
 
+            # Приграничные вражеские провинции, соседствующие именно с этой армией
+            var adjacent_targets = []
+            for adj_id in ProvinceRegistry.province_adjacency.get(p_id, []):
+                var t_id = int(adj_id)
+                if frontier_targets.has(t_id):
+                    adjacent_targets.append(t_id)
+
             var target_p_id = -1
-
-            if not frontier_targets.is_empty():
-                # Приграничные вражеские провинции, соседствующие именно с этой армией
-                var adjacent_targets = []
-                for adj_id in ProvinceRegistry.province_adjacency.get(p_id, []):
-                    var t_id = int(adj_id)
-                    if frontier_targets.has(t_id):
-                        adjacent_targets.append(t_id)
-
-                if not adjacent_targets.is_empty():
-                    target_p_id = _pick_least_assigned_target(adjacent_targets, assigned_count)
-                else:
-                    # Армия в тылу — направляем её на самый "слабоатакуемый" участок фронта,
-                    # чтобы наступление подтягивалось равномерно по всей линии
-                    target_p_id = _pick_least_assigned_target(frontier_targets, assigned_count)
+            if not adjacent_targets.is_empty():
+                target_p_id = _pick_least_assigned_target(adjacent_targets, assigned_count)
             else:
-                target_p_id = fallback_targets.pick_random()
+                # Армия не граничит напрямую с фронтом — направляем её на самый
+                # "слабоатакуемый" участок фронта, чтобы наступление подтягивалось
+                # равномерно по всей линии
+                target_p_id = _pick_least_assigned_target(frontier_targets, assigned_count)
 
             if target_p_id == -1:
                 continue

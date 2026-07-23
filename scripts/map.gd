@@ -26,6 +26,16 @@ var _flash_next_slot: int = 0
 var _neg_enemy: String = ""
 var divisions_hidden: bool = false
 
+# ─── РЕЖИМ ЗАПУСКА БПЛА ───────────────────────────────────────────────────────
+var uav_mode: bool = false
+var _uav_enemies: Array = []
+var uav_image: Image
+var uav_texture: ImageTexture
+
+## Слой с линиями "столица -> цель" и бегущими по ним стрелочками (UAVMenu).
+## Создаётся как child-нода в _ready(), координаты — как у province_centers.
+var uav_lines_layer: Node2D
+
 # Сохраняем локальные координаты последнего физического клика мыши
 var _last_click_local_pos: Vector2 = Vector2.ZERO
 
@@ -85,6 +95,17 @@ func _ready():
     neg_image.fill(Color(0, 0, 0, 0))
     neg_texture = ImageTexture.create_from_image(neg_image)
 
+    # uav_texture (режим запуска БПЛА)
+    uav_image = Image.create(256, 256, false, Image.FORMAT_RGBA8)
+    uav_image.fill(Color(0, 0, 0, 0))
+    uav_texture = ImageTexture.create_from_image(uav_image)
+
+    # Слой линий/стрелочек БПЛА — добавляем как child, чтобы использовать
+    # ту же локальную систему координат, что и province_centers.
+    uav_lines_layer = preload("res://scripts/uav_lines_layer.gd").new()
+    uav_lines_layer.name = "UAVLinesLayer"
+    add_child(uav_lines_layer)
+
     # capital_texture (обводка столичных провинций)
     capital_image = Image.create(256, 256, false, Image.FORMAT_RGBA8)
     capital_image.fill(Color(0, 0, 0, 0))
@@ -94,6 +115,7 @@ func _ready():
     material.set_shader_parameter("data_texture",  data_texture)
     material.set_shader_parameter("occup_texture", occup_texture)
     material.set_shader_parameter("neg_texture",   neg_texture)
+    material.set_shader_parameter("uav_texture",   uav_texture)
     material.set_shader_parameter("capital_texture", capital_texture)
     material.set_shader_parameter("country_colors", ProvinceRegistry.country_colors)
 
@@ -145,7 +167,6 @@ func _ready():
 
     _restore_occupation_from_data()
 
-
 func _process(delta: float) -> void:
     if _highlight_elapsed >= 0.0:
         _highlight_elapsed += delta
@@ -193,6 +214,10 @@ func _input(event: InputEvent):
     if settings.negotiation_mode and not _is_province_visible_in_negotiation(p_id):
         return
 
+    # В режиме запуска БПЛА блокируем клики по затемнённым провинциям
+    if uav_mode and not _is_province_visible_in_uav(p_id):
+        return
+
     # Запоминаем точную локальную позицию клика
     _last_click_local_pos = get_local_mouse_position()
 
@@ -214,6 +239,11 @@ func _input(event: InputEvent):
 
 
 func _handle_left_click(p_id, px, province_info, current_owner):
+    # РЕЖИМ ЗАПУСКА БПЛА: передаём клик в UAVMenu и выходим
+    if uav_mode:
+        get_node("/root/Game/CanvasLayer/UAVMenu").on_province_clicked(p_id)
+        return
+
     # РЕЖИМ ПЕРЕГОВОРОВ: передаём клик в меню и выходим
     if settings.negotiation_mode:
         get_node("/root/Game/CanvasLayer/NegotiationMenu").on_province_clicked(p_id)
@@ -303,6 +333,63 @@ func _is_province_visible_in_negotiation(p_id: int) -> bool:
     var p = ProvinceRegistry.province_data.get(p_id, {})
     var owner = p.get("owner", "")
     return owner == settings.active_country or owner == _neg_enemy
+
+
+# ─── РЕЖИМ ЗАПУСКА БПЛА ───────────────────────────────────────────────────────
+
+## Включить режим прицеливания БПЛА. enemies — список стран-противников,
+## чьи провинции остаются видимыми (все остальные затемняются).
+## Вызывать из uav_menu.gd (аналогично enter_negotiation_mode).
+func enter_uav_mode(enemies: Array) -> void:
+    uav_mode = true
+    _uav_enemies = enemies
+
+    uav_image.fill(Color(0, 0, 0, 0))  # сначала всё затемнено
+
+    for key in ProvinceRegistry.province_data:
+        var p = ProvinceRegistry.province_data[key]
+        var owner = p.get("owner", "")
+        if owner == settings.active_country or owner in enemies:
+            var p_id = int(key)
+            var r = p_id & 0xFF
+            var g = (p_id >> 8) & 0xFF
+            uav_image.set_pixel(r, g, Color(1, 0, 0, 1))
+
+    uav_texture.update(uav_image)
+    material.set_shader_parameter("uav_mode", true)
+    print("[Map] Режим запуска БПЛА, противников: ", enemies.size())
+
+
+## Выключить режим прицеливания БПЛА и вернуть карту к нормальному виду.
+func exit_uav_mode() -> void:
+    uav_mode = false
+    _uav_enemies = [] # Было: _uav_enemies.clear()
+    uav_image.fill(Color(0, 0, 0, 0))
+    uav_texture.update(uav_image)
+    material.set_shader_parameter("uav_mode", false)
+    clear_uav_target_lines()
+    print("[Map] Режим запуска БПЛА завершён")
+
+
+## Проверить видима ли провинция в режиме запуска БПЛА (для блокировки кликов).
+func _is_province_visible_in_uav(p_id: int) -> bool:
+    var p = ProvinceRegistry.province_data.get(p_id, {})
+    var owner = p.get("owner", "")
+    return owner == settings.active_country or owner in _uav_enemies
+
+
+## Обновляет линии "столица -> выбранная вражеская провинция" с бегущими
+## по ним стрелочками. Вызывается из uav_menu.gd при изменении списка целей.
+## from_pos/target_positions — локальные координаты Map (как в province_centers).
+func set_uav_target_lines(from_pos: Vector2, target_positions: Array) -> void:
+    if uav_lines_layer:
+        uav_lines_layer.set_lines(from_pos, target_positions)
+
+
+## Убирает все линии целей БПЛА (закрытие меню / выход из режима).
+func clear_uav_target_lines() -> void:
+    if uav_lines_layer:
+        uav_lines_layer.clear_lines()
 
 
 # ─── СИГНАЛЫ ──────────────────────────────────────────────────────────────────
@@ -515,7 +602,6 @@ func _build_province_centers():
         if centered:
             local_pos -= Vector2(img_size) / 2.0
         province_centers[p_id] = local_pos
-
     # V-образные провинции
     settings.province_centers = province_centers
 

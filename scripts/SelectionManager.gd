@@ -50,10 +50,12 @@ func can_move_to(target_province_id: int, target_owner: String) -> bool:
         var owner = div.division_owner
         if owner == target_owner:
             return true
-        if target_owner == "":
+        if target_owner == "" or target_owner == ProvinceRegistry.SEA_OWNER:
             return true
         if ProvinceRegistry.is_at_war(owner, target_owner):
             return true
+        if not ProvinceRegistry.countries_data.has(owner) or not ProvinceRegistry.countries_data.has(target_owner):
+            continue
         var owner_data = ProvinceRegistry.countries_data[div.division_owner]
         var province_owner_data = ProvinceRegistry.countries_data[target_owner]
         var check_control = div.division_owner in province_owner_data["control"] or target_owner in owner_data["control"]

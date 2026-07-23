@@ -26,24 +26,23 @@ func find_path(start_id: int, goal_id: int, country: String) -> Array:
                 continue
 
             if n != goal_id:
+                if not settings.province_data.has(n):
+                    # Провинция есть в графе смежности, но отсутствует в provinces.json —
+                    # рассинхрон данных. Не падаем, просто не пускаем путь через неё.
+                    continue
                 var owner = settings.province_data[n].get("owner", "")
 
                 if country == "":
                     continue
 
-                # Провинции моря (owner == "sea") — это не страна, наземные
-                # армии по ним не ходят (согласовано с
-                # army_circle.gd::_can_enter_territory). Раньше тут сразу
-                # шло ProvinceRegistry.countries_data[owner] — для "sea"
-                # (и вообще для owner, которого нет в countries_data) это
-                # падало с ошибкой, т.к. такого ключа не существует.
-                if owner == ProvinceRegistry.SEA_OWNER:
-                    continue
-
-                if owner != "":
+                # Провинции моря (owner == "sea") и ничья земля (owner == "")
+                # свободно проходимы — это не чужая страна, блокировать нечем.
+                # Раньше тут сразу шло ProvinceRegistry.countries_data[owner] —
+                # для "sea" (и вообще для owner, которого нет в countries_data)
+                # это падало с ошибкой, т.к. такого ключа не существует.
+                if owner != "" and owner != ProvinceRegistry.SEA_OWNER:
                     if not ProvinceRegistry.countries_data.has(owner):
-                        # Неизвестный/битый owner — не пускаем путь, но и не падаем
-                        continue
+                        continue  # неизвестный/битый owner — не пускаем, но и не падаем
 
                     var owner_data = ProvinceRegistry.countries_data[owner]
                     var province_owner_data = ProvinceRegistry.countries_data[country]
@@ -51,8 +50,6 @@ func find_path(start_id: int, goal_id: int, country: String) -> Array:
                     # Своя провинция — проходим, враг — проходим, нейтрал — нет
                     if owner != country and not ProvinceRegistry.is_at_war(country, owner) and not check_control:
                         continue
-                # owner == "" (ничья/неосвоенная земля) — пропускаем свободно,
-                # блокировать тут нечем, это не чужая страна.
 
             visited[n] = true
             previous[n] = current

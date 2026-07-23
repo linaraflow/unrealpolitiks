@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://bhn7610u0q4gq" path="res://scripts/ProvinceMenu.gd" id="1_ehxlg"]
 [ext_resource type="Texture2D" uid="uid://bibgkkv8ss0yu" path="res://assets/icons_province_menu/population.svg" id="3_ddf8l"]
 [ext_resource type="Texture2D" uid="uid://daeuasg27vao2" path="res://assets/icons_province_menu/factory.svg" id="4_kgwgh"]
-[ext_resource type="Resource" uid="uid://duwodqh5ow0tn" path="res://new_resource.tres" id="4_lsrs6"]
+[ext_resource type="Resource" uid="uid://dpsywpq1i1i6j" path="res://new_resource.tres" id="4_lsrs6"]
 [ext_resource type="Script" uid="uid://bk0y6lyt1mnn7" path="res://scripts/recruit_slider_panel.gd" id="4_n6hjb"]
 [ext_resource type="Texture2D" uid="uid://di1sqh6a4xwlf" path="res://assets/icons_province_menu/declare_war.svg" id="5_7oiae"]
 [ext_resource type="Texture2D" uid="uid://bw2mdyartqmr7" path="res://assets/icons_province_menu/build_factory.svg" id="6_5cf6e"]

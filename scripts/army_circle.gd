@@ -176,7 +176,7 @@ func _has_control_access(target_owner: String) -> bool:
     return target_owner in my_ctrl or division_owner in their_ctrl
 
 func _can_enter_territory(target_owner: String) -> bool:
-    if target_owner == "" or target_owner == division_owner:
+    if target_owner == "" or target_owner == division_owner or target_owner == ProvinceRegistry.SEA_OWNER:
         return true
     return ProvinceRegistry.is_at_war(division_owner, target_owner) or _has_control_access(target_owner)
 
@@ -283,7 +283,7 @@ func _process_movement(delta: float) -> void:
         )
 
         if total_length > 0:
-            var growth_per_second = (500.0 * GameClock.SPEEDS[GameClock.speed_index]) / total_length
+            var growth_per_second = (1000.0 * GameClock.SPEEDS[GameClock.speed_index]) / total_length
             line_growth = min(line_growth + growth_per_second * delta, 1.0)
 
         var end_index = clamp(
@@ -323,7 +323,7 @@ func _process_movement(delta: float) -> void:
                         break
 
                 if not enemies_in_province:
-                    if ground_owner != "" and ground_owner != division_owner and not has_access:
+                    if ground_owner != "" and ground_owner != division_owner and ground_owner != ProvinceRegistry.SEA_OWNER and not has_access:
                         ProvinceRegistry.occupy_province(ground_p_id, division_owner)
                         ProvinceRegistry.province_army_changed.emit(ground_p_id)
 
@@ -336,10 +336,14 @@ func _process_movement(delta: float) -> void:
                     DivisionManager.reposition_armies_in_province(province_id)
                     return
             else:
-                _stop_current_movement()
-                # ФИКС БАГА 1: Репозиционируем, если движение прервано из-за потери доступа
-                DivisionManager.reposition_armies_in_province(province_id)
-                return
+                # Дивизия просто транзитом идёт/плывёт над чужой провинцией,
+                # с которой нет войны и нет прав контроля — это не повод
+                # останавливаться и телепортироваться назад в предыдущую
+                # провинцию. Продолжаем движение по пути дальше, но сама эта
+                # провинция за дивизией НЕ засчитывается: province_id не
+                # меняем, _transfer_data_to() не вызываем, оккупацию не
+                # запускаем — просто идём дальше.
+                pass
 
     if current_movement_offset >= total_length:
         _arrive_at_destination(target_destination_pos)

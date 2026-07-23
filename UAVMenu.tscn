@@ -1,0 +1,271 @@
+[gd_scene format=3 uid="uid://bci06whudyu82"]
+
+[ext_resource type="Script" uid="uid://dbg1y8q83cgjt" path="res://scripts/uav_menu.gd" id="1_ftdrn"]
+[ext_resource type="Texture2D" uid="uid://bkvnam3f32fos" path="res://assets/icons_uav_menu/drone.svg" id="2_7ovbt"]
+[ext_resource type="Texture2D" uid="uid://kbbj0ffkex8y" path="res://assets/icons_uav_menu/rocket.svg" id="3_34ixh"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ftdrn"]
+bg_color = Color(0.12156863, 0.12156863, 0.11764706, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hc05d"]
+bg_color = Color(0.16470589, 0.16862746, 0.18039216, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_34ixh"]
+bg_color = Color(0.10980392, 0.11372549, 0.1254902, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.35156286, 0.35156295, 0.35156265, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+corner_detail = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4so8p"]
+content_margin_left = 10.0
+content_margin_top = 10.0
+content_margin_right = 10.0
+content_margin_bottom = 10.0
+bg_color = Color(0.18000475, 0.18000492, 0.18000486, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+corner_detail = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_io8l6"]
+content_margin_left = 12.0
+content_margin_top = 12.0
+content_margin_right = 12.0
+content_margin_bottom = 12.0
+bg_color = Color(0.18000475, 0.18000492, 0.18000486, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+corner_detail = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4c1hm"]
+content_margin_left = 13.0
+content_margin_top = 5.0
+content_margin_right = 13.0
+content_margin_bottom = 5.0
+bg_color = Color(0.27387273, 0.27387273, 0.27387273, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_015pj"]
+content_margin_top = 13.0
+content_margin_bottom = 13.0
+bg_color = Color(0.16735852, 0.1394844, 0.021867702, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.9286717, 0.6328202, 0, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_qnt68"]
+content_margin_top = 13.0
+content_margin_bottom = 13.0
+bg_color = Color(0.112334795, 0.09179016, 0.01171793, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.9286717, 0.6328202, 0, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wut0g"]
+content_margin_top = 13.0
+content_margin_bottom = 13.0
+bg_color = Color(0.15037912, 0.12516642, 0.019173365, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.9286717, 0.6328202, 0, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[node name="UAVMenu" type="Control" unique_id=147817782]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_ftdrn")
+
+[node name="MainPanel" type="Panel" parent="." unique_id=1931929304]
+layout_mode = 0
+offset_right = 1920.0
+offset_bottom = 50.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_ftdrn")
+
+[node name="MainLabel" type="Label" parent="MainPanel" unique_id=36086589]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -71.0
+offset_top = -11.5
+offset_right = 71.0
+offset_bottom = 11.5
+grow_horizontal = 2
+grow_vertical = 2
+text = "UAV Launch Menu"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="LeaveButton" type="Button" parent="MainPanel" unique_id=676629131]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 8.25
+offset_top = -16.75
+offset_right = 154.75
+offset_bottom = 16.75
+grow_vertical = 2
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = SubResource("StyleBoxFlat_hc05d")
+text = "Leave"
+
+[node name="PanelContainer" type="PanelContainer" parent="." unique_id=440090076]
+layout_mode = 0
+offset_left = 12.0
+offset_top = 778.0
+offset_right = 310.0
+offset_bottom = 1068.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_34ixh")
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer" unique_id=1790211659]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 14
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer" unique_id=1601162408]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="UAVHeader" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=767331349]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="UAVCard" type="PanelContainer" parent="PanelContainer/MarginContainer/VBoxContainer/UAVHeader" unique_id=1033130211]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_4so8p")
+
+[node name="UAVIcon" type="TextureRect" parent="PanelContainer/MarginContainer/VBoxContainer/UAVHeader/UAVCard" unique_id=1580538297]
+layout_mode = 2
+texture = ExtResource("2_7ovbt")
+expand_mode = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer/UAVHeader" unique_id=1517828445]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="UAVLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/UAVHeader/VBoxContainer" unique_id=636510664]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "UAV launch"
+
+[node name="TotalLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/UAVHeader/VBoxContainer" unique_id=1692513165]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5411765, 0.54509807, 0.5529412, 1)
+theme_override_font_sizes/font_size = 12
+text = "36 available"
+
+[node name="MainCard" type="PanelContainer" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=1594478304]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_io8l6")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer/MainCard" unique_id=1888295658]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer/MainCard/VBoxContainer" unique_id=1521277564]
+layout_mode = 2
+
+[node name="PerLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/MainCard/VBoxContainer/HBoxContainer" unique_id=1088726736]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5411765, 0.54509807, 0.5529412, 1)
+theme_override_font_sizes/font_size = 12
+text = "Per province"
+
+[node name="NumLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/MainCard/VBoxContainer/HBoxContainer" unique_id=1799465787]
+layout_mode = 2
+size_flags_horizontal = 10
+theme_override_colors/font_color = Color(0.5411765, 0.54509807, 0.5529412, 1)
+theme_override_font_sizes/font_size = 12
+text = "12 / 36"
+
+[node name="SliderContainer" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer/MainCard/VBoxContainer" unique_id=2052867609]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="MinusButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/MainCard/VBoxContainer/SliderContainer" unique_id=262451901]
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_4c1hm")
+text = "-"
+
+[node name="HSlider" type="HSlider" parent="PanelContainer/MarginContainer/VBoxContainer/MainCard/VBoxContainer/SliderContainer" unique_id=53202058]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+
+[node name="PlusButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/MainCard/VBoxContainer/SliderContainer" unique_id=2087161565]
+layout_mode = 2
+size_flags_horizontal = 8
+theme_override_styles/normal = SubResource("StyleBoxFlat_4c1hm")
+text = "+
+"
+
+[node name="LaunchButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=1131160263]
+custom_minimum_size = Vector2(0, 46)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.92941177, 0.6313726, 0, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_015pj")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_qnt68")
+theme_override_styles/hover = SubResource("StyleBoxFlat_wut0g")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer/LaunchButton" unique_id=2145442713]
+layout_mode = 0
+offset_right = 268.0
+offset_bottom = 46.0
+theme_override_constants/separation = -6
+alignment = 1
+
+[node name="TextureRect" type="TextureRect" parent="PanelContainer/MarginContainer/VBoxContainer/LaunchButton/HBoxContainer" unique_id=1328609469]
+layout_mode = 2
+texture = ExtResource("3_34ixh")
+expand_mode = 3
+stretch_mode = 3
+
+[node name="Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/LaunchButton/HBoxContainer" unique_id=625222145]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.92941177, 0.6313726, 0, 1)
+text = "Launch"
