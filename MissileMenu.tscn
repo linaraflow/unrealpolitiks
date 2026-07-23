@@ -1,0 +1,67 @@
+[gd_scene format=3 uid="uid://dg6fak0jljqc7"]
+
+[ext_resource type="Script" uid="uid://ba7dqitfld7vk" path="res://scripts/missile_menu.gd" id="1_p4le1"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6vbwh"]
+bg_color = Color(0.12156863, 0.12156863, 0.11764706, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_p4le1"]
+bg_color = Color(0.16470589, 0.16862746, 0.18039216, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[node name="MissileMenu" type="Control" unique_id=1934150878]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_p4le1")
+
+[node name="MainPanel" type="Panel" parent="." unique_id=498576468]
+layout_mode = 0
+offset_right = 1920.0
+offset_bottom = 50.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_6vbwh")
+
+[node name="MainLabel" type="Label" parent="MainPanel" unique_id=426190872]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -71.0
+offset_top = -11.5
+offset_right = 71.0
+offset_bottom = 11.5
+grow_horizontal = 2
+grow_vertical = 2
+text = "Missle Launch Menu"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="LeaveButton" type="Button" parent="MainPanel" unique_id=1760669868]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 8.25
+offset_top = -16.75
+offset_right = 154.75
+offset_bottom = 16.75
+grow_vertical = 2
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = SubResource("StyleBoxFlat_p4le1")
+text = "Leave"
+
+[node name="LaunchButton" type="Button" parent="." unique_id=725755559]
+layout_mode = 0
+offset_left = 181.0
+offset_top = 10.0
+offset_right = 237.0
+offset_bottom = 36.0
+text = "Launch"

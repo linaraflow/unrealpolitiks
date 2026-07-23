@@ -36,6 +36,16 @@ var uav_texture: ImageTexture
 ## Создаётся как child-нода в _ready(), координаты — как у province_centers.
 var uav_lines_layer: Node2D
 
+# ─── РЕЖИМ ЗАПУСКА РАКЕТЫ ─────────────────────────────────────────────────────
+## Использует те же uav_image/uav_texture/uav_mode шейдерные параметры,
+## что и режим БПЛА — одновременно активен только один из режимов,
+## затемнение реализовано через общую функцию _apply_targeting_mask().
+var missile_mode: bool = false
+var _missile_enemies: Array = []
+
+## Слой с дугообразной линией "столица -> цель" для MissileMenu.
+var missile_lines_layer: Node2D
+
 # Сохраняем локальные координаты последнего физического клика мыши
 var _last_click_local_pos: Vector2 = Vector2.ZERO
 
@@ -95,7 +105,7 @@ func _ready():
     neg_image.fill(Color(0, 0, 0, 0))
     neg_texture = ImageTexture.create_from_image(neg_image)
 
-    # uav_texture (режим запуска БПЛА)
+    # uav_texture (режим прицеливания: БПЛА и ракеты)
     uav_image = Image.create(256, 256, false, Image.FORMAT_RGBA8)
     uav_image.fill(Color(0, 0, 0, 0))
     uav_texture = ImageTexture.create_from_image(uav_image)
@@ -105,6 +115,11 @@ func _ready():
     uav_lines_layer = preload("res://scripts/uav_lines_layer.gd").new()
     uav_lines_layer.name = "UAVLinesLayer"
     add_child(uav_lines_layer)
+
+    # Слой дугообразной линии для ракет (MissileMenu)
+    missile_lines_layer = preload("res://scripts/missile_lines_layer.gd").new()
+    missile_lines_layer.name = "MissileLinesLayer"
+    add_child(missile_lines_layer)
 
     # capital_texture (обводка столичных провинций)
     capital_image = Image.create(256, 256, false, Image.FORMAT_RGBA8)
@@ -214,8 +229,10 @@ func _input(event: InputEvent):
     if settings.negotiation_mode and not _is_province_visible_in_negotiation(p_id):
         return
 
-    # В режиме запуска БПЛА блокируем клики по затемнённым провинциям
-    if uav_mode and not _is_province_visible_in_uav(p_id):
+    # В режиме прицеливания (БПЛА или ракета) блокируем клики по затемнённым провинциям
+    if uav_mode and not _is_targeting_visible(p_id, _uav_enemies):
+        return
+    if missile_mode and not _is_targeting_visible(p_id, _missile_enemies):
         return
 
     # Запоминаем точную локальную позицию клика
@@ -242,6 +259,11 @@ func _handle_left_click(p_id, px, province_info, current_owner):
     # РЕЖИМ ЗАПУСКА БПЛА: передаём клик в UAVMenu и выходим
     if uav_mode:
         get_node("/root/Game/CanvasLayer/UAVMenu").on_province_clicked(p_id)
+        return
+
+    # РЕЖИМ ЗАПУСКА РАКЕТЫ: передаём клик в MissileMenu и выходим
+    if missile_mode:
+        get_node("/root/Game/CanvasLayer/MissileMenu").on_province_clicked(p_id)
         return
 
     # РЕЖИМ ПЕРЕГОВОРОВ: передаём клик в меню и выходим
@@ -335,7 +357,7 @@ func _is_province_visible_in_negotiation(p_id: int) -> bool:
     return owner == settings.active_country or owner == _neg_enemy
 
 
-# ─── РЕЖИМ ЗАПУСКА БПЛА ───────────────────────────────────────────────────────
+# ─── РЕЖИМ ЗАПУСКА БПЛА / РАКЕТ (универсальное затемнение карты) ─────────────
 
 ## Включить режим прицеливания БПЛА. enemies — список стран-противников,
 ## чьи провинции остаются видимыми (все остальные затемняются).
@@ -343,7 +365,44 @@ func _is_province_visible_in_negotiation(p_id: int) -> bool:
 func enter_uav_mode(enemies: Array) -> void:
     uav_mode = true
     _uav_enemies = enemies
+    _apply_targeting_mask(enemies)
+    print("[Map] Режим запуска БПЛА, противников: ", enemies.size())
 
+
+## Выключить режим прицеливания БПЛА и вернуть карту к нормальному виду.
+func exit_uav_mode() -> void:
+    uav_mode = false
+    _uav_enemies = []
+    _clear_targeting_mask()
+    clear_uav_target_lines()
+    print("[Map] Режим запуска БПЛА завершён")
+
+
+## Включить режим прицеливания РАКЕТЫ. Затемнение работает точно так же,
+## как в enter_uav_mode — через общую функцию _apply_targeting_mask().
+## Вызывать из missile_menu.gd при нажатии LaunchButton в PanelMissileOrder.
+func enter_missile_mode(enemies: Array) -> void:
+    missile_mode = true
+    _missile_enemies = enemies
+    _apply_targeting_mask(enemies)
+    print("[Map] Режим запуска ракеты, противников: ", enemies.size())
+
+
+## Выключить режим прицеливания ракеты и вернуть карту к нормальному виду.
+func exit_missile_mode() -> void:
+    missile_mode = false
+    _missile_enemies = []
+    _clear_targeting_mask()
+    clear_missile_target_line()
+    print("[Map] Режим запуска ракеты завершён")
+
+
+## УНИВЕРСАЛЬНАЯ функция затемнения карты: видимыми остаются только
+## провинции своей страны и провинции из списка enemies.
+## Используется и для БПЛА (enter_uav_mode), и для ракет (enter_missile_mode) —
+## оба режима переиспользуют один и тот же uav_texture/uav_mode шейдерный
+## параметр, так как одновременно активен только один из двух режимов.
+func _apply_targeting_mask(enemies: Array) -> void:
     uav_image.fill(Color(0, 0, 0, 0))  # сначала всё затемнено
 
     for key in ProvinceRegistry.province_data:
@@ -357,25 +416,20 @@ func enter_uav_mode(enemies: Array) -> void:
 
     uav_texture.update(uav_image)
     material.set_shader_parameter("uav_mode", true)
-    print("[Map] Режим запуска БПЛА, противников: ", enemies.size())
 
 
-## Выключить режим прицеливания БПЛА и вернуть карту к нормальному виду.
-func exit_uav_mode() -> void:
-    uav_mode = false
-    _uav_enemies = [] # Было: _uav_enemies.clear()
+## УНИВЕРСАЛЬНАЯ функция снятия затемнения карты (общая для БПЛА и ракет).
+func _clear_targeting_mask() -> void:
     uav_image.fill(Color(0, 0, 0, 0))
     uav_texture.update(uav_image)
     material.set_shader_parameter("uav_mode", false)
-    clear_uav_target_lines()
-    print("[Map] Режим запуска БПЛА завершён")
 
 
-## Проверить видима ли провинция в режиме запуска БПЛА (для блокировки кликов).
-func _is_province_visible_in_uav(p_id: int) -> bool:
+## Проверить видима ли провинция в режиме прицеливания (БПЛА или ракета).
+func _is_targeting_visible(p_id: int, enemies: Array) -> bool:
     var p = ProvinceRegistry.province_data.get(p_id, {})
     var owner = p.get("owner", "")
-    return owner == settings.active_country or owner in _uav_enemies
+    return owner == settings.active_country or owner in enemies
 
 
 ## Обновляет линии "столица -> выбранная вражеская провинция" с бегущими
@@ -390,6 +444,19 @@ func set_uav_target_lines(from_pos: Vector2, target_positions: Array) -> void:
 func clear_uav_target_lines() -> void:
     if uav_lines_layer:
         uav_lines_layer.clear_lines()
+
+
+## Обновляет дугообразную линию "столица -> выбранная вражеская провинция"
+## для MissileMenu. from_pos/to_pos — локальные координаты Map.
+func set_missile_target_line(from_pos: Vector2, to_pos: Vector2) -> void:
+    if missile_lines_layer:
+        missile_lines_layer.set_line(from_pos, to_pos)
+
+
+## Убирает линию цели ракеты (закрытие меню / выход из режима).
+func clear_missile_target_line() -> void:
+    if missile_lines_layer:
+        missile_lines_layer.clear_line()
 
 
 # ─── СИГНАЛЫ ──────────────────────────────────────────────────────────────────

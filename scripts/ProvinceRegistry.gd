@@ -21,6 +21,9 @@ signal factory_built(province_id: int, country: String)
 ## Эмитится при старте заказа БПЛА, при ежедневном производстве и при завершении заказа
 signal uav_order_changed(country: String)
 
+## Эмитится при старте заказа ракет, при ежедневном производстве и при завершении заказа
+signal missile_order_changed(country: String)
+
 # province_id -> country_id (строка типа "Germany", "France")
 var province_owners: Dictionary = {}
 
@@ -61,6 +64,19 @@ var active_uav_orders: Dictionary = {}
 # Делитель ВВП для расчёта скорости производства БПЛА (БПЛА/день)
 const UAV_SPEED_GDP_DIVISOR := 500_000_000.0
 
+# ─── ЗАКАЗ РАКЕТ ────────────────────────────────────────────────────────────────
+# country -> {"total": int, "remaining": float, "per_month": float, "per_day": float}
+# "per_month"/"per_day" фиксируются в момент оформления заказа (скорость на основе ВВП на тот момент)
+var active_missile_orders: Dictionary = {}
+
+# Делитель ВВП для расчёта скорости производства ракет (ракет/МЕСЯЦ)
+const MISSILE_SPEED_GDP_DIVISOR := 2_500_000_000.0
+
+# Сколько игровых дней считаем за "месяц" при переводе скорости ракет из "в месяц" в "в день"
+const MISSILE_DAYS_PER_MONTH := 30.0
+
+var MISSILE_KILL_RATIO = settings.MISSILE_KILL_RATIO
+
 # ─── УСТАЛОСТЬ ОТ ВОЙНЫ ────────────────────────────────────────────────────────
 const WAR_EXHAUSTION_MAX          := 100.0
 const WAR_EXHAUSTION_DECAY_PER_DAY := 1.0   # снижение в день, только если страна ни с кем не воюет
@@ -89,6 +105,7 @@ func _process(delta: float) -> void:
 func _on_day_passed(_date: Dictionary) -> void:
     _process_economy()
     _process_uav_orders()
+    _process_missile_orders()
     _decay_war_exhaustion()
     
 func _on_month_passed(_date: Dictionary) -> void:
@@ -607,14 +624,14 @@ func start_uav_order(country: String, amount: int) -> bool:
     var uav_cost: float = settings.uav_cost
     var cost: float = uav_cost * amount
 
-    if countries_data[country].get("balance", 0.0) < cost:
+    if countries_data[country].get("products", 0.0) < cost:
         return false
 
     var speed = get_uav_production_speed(country)
     if speed <= 0.0:
         return false  # нет производственных мощностей — заказ невозможен
 
-    countries_data[country]["balance"] -= cost
+    countries_data[country]["products"] -= cost
 
     active_uav_orders[country] = {
         "total": amount,
@@ -652,6 +669,84 @@ func _process_uav_orders() -> void:
         active_uav_orders.erase(country)
         print("[Registry] Заказ БПЛА страны %s завершён" % country)
         uav_order_changed.emit(country)
+
+# ─── ЗАКАЗ РАКЕТ ────────────────────────────────────────────────────────────────
+
+## Скорость производства ракет (шт/МЕСЯЦ) исходя из текущего ВВП страны
+func get_missile_production_speed(country: String) -> float:
+    var gdp = get_gdp(country)
+    return gdp / MISSILE_SPEED_GDP_DIVISOR
+
+## Есть ли у страны активный заказ ракет в производстве
+func has_active_missile_order(country: String) -> bool:
+    return active_missile_orders.has(country)
+
+## Инфо по активному заказу: {"total", "remaining", "per_month", "per_day"} (пустой Dictionary если заказа нет)
+func get_missile_order_info(country: String) -> Dictionary:
+    return active_missile_orders.get(country, {})
+
+## Оформить заказ на amount ракет. Списывает всю стоимость сразу.
+## Возвращает false, если нельзя оформить (уже есть заказ / не хватает денег / amount некорректен).
+func start_missile_order(country: String, amount: int) -> bool:
+    if amount <= 0:
+        return false
+    if has_active_missile_order(country):
+        return false
+    if not countries_data.has(country):
+        return false
+
+    var missile_cost: float = settings.missile_cost
+    var cost: float = missile_cost * amount
+
+    if countries_data[country].get("products", 0.0) < cost:
+        return false
+
+    var speed_month = get_missile_production_speed(country)
+    if speed_month <= 0.0:
+        return false  # нет производственных мощностей — заказ невозможен
+
+    countries_data[country]["products"] -= cost
+
+    active_missile_orders[country] = {
+        "total": amount,
+        "remaining": float(amount),
+        "per_month": speed_month,
+        "per_day": speed_month / MISSILE_DAYS_PER_MONTH,
+    }
+
+    print("[Registry] %s заказал %d ракет (скорость %.3f/месяц)" % [country, amount, speed_month])
+    missile_order_changed.emit(country)
+    return true
+
+## Раз в игровой день: продвигаем все активные заказы ракет,
+## постепенно добавляя произведённые ракеты в country_data["missile"].
+## Скорость задана "в месяц", но проверяется/начисляется каждый день дробными порциями,
+## поэтому при скорости, например, 0.8 ракет/месяц, к началу второго месяца уже накопится ракета,
+## а не только в конце месяца при month_passed.
+func _process_missile_orders() -> void:
+    if active_missile_orders.is_empty():
+        return
+
+    var finished: Array[String] = []
+
+    for country in active_missile_orders:
+        var order: Dictionary = active_missile_orders[country]
+        var per_day: float = order["per_day"]
+        var deliver: float = min(per_day, order["remaining"])
+
+        if deliver > 0.0 and countries_data.has(country):
+            countries_data[country]["missile"] = countries_data[country].get("missile", 0.0) + deliver
+            order["remaining"] -= deliver
+
+        if order["remaining"] <= 0.0001:
+            finished.append(country)
+
+        missile_order_changed.emit(country)
+
+    for country in finished:
+        active_missile_orders.erase(country)
+        print("[Registry] Заказ ракет страны %s завершён" % country)
+        missile_order_changed.emit(country)
 
 # Вызывать при постройке завода (в start_factory_construction):
 func start_factory_construction(p_id: int, country: String) -> bool:
@@ -702,6 +797,26 @@ func destroy_factory(p_id: int, amount: int = 1) -> void:
         if countries_data.has(owner):
                 countries_data[owner]["population"] -= kill_pop
     
+func missile_strike(province_id: int) -> void:
+    if not province_data.has(province_id):
+        return
+
+    var p = province_data[province_id]
+    var owner = p.get("owner", "")
+
+    # ФАБРИКИ — снос ВСЕХ фабрик в провинции
+    var current_factories = int(p.get("factories", 0))
+    if current_factories > 0:
+        p["factories"] = 0
+        if _is_real_country_owner(owner) and p.get("against_occupation", "") == "":
+            if countries_data.has(owner):
+                countries_data[owner]["factories"] = max(0, countries_data[owner].get("factories", 0) - current_factories)
+        print("[Registry] Ракетный удар: уничтожено фабрик ", current_factories, " в провинции ", province_id)
+
+    # ДИВИЗИИ — уничтожение 90% личного состава в провинции
+    DivisionManager.kill_percent_in_province(province_id, MISSILE_KILL_RATIO)
+
+    print("[Registry] Ракетный удар по провинции ", province_id, " завершён")
     
     
 # ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ

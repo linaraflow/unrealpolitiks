@@ -14,6 +14,7 @@
 [ext_resource type="PackedScene" uid="uid://byyy3krch8deb" path="res://NegotiationMenu.tscn" id="14_e8heu"]
 [ext_resource type="PackedScene" uid="uid://drqgjjt2yw2oq" path="res://NotificationMenu.tscn" id="14_rvswv"]
 [ext_resource type="PackedScene" uid="uid://bci06whudyu82" path="res://UAVMenu.tscn" id="15_e8heu"]
+[ext_resource type="PackedScene" uid="uid://dg6fak0jljqc7" path="res://MissileMenu.tscn" id="16_boyg6"]
 [ext_resource type="PackedScene" uid="uid://bcohuv24brb7r" path="res://TopMenu.tscn" id="16_rvswv"]
 [ext_resource type="Script" uid="uid://vkd6brrqe1wh" path="res://scripts/war_banner.gd" id="20_36jdj"]
 [ext_resource type="Script" uid="uid://4krs8r4ah56r" path="res://scripts/camera_2d.gd" id="21_xfvwf"]
@@ -186,6 +187,12 @@ grow_horizontal = 1
 grow_vertical = 1
 
 [node name="UAVMenu" parent="CanvasLayer" unique_id=147817782 instance=ExtResource("15_e8heu")]
+visible = false
+offset_right = -1920.0
+offset_bottom = -1080.0
+
+[node name="MissileMenu" parent="CanvasLayer" unique_id=1934150878 instance=ExtResource("16_boyg6")]
+visible = false
 offset_right = -1920.0
 offset_bottom = -1080.0
 

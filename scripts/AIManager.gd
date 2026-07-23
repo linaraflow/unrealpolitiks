@@ -25,6 +25,7 @@ var settings = preload("res://new_resource.tres")
 @onready var Map = get_node_or_null("/root/Game/Map")
 
 const UAVDroneScript = preload("res://scripts/uav_drone.gd")
+const MissileScript   = preload("res://scripts/missile.gd")
 
 # -----------------------------------------------------------------------------
 # 1. СОСТОЯНИЕ И КОНСТАНТЫ
@@ -38,6 +39,9 @@ var recruitment_cooldowns: Dictionary = {}
 
 ## Кулдаун ударов БПЛА: country -> дней до следующего залпа
 var uav_launch_cooldowns: Dictionary = {}
+
+## Кулдаун ракетных ударов: country -> дней до следующего залпа
+var missile_launch_cooldowns: Dictionary = {}
 
 # -----------------------------------------------------------------------------
 # ОПТИМИЗАЦИЯ: ежедневные кэши
@@ -70,7 +74,9 @@ var safe_provinces_list: Array = []
 
 # Минимальный баланс-резерв, который ИИ НЕ тратит на фабрики (чтобы не уходить в ноль)
 const RESERVE_RATIO        = 0.05   # 5% резерва сверх стоимости
-const FACTORY_COOLDOWN_DAYS = 30    # раз в 30 дней строим завод
+const FACTORY_COOLDOWN_DAYS = 30    # раз в 30 дней запускаем цикл строительства фабрик
+const FACTORY_BUDGET_FRACTION = 0.6 # ИИ тратит на фабрики до 60% текущего баланса за один заход (было: 1 фабрика на весь баланс)
+const MAX_QUEUE_PER_PROVINCE = 5    # максимум фабрик в очереди одной провинции
 const RECRUIT_COOLDOWN_DAYS = 5     # раз в 5 дней нанимаем войска
 const MIN_RECRUIT_SIZE      = 50    # минимальный размер призыва
 const RECRUIT_BUDGET_FRACTION = 0.3 # тратим на армию 30% текущего баланса
@@ -83,14 +89,36 @@ const HAPPINESS_DRAIN_PER_1K_RECRUITS = 0.1
 const ARMY_LIMIT_GDP_RATIO = 0.0000714
 
 # --- БПЛА-ПРОГРАММА ИИ ---
-# Доля баланса, которую ИИ тратит на заказ дронов в мирное и военное время
-const UAV_BUDGET_PEACETIME = 0.05   # 5% баланса в мирное время
-const UAV_BUDGET_WARTIME   = 0.15   # 15% баланса во время войны
+# Доля СЕГОДНЯШНЕЙ выработки товаров, которую ИИ каждый день откладывает
+# в резерв под дронов ДО того, как _process_trade продаст остаток товаров
+# за деньги. Резерв копится изо дня в день и не обнуляется торговлей —
+# тратится целиком раз в 6 дней в _process_uav_program().
+const UAV_RESERVE_PEACETIME = 0.3   # 30% дневных товаров в резерв в мирное время
+const UAV_RESERVE_WARTIME   = 0.6   # 60% дневных товаров в резерв во время войны
 
 const UAV_LAUNCH_COOLDOWN_DAYS  = 4   # раз в 4 дня — новый залп
 const UAV_MIN_BATCH_PER_TARGET  = 5   # меньше этого по одной цели не бьём (не распыляемся)
 const UAV_MAX_PER_TARGET        = 20  # не тратим на одну провинцию весь запас разом
 const UAV_MAX_TARGETS_PER_STRIKE = 3  # бьём максимум по стольким провинциям за раз
+
+# --- РАКЕТНАЯ ПРОГРАММА ИИ ---
+# Доля СЕГОДНЯШНЕЙ выработки товаров, которую ИИ каждый день откладывает
+# в резерв под ракеты, ДО того как _process_trade продаст остаток товаров за
+# деньги. Считается ОДНОВРЕМЕННО с резервом под БПЛА (см. _skim_production_reserves,
+# один проход по "products" вместо двух — меньше обращений к Dictionary на страну
+# в день, что заметно на большом числе стран). Резерв копится изо дня в день и
+# не обнуляется торговлей — тратится целиком раз в MISSILE_ORDER_INTERVAL_DAYS
+# дней в _process_missile_program().
+const MISSILE_RESERVE_PEACETIME = 0.05  # 5% дневных товаров в резерв в мирное время
+const MISSILE_RESERVE_WARTIME   = 0.10  # 10% дневных товаров в резерв во время войны
+
+const MISSILE_ORDER_INTERVAL_DAYS = 7   # раз в 7 дней пробуем купить компанию / оформить заказ ракет
+
+# Удар ракетой полностью сносит фабрики провинции и убивает MISSILE_KILL_RATIO
+# войск в ней за ОДИН залп (см. ProvinceRegistry.missile_strike) — в отличие от
+# БПЛА тут не нужно копить много ракет на одну цель, хватает 1 ракеты на цель.
+const MISSILE_STRIKE_COOLDOWN_DAYS  = 6  # раз в 6 дней — новый ракетный залп
+const MISSILE_MAX_TARGETS_PER_STRIKE = 3 # бьём максимум по стольким провинциям за раз (1 ракета на провинцию)
 
 # -----------------------------------------------------------------------------
 # 2. ИНИЦИАЛИЗАЦИЯ И ТИКИ
@@ -142,31 +170,50 @@ func _on_day_passed(_date: Dictionary) -> void:
         # Принудительно приводим индекс страны к int, даже если он прилетел как float
         var country_index: int = int(ProvinceRegistry.country_index.get(country, 0))
         
-        # 1. Быстрые кулдауны и торговля
+        # 1. Быстрые кулдауны
         _tick_recruitment_cooldown(country)
         _tick_factory_cooldown(country)
         _tick_uav_launch_cooldown(country)
+        _tick_missile_launch_cooldown(country)
+
+        # 2. Резервы под БПЛА и ракеты: КАЖДЫЙ день откладываем часть сегодняшней
+        # выработки товаров в накопительные резервы ДО того, как торговля продаст
+        # их за деньги (см. _skim_production_reserves — считает оба резерва за
+        # один проход по "products"/"war_relations", что дешевле двух отдельных
+        # функций на большом числе стран). Раз в N дней тратим накопленное:
+        # БПЛА — каждые 6 дней, ракеты — каждые MISSILE_ORDER_INTERVAL_DAYS дней.
+        # ВАЖНО: skim должен идти ДО _process_trade() — иначе торговля каждый
+        # день продаёт весь склад products в balance и обнуляет его, а дроны
+        # и ракеты покупаются именно за products, а не за balance.
+        _skim_production_reserves(country)
+        if (current_day + country_index) % 6 == 0:
+            _process_uav_program(country)
+        if (current_day + country_index) % MISSILE_ORDER_INTERVAL_DAYS == 0:
+            _process_missile_program(country)
+
+        # 3. Торговля — продажа того, что осталось от товаров после резервов под БПЛА и ракеты
         _process_trade(country)
 
-        # 2. Экономика — раз в 5 дней
+        # 4. Экономика — раз в 5 дней
         if (current_day + country_index) % 5 == 0:
             _process_economy(country)              
 
-        # 3. Рекрутинг — раз в 3 дня
+        # 5. Рекрутинг — раз в 3 дня
         if (current_day + country_index) % 3 == 0:
             _process_recruitment(country)          
 
-        # 4. ДВИЖЕНИЕ ВОЙСК — раз в 4 дня
+        # 6. ДВИЖЕНИЕ ВОЙСК — раз в 4 дня
         if (current_day + country_index) % 4 == 0:
             _process_military_movement(country)    
 
-        # 5. БПЛА-программа (покупка компании + заказ дронов) — раз в 6 дней
-        if (current_day + country_index) % 6 == 0:
-            _process_uav_program(country)
-
-        # 6. Запуск БПЛА по врагу — раз в 2 дня (сам залп ограничен кулдауном выше)
+        # 7. Запуск БПЛА по врагу — раз в 2 дня (сам залп ограничен кулдауном выше)
         if (current_day + country_index) % 2 == 0:
             _process_uav_strikes(country)
+
+        # 7.5 Запуск ракет по врагу — раз в 5 дней, со сдвигом от БПЛА, чтобы не
+        # бить в один и тот же день (сам залп ограничен кулдауном выше)
+        if (current_day + country_index + 1) % 5 == 0:
+            _process_missile_strikes(country)
 
     # 5. Обсчет населения
     _process_population()
@@ -214,8 +261,47 @@ func _process_economy(country: String) -> void:
     if candidates.is_empty():
         return
 
-    var target_p = candidates.pick_random()
-    if ProvinceRegistry.start_factory_construction(target_p, country):
+    # Раньше ИИ строил ровно 1 фабрику за цикл (тратил минимум денег).
+    # Теперь тратим на фабрики намного бОльшую часть баланса за раз — строим
+    # столько фабрик, на сколько хватает FACTORY_BUDGET_FRACTION от баланса.
+    # Очередь в одной провинции вмещает до 5 фабрик, поэтому распределяем
+    # постройки round-robin по провинциям, но позволяем провинции набрать
+    # все 5, если бюджет и/или число доступных провинций это требуют.
+    var budget = balance * FACTORY_BUDGET_FRACTION
+    var affordable = max(1, int(budget / factory_cost))
+
+    # Свободное место в очереди каждой кандидатной провинции
+    var queue_room: Dictionary = {}
+    for p_id in candidates:
+        var p_data = ProvinceRegistry.province_data.get(p_id, {})
+        queue_room[p_id] = MAX_QUEUE_PER_PROVINCE - p_data.get("factory_queue", []).size()
+
+    candidates.shuffle()
+
+    var built = 0
+    var idx = 0
+    var stall = 0
+    while built < affordable and stall < candidates.size():
+        var target_p = candidates[idx % candidates.size()]
+        idx += 1
+
+        if queue_room.get(target_p, 0) <= 0:
+            stall += 1
+            continue
+
+        if c_data.get("balance", 0.0) < required:
+            break
+
+        if ProvinceRegistry.start_factory_construction(target_p, country):
+            queue_room[target_p] -= 1
+            built += 1
+            stall = 0
+        else:
+            # Провинция почему-то не приняла стройку — больше не пытаемся её использовать
+            queue_room[target_p] = 0
+            stall += 1
+
+    if built > 0:
         factory_cooldowns[country] = FACTORY_COOLDOWN_DAYS
 
 # Провинции без активных боёв, без оккупации, с очередью < 5
@@ -235,15 +321,45 @@ func _get_safe_buildable_provinces(country: String) -> Array:
 # 3.5 БПЛА — своя компания дронов, закупка и удары по фабрикам врага
 # -----------------------------------------------------------------------------
 
+func _tick_missile_launch_cooldown(country: String) -> void:
+    if missile_launch_cooldowns.has(country):
+        missile_launch_cooldowns[country] -= 1
+        if missile_launch_cooldowns[country] <= 0:
+            missile_launch_cooldowns.erase(country)
+
 func _tick_uav_launch_cooldown(country: String) -> void:
     if uav_launch_cooldowns.has(country):
         uav_launch_cooldowns[country] -= 1
         if uav_launch_cooldowns[country] <= 0:
             uav_launch_cooldowns.erase(country)
 
-## Покупка компании БПЛА (один раз) + регулярный заказ дронов на процент от баланса.
-## В мирное время тратим UAV_BUDGET_PEACETIME (5%) баланса, во время войны —
-## UAV_BUDGET_WARTIME (15%), как и у игрока — через ProvinceRegistry.start_uav_order().
+## Каждый день откладывает часть СЕГОДНЯШНЕЙ выработки товаров в накопительные
+## резервы под дронов и под ракеты — ДО того, как _process_trade продаст остаток
+## товаров за деньги. Резервы (c_data["uav_reserve"] / c_data["missile_reserve"])
+## не обнуляются торговлей и копятся изо дня в день, пока _process_uav_program /
+## _process_missile_program их не потратят на заказ.
+## ОБЪЕДИНЕНО с ракетным резервом в один проход (одно чтение "products" и
+## "war_relations" вместо двух отдельных функций) — на большом числе стран
+## это ощутимо дешевле, чем два раздельных Dictionary-обращения в день на страну.
+func _skim_production_reserves(country: String) -> void:
+    var c_data = ProvinceRegistry.countries_data[country]
+    var stock  = c_data.get("products", 0.0)
+    if stock <= 0.0:
+        return
+
+    var is_at_war = not ProvinceRegistry.war_relations.get(country, []).is_empty()
+
+    var uav_fraction     = UAV_RESERVE_WARTIME if is_at_war else UAV_RESERVE_PEACETIME
+    var missile_fraction = MISSILE_RESERVE_WARTIME if is_at_war else MISSILE_RESERVE_PEACETIME
+
+    var uav_skim     = stock * uav_fraction
+    var missile_skim = stock * missile_fraction
+
+    c_data["products"]        = stock - uav_skim - missile_skim
+    c_data["uav_reserve"]     = c_data.get("uav_reserve", 0.0) + uav_skim
+    c_data["missile_reserve"] = c_data.get("missile_reserve", 0.0) + missile_skim
+
+## Покупка компании БПЛА (один раз) + заказ дронов на накопленный резерв товаров.
 func _process_uav_program(country: String) -> void:
     var c_data  = ProvinceRegistry.countries_data[country]
     var balance = c_data.get("balance", 0.0)
@@ -254,27 +370,40 @@ func _process_uav_program(country: String) -> void:
         if balance >= company_cost * (1.0 + RESERVE_RATIO):
             c_data["balance"] -= company_cost
             c_data["uav_company"] = true
-        # В день покупки заказ дронов не оформляем — баланс уже потрачен,
-        # снова попробуем через 6 дней на свежем балансе
+        # В день покупки заказ дронов не оформляем — резерв продолжает копиться,
+        # снова попробуем через 6 дней
         return
 
     # 2. Компания уже есть — заказываем дроны, если сейчас нет активного заказа
     if ProvinceRegistry.has_active_uav_order(country):
         return
 
-    var uav_cost = settings.uav_cost
+    var uav_cost: float = settings.uav_cost
     if uav_cost <= 0.0:
         return
 
-    var is_at_war       = not ProvinceRegistry.war_relations.get(country, []).is_empty()
-    var budget_fraction = UAV_BUDGET_WARTIME if is_at_war else UAV_BUDGET_PEACETIME
-    var uav_budget      = balance * budget_fraction
-
-    var amount = int(uav_budget / uav_cost)
+    # Тратим накопленный за последние ~6 дней резерв товаров на дронов целиком
+    var reserve = c_data.get("uav_reserve", 0.0)
+    var amount = int(reserve / uav_cost)
     if amount <= 0:
         return
 
-    ProvinceRegistry.start_uav_order(country, amount)
+    var cost = amount * uav_cost
+
+    # ВАЖНО: start_uav_order() в ProvinceRegistry проверяет платёжеспособность
+    # и списывает деньги именно из countries_data[country]["products"], а не
+    # из нашего отдельного "uav_reserve". Резерв мы копили ОТДЕЛЬНО от products
+    # (см. _skim_production_reserves), поэтому нужную сумму нужно на секунду вернуть
+    # обратно в products — иначе start_uav_order всегда будет проваливать
+    # проверку "products < cost", ведь в products к этому моменту почти пусто.
+    c_data["products"] = c_data.get("products", 0.0) + cost
+
+    if ProvinceRegistry.start_uav_order(country, amount):
+        c_data["uav_reserve"] = reserve - cost
+    else:
+        # Не получилось (например, нет производственных мощностей) — возвращаем
+        # деньги обратно в резерв, чтобы они не потерялись
+        c_data["products"] = c_data.get("products", 0.0) - cost
 
 ## Удары БПЛА по самым "жирным" (по числу фабрик) провинциям врага.
 ## Работает только во время войны и только если накоплено достаточно дронов.
@@ -356,6 +485,122 @@ func _get_richest_enemy_factory_provinces(enemies: Array, max_count: int) -> Arr
         if result.size() >= max_count:
             break
     return result
+
+# -----------------------------------------------------------------------------
+# 3.6 РАКЕТЫ — своя ракетная компания, закупка, производство и удары ракетами
+# -----------------------------------------------------------------------------
+# Резерв под ракеты (5% вне войны / 10% во время войны) считается вместе с
+# резервом под БПЛА в одной функции _skim_production_reserves() (см. раздел 3.5).
+
+## Покупка ракетной компании (один раз) + заказ ракет на накопленный резерв товаров.
+## Полностью зеркалит _process_uav_program(), только с ракетными полями/стоимостями.
+func _process_missile_program(country: String) -> void:
+    var c_data  = ProvinceRegistry.countries_data[country]
+    var balance = c_data.get("balance", 0.0)
+
+    # 1. Если компании ещё нет — покупаем её, если хватает денег + резерв
+    if not c_data.get("missile_company", false):
+        var company_cost = settings.MISSILE_COMPANY_COST
+        if balance >= company_cost * (1.0 + RESERVE_RATIO):
+            c_data["balance"] -= company_cost
+            c_data["missile_company"] = true
+        # В день покупки заказ ракет не оформляем — резерв продолжает копиться,
+        # снова попробуем через MISSILE_ORDER_INTERVAL_DAYS дней
+        return
+
+    # 2. Компания уже есть — заказываем ракеты, если сейчас нет активного заказа
+    if ProvinceRegistry.has_active_missile_order(country):
+        return
+
+    var missile_cost: float = settings.missile_cost
+    if missile_cost <= 0.0:
+        return
+
+    # Тратим накопленный за последние ~MISSILE_ORDER_INTERVAL_DAYS дней резерв
+    # товаров на ракеты целиком
+    var reserve = c_data.get("missile_reserve", 0.0)
+    var amount = int(reserve / missile_cost)
+    if amount <= 0:
+        return
+
+    var cost = amount * missile_cost
+
+    # ВАЖНО: start_missile_order() в ProvinceRegistry проверяет платёжеспособность
+    # и списывает деньги именно из countries_data[country]["products"], а не
+    # из нашего отдельного "missile_reserve". Резерв мы копили ОТДЕЛЬНО от
+    # products (см. _skim_production_reserves), поэтому нужную сумму нужно на
+    # секунду вернуть обратно в products — иначе start_missile_order всегда
+    # будет проваливать проверку "products < cost", ведь в products к этому
+    # моменту почти пусто.
+    c_data["products"] = c_data.get("products", 0.0) + cost
+
+    if ProvinceRegistry.start_missile_order(country, amount):
+        c_data["missile_reserve"] = reserve - cost
+    else:
+        # Не получилось (например, нет производственных мощностей — ВВП
+        # слишком мал) — возвращаем деньги обратно в резерв, чтобы они не
+        # потерялись
+        c_data["products"] = c_data.get("products", 0.0) - cost
+
+## Ракетные удары по самым "жирным" (по числу фабрик) провинциям врага —
+## та же логика выбора целей, что и у БПЛА (переиспользуем
+## _get_richest_enemy_factory_provinces). В отличие от БПЛА ракета не несёт
+## "amount": один залп missile_strike() сразу сносит ВСЕ фабрики провинции и
+## убивает MISSILE_KILL_RATIO войск в ней (см. ProvinceRegistry.missile_strike),
+## поэтому копить много ракет на одну цель не нужно — хватает 1 ракеты на цель,
+## и мы просто бьём по нескольким целям сразу (до MISSILE_MAX_TARGETS_PER_STRIKE).
+## Работает только во время войны и только если есть хотя бы 1 ракета в запасе.
+func _process_missile_strikes(country: String) -> void:
+    if missile_launch_cooldowns.has(country):
+        return
+
+    var enemies = ProvinceRegistry.war_relations.get(country, [])
+    if enemies.is_empty():
+        return
+
+    var c_data   = ProvinceRegistry.countries_data[country]
+    var available = int(c_data.get("missile", 0))
+    if available < 1:
+        return
+
+    var max_targets = min(MISSILE_MAX_TARGETS_PER_STRIKE, available)
+    var targets = _get_richest_enemy_factory_provinces(enemies, max_targets)
+    if targets.is_empty():
+        return
+
+    var cap_id = int(c_data.get("capital", 0))
+    if not settings.province_centers.has(cap_id):
+        return
+    var start_pos: Vector2 = settings.province_centers[cap_id]
+
+    var total_used = 0
+    for target_id in targets:
+        if not settings.province_centers.has(target_id):
+            continue
+        _launch_missile_wave(start_pos, target_id)
+        total_used += 1
+
+    if total_used > 0:
+        c_data["missile"] = available - total_used
+        ProvinceRegistry.missile_order_changed.emit(country)
+        missile_launch_cooldowns[country] = MISSILE_STRIKE_COOLDOWN_DAYS
+
+## Спавнит одну ракету (тот же visual-скрипт, что и у игрока в missile_menu.gd),
+## которая долетает до цели и сама вызывает ProvinceRegistry.missile_strike().
+func _launch_missile_wave(start_pos: Vector2, target_id: int) -> void:
+    if not is_instance_valid(Map):
+        return
+
+    var target_pos: Vector2 = settings.province_centers[target_id]
+
+    var missile = Sprite2D.new()
+    missile.set_script(MissileScript)
+    missile.start_pos    = start_pos
+    missile.target_pos   = target_pos
+    missile.control_pos  = MissileLinesLayer.compute_arc_control(start_pos, target_pos)
+    missile.target_p_id  = target_id
+
+    Map.add_child(missile)
 
 # -----------------------------------------------------------------------------
 # 4. ВОЕНКА — найм войск и движение армий

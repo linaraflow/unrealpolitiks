@@ -9,6 +9,7 @@
 [ext_resource type="Texture2D" uid="uid://due03bxc3mlaj" path="res://assets/minus_speed.png" id="6_p7twc"]
 [ext_resource type="Script" uid="uid://ctb4bvdw8phsl" path="res://scripts/products_label.gd" id="8_ym8ti"]
 [ext_resource type="Texture2D" uid="uid://bn2ndsh5vqyl2" path="res://assets/icons_uav_menu/uav.png" id="9_p7twc"]
+[ext_resource type="Texture2D" uid="uid://cl10535rof6ac" path="res://assets/icons_uav_menu/missile.png" id="10_0dvk7"]
 [ext_resource type="Texture2D" uid="uid://de4b57yabr7i7" path="res://assets/flags/Iran.png" id="10_j86uc"]
 [ext_resource type="Texture2D" uid="uid://c66dtruypl7r6" path="res://assets/icons_uav_menu/create_uav.svg" id="11_kc1aw"]
 [ext_resource type="Texture2D" uid="uid://cui34p0yrac20" path="res://assets/icons_uav_menu/clock.svg" id="12_kc1aw"]
@@ -58,6 +59,12 @@ corner_radius_bottom_left = 3
 content_margin_left = 10.0
 content_margin_top = 10.0
 content_margin_bottom = 10.0
+bg_color = Color(0.6, 0.6, 0.6, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gl2ac"]
+content_margin_left = 5.0
+content_margin_top = 5.0
+content_margin_bottom = 5.0
 bg_color = Color(0.6, 0.6, 0.6, 0)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_p7twc"]
@@ -340,7 +347,7 @@ text = "x1"
 [node name="ProductsLabel" type="RichTextLabel" parent="TopPanel" unique_id=1130383569]
 layout_mode = 0
 offset_left = 312.0
-offset_right = 808.0
+offset_right = 497.0
 offset_bottom = 50.0
 size_flags_horizontal = 3
 bbcode_enabled = true
@@ -352,15 +359,30 @@ settings = ExtResource("2_axhfq")
 [node name="UAVLabel" type="Button" parent="TopPanel" unique_id=448934481]
 layout_mode = 0
 offset_left = 500.0
-offset_right = 585.0
+offset_right = 658.0
 offset_bottom = 50.0
 focus_mode = 0
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_styles/normal = SubResource("StyleBoxFlat_hc05d")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_hc05d")
 theme_override_styles/hover = SubResource("StyleBoxFlat_hc05d")
-text = " 13"
+text = " 133"
 icon = ExtResource("9_p7twc")
+alignment = 0
+expand_icon = true
+
+[node name="MissileLabel" type="Button" parent="TopPanel" unique_id=844776432]
+layout_mode = 0
+offset_left = 688.0
+offset_right = 833.0
+offset_bottom = 50.0
+focus_mode = 0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_gl2ac")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_gl2ac")
+theme_override_styles/hover = SubResource("StyleBoxFlat_gl2ac")
+text = " 9"
+icon = ExtResource("10_0dvk7")
 alignment = 0
 expand_icon = true
 
@@ -396,6 +418,7 @@ offset_bottom = 72.0
 text = "sell all"
 
 [node name="PanelUAVEmpty" type="PanelContainer" parent="." unique_id=858265719]
+visible = false
 layout_mode = 0
 offset_left = 500.0
 offset_top = 56.0
@@ -494,6 +517,7 @@ theme_override_font_sizes/font_size = 15
 text = "$10.000.000"
 
 [node name="PanelUAVOrder" type="PanelContainer" parent="." unique_id=1682303829]
+visible = false
 layout_mode = 0
 offset_left = 500.0
 offset_top = 56.0
@@ -565,7 +589,7 @@ text = "In service"
 [node name="NumberLabel" type="Label" parent="PanelUAVOrder/MarginContainer/VBoxContainer/GridContainer/NumberUAVCard/VBoxContainer" unique_id=267202859]
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
-text = "13"
+text = "134"
 
 [node name="SpeedCard" type="PanelContainer" parent="PanelUAVOrder/MarginContainer/VBoxContainer/GridContainer" unique_id=590694337]
 layout_mode = 2
@@ -641,9 +665,265 @@ layout_mode = 2
 size_flags_horizontal = 10
 theme_override_colors/font_color = Color(0.8862745, 0.69411767, 0.23529412, 1)
 theme_override_font_sizes/font_size = 14
-text = "$1.000.000"
+text = "📦10"
 
 [node name="OrderButton" type="Button" parent="PanelUAVOrder/MarginContainer/VBoxContainer" unique_id=1387859603]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_owoy5")
+theme_override_styles/hover = SubResource("StyleBoxFlat_0x63p")
+text = "Order"
+
+[node name="PanelMissileEmpty" type="PanelContainer" parent="." unique_id=1721080826]
+visible = false
+layout_mode = 0
+offset_left = 500.0
+offset_top = 56.0
+offset_right = 1105.0
+offset_bottom = 335.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_p7twc")
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelMissileEmpty" unique_id=188117450]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 18
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelMissileEmpty/MarginContainer" unique_id=336441781]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="HBoxContainer" type="HBoxContainer" parent="PanelMissileEmpty/MarginContainer/VBoxContainer" unique_id=1439653320]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="FlagIcon" type="TextureRect" parent="PanelMissileEmpty/MarginContainer/VBoxContainer/HBoxContainer" unique_id=753261703]
+custom_minimum_size = Vector2(34, 24)
+layout_mode = 2
+texture = ExtResource("10_j86uc")
+expand_mode = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelMissileEmpty/MarginContainer/VBoxContainer/HBoxContainer" unique_id=606902429]
+layout_mode = 2
+
+[node name="MissileLabel" type="Label" parent="PanelMissileEmpty/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer" unique_id=1248357000]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Missile programm of Iran"
+
+[node name="NoMissileLabel" type="Label" parent="PanelMissileEmpty/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer" unique_id=1942025132]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5411765, 0.54509807, 0.5529412, 1)
+theme_override_font_sizes/font_size = 14
+text = "Ballistic missiles have not been developed"
+
+[node name="CenterContainer" type="CenterContainer" parent="PanelMissileEmpty/MarginContainer/VBoxContainer" unique_id=1159925753]
+layout_mode = 2
+
+[node name="MissileIcon" type="TextureRect" parent="PanelMissileEmpty/MarginContainer/VBoxContainer/CenterContainer" unique_id=1335256624]
+custom_minimum_size = Vector2(60, 60)
+layout_mode = 2
+texture = ExtResource("10_0dvk7")
+expand_mode = 3
+
+[node name="DescriptionLabel" type="Label" parent="PanelMissileEmpty/MarginContainer/VBoxContainer" unique_id=1559432791]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "The country doesn't yet have its own missile production lines. 
+Create a missile company to begin developing and manufacturing missiles."
+
+[node name="CreateButton" type="Button" parent="PanelMissileEmpty/MarginContainer/VBoxContainer" unique_id=957686036]
+custom_minimum_size = Vector2(0, 40)
+custom_maximum_size = Vector2(650, -1)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxFlat_4c1hm")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_j86uc")
+theme_override_styles/hover = SubResource("StyleBoxFlat_4c1hm")
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelMissileEmpty/MarginContainer/VBoxContainer/CreateButton" unique_id=707098041]
+layout_mode = 0
+offset_right = 567.0
+offset_bottom = 42.0
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="HBoxContainer" type="HBoxContainer" parent="PanelMissileEmpty/MarginContainer/VBoxContainer/CreateButton/MarginContainer" unique_id=2146033613]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="TextureRect" type="TextureRect" parent="PanelMissileEmpty/MarginContainer/VBoxContainer/CreateButton/MarginContainer/HBoxContainer" unique_id=1762356549]
+layout_mode = 2
+texture = ExtResource("11_kc1aw")
+expand_mode = 3
+
+[node name="CreateLabel" type="Label" parent="PanelMissileEmpty/MarginContainer/VBoxContainer/CreateButton/MarginContainer/HBoxContainer" unique_id=1418021383]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.37254903, 0.8392157, 0.44313726, 1)
+theme_override_font_sizes/font_size = 15
+text = "Create missile-company"
+
+[node name="PriceLabel" type="Label" parent="PanelMissileEmpty/MarginContainer/VBoxContainer/CreateButton/MarginContainer/HBoxContainer" unique_id=318813068]
+layout_mode = 2
+size_flags_horizontal = 10
+theme_override_colors/font_color = Color(0.37254903, 0.8392157, 0.44313726, 1)
+theme_override_font_sizes/font_size = 15
+text = "$100.000.000"
+
+[node name="PanelMissileOrder" type="PanelContainer" parent="." unique_id=1479652578]
+layout_mode = 0
+offset_left = 500.0
+offset_top = 56.0
+offset_right = 1105.0
+offset_bottom = 382.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_p7twc")
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelMissileOrder" unique_id=251924737]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 18
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelMissileOrder/MarginContainer" unique_id=2124680240]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="HBoxContainer" type="HBoxContainer" parent="PanelMissileOrder/MarginContainer/VBoxContainer" unique_id=1971255372]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="MissileRect" type="TextureRect" parent="PanelMissileOrder/MarginContainer/VBoxContainer/HBoxContainer" unique_id=1744310626]
+layout_mode = 2
+texture = ExtResource("10_0dvk7")
+expand_mode = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelMissileOrder/MarginContainer/VBoxContainer/HBoxContainer" unique_id=311077012]
+layout_mode = 2
+
+[node name="MissileLabel" type="Label" parent="PanelMissileOrder/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer" unique_id=460321133]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Missile of Iran"
+
+[node name="ProduceLabel" type="Label" parent="PanelMissileOrder/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer" unique_id=1975641261]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5411765, 0.54509807, 0.5529412, 1)
+theme_override_font_sizes/font_size = 14
+text = "Production line · level 1"
+
+[node name="LaunchButton" type="Button" parent="PanelMissileOrder/MarginContainer/VBoxContainer/HBoxContainer" unique_id=1750283377]
+layout_mode = 2
+size_flags_horizontal = 10
+theme_override_styles/normal = SubResource("StyleBoxFlat_7ovbt")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_kc1aw")
+theme_override_styles/hover = SubResource("StyleBoxFlat_kdok2")
+text = "Launch"
+
+[node name="GridContainer" type="GridContainer" parent="PanelMissileOrder/MarginContainer/VBoxContainer" unique_id=1132475241]
+layout_mode = 2
+theme_override_constants/h_separation = 10
+columns = 2
+
+[node name="NumberMissileCard" type="PanelContainer" parent="PanelMissileOrder/MarginContainer/VBoxContainer/GridContainer" unique_id=2080471919]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_0dvk7")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelMissileOrder/MarginContainer/VBoxContainer/GridContainer/NumberMissileCard" unique_id=1707014387]
+layout_mode = 2
+
+[node name="MissileCaption" type="Label" parent="PanelMissileOrder/MarginContainer/VBoxContainer/GridContainer/NumberMissileCard/VBoxContainer" unique_id=1158647233]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.53333336, 0.53333336, 0.53333336, 1)
+theme_override_font_sizes/font_size = 10
+text = "In service"
+
+[node name="NumberLabel" type="Label" parent="PanelMissileOrder/MarginContainer/VBoxContainer/GridContainer/NumberMissileCard/VBoxContainer" unique_id=2024587184]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "9"
+
+[node name="SpeedCard" type="PanelContainer" parent="PanelMissileOrder/MarginContainer/VBoxContainer/GridContainer" unique_id=752375092]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_0dvk7")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelMissileOrder/MarginContainer/VBoxContainer/GridContainer/SpeedCard" unique_id=1386429983]
+layout_mode = 2
+
+[node name="SpeedCaption" type="Label" parent="PanelMissileOrder/MarginContainer/VBoxContainer/GridContainer/SpeedCard/VBoxContainer" unique_id=855825088]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.53333336, 0.53333336, 0.53333336, 1)
+theme_override_font_sizes/font_size = 10
+text = "Production speed"
+
+[node name="SpeedLabel" type="Label" parent="PanelMissileOrder/MarginContainer/VBoxContainer/GridContainer/SpeedCard/VBoxContainer" unique_id=1878680520]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "1.1 / month"
+
+[node name="OrderLabel" type="Label" parent="PanelMissileOrder/MarginContainer/VBoxContainer" unique_id=3189926]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "Order missiles"
+
+[node name="Slider" type="HBoxContainer" parent="PanelMissileOrder/MarginContainer/VBoxContainer" unique_id=1701811448]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="NumberLabel" type="Label" parent="PanelMissileOrder/MarginContainer/VBoxContainer/Slider" unique_id=599405725]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5411765, 0.54509807, 0.5529412, 1)
+theme_override_font_sizes/font_size = 14
+text = "amo."
+
+[node name="HSlider" type="HSlider" parent="PanelMissileOrder/MarginContainer/VBoxContainer/Slider" unique_id=579909744]
+custom_minimum_size = Vector2(0, 18)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+theme_override_styles/slider = SubResource("StyleBoxFlat_ig0mh")
+theme_override_styles/grabber_area = SubResource("StyleBoxFlat_5citk")
+theme_override_styles/grabber_area_highlight = SubResource("StyleBoxFlat_j05aq")
+value = 20.0
+
+[node name="RealNumberLabel" type="Label" parent="PanelMissileOrder/MarginContainer/VBoxContainer/Slider" unique_id=1317251090]
+layout_mode = 2
+size_flags_horizontal = 8
+theme_override_font_sizes/font_size = 14
+text = "13"
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="PanelMissileOrder/MarginContainer/VBoxContainer" unique_id=1961024865]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="PanelMissileOrder/MarginContainer/VBoxContainer/HBoxContainer2" unique_id=545327331]
+layout_mode = 2
+
+[node name="ClockIcon" type="TextureRect" parent="PanelMissileOrder/MarginContainer/VBoxContainer/HBoxContainer2/HBoxContainer" unique_id=1828721]
+layout_mode = 2
+texture = ExtResource("12_kc1aw")
+
+[node name="TimeLabel" type="Label" parent="PanelMissileOrder/MarginContainer/VBoxContainer/HBoxContainer2/HBoxContainer" unique_id=607350061]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5411765, 0.54509807, 0.5529412, 1)
+theme_override_font_sizes/font_size = 14
+text = "9 months"
+
+[node name="Control" type="Control" parent="PanelMissileOrder/MarginContainer/VBoxContainer/HBoxContainer2" unique_id=815315264]
+layout_mode = 2
+
+[node name="PriceLabel" type="Label" parent="PanelMissileOrder/MarginContainer/VBoxContainer/HBoxContainer2" unique_id=1647557413]
+layout_mode = 2
+size_flags_horizontal = 10
+theme_override_colors/font_color = Color(0.8862745, 0.69411767, 0.23529412, 1)
+theme_override_font_sizes/font_size = 14
+text = "📦10.000"
+
+[node name="OrderButton" type="Button" parent="PanelMissileOrder/MarginContainer/VBoxContainer" unique_id=1324691844]
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
 theme_override_styles/normal = SubResource("StyleBoxFlat_owoy5")

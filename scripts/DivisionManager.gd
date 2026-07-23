@@ -150,6 +150,53 @@ func merge_divisions(province_id: int) -> void:
 
     ProvinceRegistry.province_army_changed.emit(province_id)
     reposition_armies_in_province(province_id)
+    
+## Уничтожает kill_ratio (0..1) личного состава ВСЕХ дивизий в провинции
+## (используется ракетным ударом: kill_ratio = 0.9 → уничтожает 90% людей).
+## Дивизии, у которых солдат осталось <= 0, удаляются полностью.
+func kill_percent_in_province(province_id: int, kill_ratio: float) -> void:
+    if not armies.has(province_id):
+        return
+
+    var province_armies = armies[province_id]
+    var owners_lost: Dictionary = {} # owner_id -> total_lost
+
+    for circle in province_armies.duplicate():
+        if not is_instance_valid(circle):
+            continue
+
+        var lost = int(round(circle.soldiers * kill_ratio))
+        if lost <= 0:
+            continue
+
+        circle.soldiers -= lost
+        owners_lost[circle.division_owner] = owners_lost.get(circle.division_owner, 0) + lost
+
+        if circle.soldiers <= 0:
+            province_armies.erase(circle)
+            if is_instance_valid(circle.current_path_node):
+                circle._stop_current_movement()
+            circle.queue_free()
+
+    if owners_lost.is_empty():
+        return
+
+    var p_data = ProvinceRegistry.province_data.get(province_id, {})
+    if p_data.has("army"):
+        var total_lost = 0
+        for owner_id in owners_lost:
+            total_lost += owners_lost[owner_id]
+        p_data["army"]["land"] = max(0, p_data["army"].get("land", 0) - total_lost)
+
+    for owner_id in owners_lost:
+        if CombatManager.active_battles.has(province_id):
+            var sides = CombatManager.active_battles[province_id]["sides"]
+            if sides.has(owner_id):
+                _refresh_combat_hp_manually(province_id, owner_id)
+
+    ProvinceRegistry.province_army_changed.emit(province_id)
+    reposition_armies_in_province(province_id)
+    print("[DivisionManager] Ракетный удар: потери личного состава в провинции ", province_id, " -> ", owners_lost)
 
 # ФИКС БАГА 2: Оптимизированное позиционирование с использованием кэшированного cam_factor
 func reposition_armies_in_province(p_id: int, cam_factor: float = -1.0) -> void:
