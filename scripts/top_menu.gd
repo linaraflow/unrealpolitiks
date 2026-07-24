@@ -36,6 +36,12 @@ var UAV_COMPANY_COST = settings.UAV_COMPANY_COST
 
 @onready var balance_label: Label = $TopPanel/BalanceLabel
 
+@onready var statistics_menu = get_node("/root/Game/CanvasLayer/StatisticsMenu")
+
+# SellMenu — панель продажи продуктов, лежит как %SellMenu под TopPanel/ProductsLabel
+# (её открывает products_label.gd через клик по RichTextLabel, не через Button).
+@onready var panel_products: Control = get_node_or_null("%SellMenu")
+
 # Кэш скорости производства БПЛА (шт/день), пересчитывается при каждом refresh панели заказа
 var _order_uav_speed: float = 0.0
 var _order_uav_cost: float = 0.0
@@ -83,6 +89,8 @@ func _ready() -> void:
     panel_missile_empty.hide()
     panel_missile_order.hide()
 
+    flag_button.pressed.connect(_on_flag_button_pressed)
+
     uav_label.pressed.connect(_on_uav_label_pressed)
     create_button.pressed.connect(_on_create_button_pressed)
 
@@ -117,18 +125,39 @@ func _ready() -> void:
     order_missile_button.add_theme_color_override("font_disabled_color", order_missile_button_normal_color)
 
 
+## Прячет все панели TopMenu (UAV/Missile/Products), кроме перечисленных в keep_open.
+## Вызывается перед открытием любой из них, чтобы не было двух открытых одновременно.
+func _close_other_top_panels(keep_open: Array = []) -> void:
+    for p in [panel_uav_empty, panel_uav_order, panel_missile_empty, panel_missile_order, panel_products]:
+        if p == null or p in keep_open:
+            continue
+        p.hide()
+
+
+## Кнопка TopMenu/TopPanel/Flag — открывает/закрывает панель статистики.
+## Перед открытием закрываем остальные панели TopMenu (UAV/Missile/Products),
+## чтобы не было двух открытых одновременно.
+func _on_flag_button_pressed() -> void:
+    _close_other_top_panels()
+    statistics_menu.toggle_menu()
+
+
 func _on_uav_label_pressed() -> void:
     var country_data = ProvinceRegistry.countries_data[settings.active_country]
     if country_data["uav_company"]:
         # компания уже куплена — открываем/закрываем меню заказа
-        panel_uav_order.visible = not panel_uav_order.visible
+        var was_open = panel_uav_order.visible
+        _close_other_top_panels()
+        panel_uav_order.visible = not was_open
         if panel_uav_order.visible:
             _refresh_order_panel()
     else:
         # компании ещё нет — открываем/закрываем меню покупки
-        if not panel_uav_empty.visible:
+        var was_open = panel_uav_empty.visible
+        _close_other_top_panels()
+        if not was_open:
             _update_panel_uav_empty(country_data)
-        panel_uav_empty.visible = not panel_uav_empty.visible
+        panel_uav_empty.visible = not was_open
 
 
 func _update_panel_uav_empty(country_data: Dictionary) -> void:
@@ -146,6 +175,7 @@ func _on_create_button_pressed() -> void:
     country_data["uav_company"] = true
 
     panel_uav_empty.hide()
+    _close_other_top_panels()
     _refresh_order_panel()
     panel_uav_order.show()
 
@@ -314,14 +344,18 @@ func _on_missile_label_pressed() -> void:
     var country_data = ProvinceRegistry.countries_data[settings.active_country]
     if country_data["missile_company"]:
         # компания уже куплена — открываем/закрываем меню заказа
-        panel_missile_order.visible = not panel_missile_order.visible
+        var was_open = panel_missile_order.visible
+        _close_other_top_panels()
+        panel_missile_order.visible = not was_open
         if panel_missile_order.visible:
             _refresh_missile_order_panel()
     else:
         # компании ещё нет — открываем/закрываем меню покупки
-        if not panel_missile_empty.visible:
+        var was_open = panel_missile_empty.visible
+        _close_other_top_panels()
+        if not was_open:
             _update_panel_missile_empty(country_data)
-        panel_missile_empty.visible = not panel_missile_empty.visible
+        panel_missile_empty.visible = not was_open
 
 
 func _update_panel_missile_empty(country_data: Dictionary) -> void:
@@ -339,6 +373,7 @@ func _on_create_missile_button_pressed() -> void:
     country_data["missile_company"] = true
 
     panel_missile_empty.hide()
+    _close_other_top_panels()
     _refresh_missile_order_panel()
     panel_missile_order.show()
 

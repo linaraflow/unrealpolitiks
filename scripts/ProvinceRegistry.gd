@@ -17,6 +17,8 @@ signal country_color_changed
 ## province_id == -1 значит "у страны больше нет провинций" (столицу ставить некуда).
 signal capital_changed(country: String, province_id: int)
 signal factory_built(province_id: int, country: String)
+## Эмитится, когда у страны уничтожены заводы (удар БПЛА или ракетой). amount — сколько именно уничтожено.
+signal factory_destroyed(province_id: int, country: String, amount: int)
 
 ## Эмитится, когда БПЛА долетел и ударил по провинции
 signal uav_strike_landed(province_id: int)
@@ -795,6 +797,7 @@ func destroy_factory(p_id: int, amount: int = 1) -> void:
                 countries_data[owner]["factories"] = max(0, countries_data[owner].get("factories", 0) - destroyed)
                 
         print("[Registry] Фабрик уничтожено: ", destroyed, " в провинции ", p_id)
+        factory_destroyed.emit(p_id, owner, destroyed)
         
     # НАСЕЛЕНИЕ
     var kill_pop = settings.KILLS_PER_DRONE * amount
@@ -820,6 +823,7 @@ func missile_strike(province_id: int) -> void:
             if countries_data.has(owner):
                 countries_data[owner]["factories"] = max(0, countries_data[owner].get("factories", 0) - current_factories)
         print("[Registry] Ракетный удар: уничтожено фабрик ", current_factories, " в провинции ", province_id)
+        factory_destroyed.emit(province_id, owner, current_factories)
 
     # ДИВИЗИИ — уничтожение 90% личного состава в провинции
     DivisionManager.kill_percent_in_province(province_id, MISSILE_KILL_RATIO)

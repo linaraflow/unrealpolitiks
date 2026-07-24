@@ -1,0 +1,341 @@
+[gd_scene format=3 uid="uid://jjnqwjl47g6h"]
+
+[ext_resource type="Script" uid="uid://c2vqkpyf0trmm" path="res://scripts/statistics_menu.gd" id="1_u7b0n"]
+[ext_resource type="Texture2D" uid="uid://daa6x4wvp626o" path="res://assets/icons_statistics_menu/declare_war.svg" id="2_gysw0"]
+[ext_resource type="Texture2D" uid="uid://dabrkndbh4sy4" path="res://assets/icons_statistics_menu/skull_enemy.svg" id="4_215hw"]
+[ext_resource type="Texture2D" uid="uid://cc82sfcq4meju" path="res://assets/icons_statistics_menu/skull_your.svg" id="4_u7b0n"]
+[ext_resource type="Texture2D" uid="uid://pnu5f4e7gx7l" path="res://assets/icons_statistics_menu/factory_built.svg" id="5_gysw0"]
+[ext_resource type="Texture2D" uid="uid://beet5nhsfsxpy" path="res://assets/icons_statistics_menu/factory_destroyed.svg" id="6_nt4dt"]
+[ext_resource type="Texture2D" uid="uid://c7veboj8law5s" path="res://assets/icons_statistics_menu/drone.svg" id="7_hn2dw"]
+[ext_resource type="Texture2D" uid="uid://cqsusenijw8i8" path="res://assets/icons_statistics_menu/rocket.svg" id="8_e0cn8"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wdwn2"]
+bg_color = Color(0.10980392, 0.11372549, 0.1254902, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.35156286, 0.35156295, 0.35156265, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+corner_detail = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_edmow"]
+content_margin_left = 10.0
+content_margin_top = 10.0
+content_margin_right = 10.0
+content_margin_bottom = 10.0
+bg_color = Color(0.16470589, 0.16862746, 0.18039216, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+corner_detail = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4c1hm"]
+content_margin_left = 5.0
+content_margin_top = 8.0
+content_margin_right = 5.0
+content_margin_bottom = 8.0
+bg_color = Color(0.076788716, 0.20944473, 2.4065375e-08, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.34711018, 0.7624294, 0.31282598, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ncbo6"]
+content_margin_left = 5.0
+content_margin_top = 8.0
+content_margin_right = 5.0
+content_margin_bottom = 8.0
+bg_color = Color(0.2633232, 0.08624672, 0.06880632, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.99999756, 0.3560441, 0.3013854, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dbil3"]
+content_margin_left = 5.0
+content_margin_top = 8.0
+content_margin_right = 5.0
+content_margin_bottom = 8.0
+bg_color = Color(0.16470589, 0.16862746, 0.18039216, 1)
+border_color = Color(0.34711018, 0.7624294, 0.31282598, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8uaw0"]
+content_margin_left = 5.0
+content_margin_top = 8.0
+content_margin_right = 5.0
+content_margin_bottom = 8.0
+bg_color = Color(0.16470589, 0.16862746, 0.18039216, 1)
+border_color = Color(0.99999756, 0.3560441, 0.3013854, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="StatisticsMenu" type="Control" unique_id=1277860925]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_u7b0n")
+player_country = "Egypt"
+
+[node name="Panel" type="Panel" parent="." unique_id=83344010]
+layout_mode = 0
+offset_right = 300.0
+offset_bottom = 400.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_wdwn2")
+
+[node name="MarginContainer" type="MarginContainer" parent="Panel" unique_id=769726397]
+layout_mode = 0
+offset_right = 300.0
+offset_bottom = 400.0
+theme_override_constants/margin_left = 15
+theme_override_constants/margin_top = 15
+theme_override_constants/margin_right = 15
+theme_override_constants/margin_bottom = 15
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel/MarginContainer" unique_id=1310033986]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="HeadContainer" type="HBoxContainer" parent="Panel/MarginContainer/VBoxContainer" unique_id=686868103]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="SwordsRect" type="TextureRect" parent="Panel/MarginContainer/VBoxContainer/HeadContainer" unique_id=819589290]
+layout_mode = 2
+texture = ExtResource("2_gysw0")
+expand_mode = 3
+
+[node name="Label" type="Label" parent="Panel/MarginContainer/VBoxContainer/HeadContainer" unique_id=350620061]
+layout_mode = 2
+text = "Active wars"
+
+[node name="NumberLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer/HeadContainer" unique_id=151833704]
+layout_mode = 2
+size_flags_horizontal = 10
+theme_override_colors/font_color = Color(0.5411765, 0.54509807, 0.5529412, 1)
+theme_override_font_sizes/font_size = 14
+text = "1"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Panel/MarginContainer/VBoxContainer" unique_id=1805757196]
+custom_minimum_size = Vector2(0, 152)
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel/MarginContainer/VBoxContainer/ScrollContainer" unique_id=871952229]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="WarContainer" type="PanelContainer" parent="Panel/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer" unique_id=1370120355]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_edmow")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/WarContainer" unique_id=1064894557]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Panel/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/WarContainer/VBoxContainer" unique_id=236847379]
+layout_mode = 2
+
+[node name="AgainLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/WarContainer/VBoxContainer/HBoxContainer" unique_id=115651299]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "Again {{country}}"
+
+[node name="DayLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/WarContainer/VBoxContainer/HBoxContainer" unique_id=428303576]
+layout_mode = 2
+size_flags_horizontal = 10
+theme_override_colors/font_color = Color(0.5411765, 0.54509807, 0.5529412, 1)
+theme_override_font_sizes/font_size = 12
+text = "n days"
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="Panel/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/WarContainer/VBoxContainer" unique_id=320818650]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="YourRect" type="TextureRect" parent="Panel/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/WarContainer/VBoxContainer/HBoxContainer2" unique_id=1385972440]
+layout_mode = 2
+texture = ExtResource("4_u7b0n")
+expand_mode = 3
+
+[node name="YourLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/WarContainer/VBoxContainer/HBoxContainer2" unique_id=327643072]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4862745, 0.76862746, 0.9411765, 1)
+theme_override_font_sizes/font_size = 12
+text = "10.000"
+
+[node name="Spacer" type="Control" parent="Panel/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/WarContainer/VBoxContainer/HBoxContainer2" unique_id=663991149]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="EnemyLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/WarContainer/VBoxContainer/HBoxContainer2" unique_id=1122625386]
+layout_mode = 2
+offset_transform_position = Vector2(74.08, 0)
+theme_override_colors/font_color = Color(1, 0.31293753, 0.34184864, 1)
+theme_override_font_sizes/font_size = 12
+text = "10.000"
+
+[node name="EnemyRect" type="TextureRect" parent="Panel/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/WarContainer/VBoxContainer/HBoxContainer2" unique_id=1292970445]
+layout_mode = 2
+texture = ExtResource("4_215hw")
+expand_mode = 3
+
+[node name="HSeparator" type="HSeparator" parent="Panel/MarginContainer/VBoxContainer" unique_id=2026933307]
+layout_mode = 2
+
+[node name="WeekLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer" unique_id=228714217]
+layout_mode = 2
+text = "This week"
+
+[node name="FactoriesContainer" type="HBoxContainer" parent="Panel/MarginContainer/VBoxContainer" unique_id=1003886057]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="BuiltFactories" type="PanelContainer" parent="Panel/MarginContainer/VBoxContainer/FactoriesContainer" unique_id=307315509]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_4c1hm")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Panel/MarginContainer/VBoxContainer/FactoriesContainer/BuiltFactories" unique_id=892155690]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="TextureRect" type="TextureRect" parent="Panel/MarginContainer/VBoxContainer/FactoriesContainer/BuiltFactories/HBoxContainer" unique_id=308972473]
+layout_mode = 2
+texture = ExtResource("5_gysw0")
+expand_mode = 3
+stretch_mode = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel/MarginContainer/VBoxContainer/FactoriesContainer/BuiltFactories/HBoxContainer" unique_id=200047320]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="FactoriesLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer/FactoriesContainer/BuiltFactories/HBoxContainer/VBoxContainer" unique_id=302002855]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.46477896, 0.96188086, 0.42141172, 1)
+theme_override_font_sizes/font_size = 14
+text = "+7"
+
+[node name="Label" type="Label" parent="Panel/MarginContainer/VBoxContainer/FactoriesContainer/BuiltFactories/HBoxContainer/VBoxContainer" unique_id=706811470]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7856085, 0.9850294, 0.6406663, 1)
+theme_override_font_sizes/font_size = 12
+text = "built"
+
+[node name="DestroyedFactories" type="PanelContainer" parent="Panel/MarginContainer/VBoxContainer/FactoriesContainer" unique_id=1697512160]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_ncbo6")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Panel/MarginContainer/VBoxContainer/FactoriesContainer/DestroyedFactories" unique_id=1617328070]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="TextureRect" type="TextureRect" parent="Panel/MarginContainer/VBoxContainer/FactoriesContainer/DestroyedFactories/HBoxContainer" unique_id=2047659800]
+layout_mode = 2
+texture = ExtResource("6_nt4dt")
+expand_mode = 3
+stretch_mode = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel/MarginContainer/VBoxContainer/FactoriesContainer/DestroyedFactories/HBoxContainer" unique_id=1175041508]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="DestroyLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer/FactoriesContainer/DestroyedFactories/HBoxContainer/VBoxContainer" unique_id=1368391789]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.35686275, 0.3019608, 1)
+theme_override_font_sizes/font_size = 14
+text = "-3"
+
+[node name="Label" type="Label" parent="Panel/MarginContainer/VBoxContainer/FactoriesContainer/DestroyedFactories/HBoxContainer/VBoxContainer" unique_id=66106656]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.74014354, 0.70155406, 1)
+theme_override_font_sizes/font_size = 12
+text = "destroyed"
+
+[node name="StrikesContainer" type="HBoxContainer" parent="Panel/MarginContainer/VBoxContainer" unique_id=1654096519]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="UAVPanel" type="PanelContainer" parent="Panel/MarginContainer/VBoxContainer/StrikesContainer" unique_id=1469746401]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_dbil3")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Panel/MarginContainer/VBoxContainer/StrikesContainer/UAVPanel" unique_id=680393213]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="TextureRect" type="TextureRect" parent="Panel/MarginContainer/VBoxContainer/StrikesContainer/UAVPanel/HBoxContainer" unique_id=269413585]
+layout_mode = 2
+texture = ExtResource("7_hn2dw")
+expand_mode = 3
+stretch_mode = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel/MarginContainer/VBoxContainer/StrikesContainer/UAVPanel/HBoxContainer" unique_id=2050497815]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="UAVLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer/StrikesContainer/UAVPanel/HBoxContainer/VBoxContainer" unique_id=723092671]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 14
+text = "54"
+
+[node name="Label" type="Label" parent="Panel/MarginContainer/VBoxContainer/StrikesContainer/UAVPanel/HBoxContainer/VBoxContainer" unique_id=1931641061]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5411765, 0.54509807, 0.5529412, 1)
+theme_override_font_sizes/font_size = 12
+text = "UAV"
+
+[node name="RocketsPanel" type="PanelContainer" parent="Panel/MarginContainer/VBoxContainer/StrikesContainer" unique_id=494804516]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_8uaw0")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Panel/MarginContainer/VBoxContainer/StrikesContainer/RocketsPanel" unique_id=841960536]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="TextureRect" type="TextureRect" parent="Panel/MarginContainer/VBoxContainer/StrikesContainer/RocketsPanel/HBoxContainer" unique_id=1842012258]
+layout_mode = 2
+texture = ExtResource("8_e0cn8")
+expand_mode = 3
+stretch_mode = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel/MarginContainer/VBoxContainer/StrikesContainer/RocketsPanel/HBoxContainer" unique_id=1286714675]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="RocketLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer/StrikesContainer/RocketsPanel/HBoxContainer/VBoxContainer" unique_id=1136969740]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 14
+text = "11"
+
+[node name="Label" type="Label" parent="Panel/MarginContainer/VBoxContainer/StrikesContainer/RocketsPanel/HBoxContainer/VBoxContainer" unique_id=335572679]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5411765, 0.54509807, 0.5529412, 1)
+theme_override_font_sizes/font_size = 12
+text = "rockets"

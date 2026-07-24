@@ -43,7 +43,8 @@ func _ready():
                      get_node("/root/Game/CanvasLayer/VBoxContainer/ProvinceMenu"),
                      get_node("/root/Game/CanvasLayer/VBoxContainer/DivisionMenu"),
                      get_node("/root/Game/CanvasLayer/TopMenu"),
-                     get_node("/root/Game/CanvasLayer/NotificationMenu")]
+                     get_node("/root/Game/CanvasLayer/NotificationMenu"),
+                     get_node("/root/Game/CanvasLayer/StatisticsMenu")]
 
     for b in buttons:
         b.pivot_offset = b.size / 2

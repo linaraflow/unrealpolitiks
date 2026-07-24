@@ -36,6 +36,9 @@ extends Panel
 @export var NegotiationBtn: Button
 @onready var NegotiationMenu = get_node("/root/Game/CanvasLayer/NegotiationMenu")
 
+# --- Статистика ---
+@onready var StatisticsMenu = get_node("/root/Game/CanvasLayer/StatisticsMenu")
+
 # --- Ideology ---
 @export var IdeologyCard: Control
 @export var IdeologyLabel: Label
@@ -193,6 +196,10 @@ func update_info():
 
     var is_myself = (owner_name == settings.active_country)
     var at_war = ProvinceRegistry.is_at_war(settings.active_country, owner_name)
+
+    # Статистика имеет смысл только для своей страны — если смотрим чужую, закрываем панель
+    if not is_myself:
+        StatisticsMenu.close_menu()
 
     if not is_myself:
         _update_relations_bar(DiplomacyManager.get_relation(settings.active_country, owner_name))

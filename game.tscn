@@ -16,6 +16,7 @@
 [ext_resource type="PackedScene" uid="uid://bci06whudyu82" path="res://UAVMenu.tscn" id="15_e8heu"]
 [ext_resource type="PackedScene" uid="uid://dg6fak0jljqc7" path="res://MissileMenu.tscn" id="16_boyg6"]
 [ext_resource type="PackedScene" uid="uid://bcohuv24brb7r" path="res://TopMenu.tscn" id="16_rvswv"]
+[ext_resource type="PackedScene" uid="uid://jjnqwjl47g6h" path="res://StatisticsMenu.tscn" id="17_boyg6"]
 [ext_resource type="Script" uid="uid://vkd6brrqe1wh" path="res://scripts/war_banner.gd" id="20_36jdj"]
 [ext_resource type="Script" uid="uid://4krs8r4ah56r" path="res://scripts/camera_2d.gd" id="21_xfvwf"]
 
@@ -33,6 +34,9 @@ shader_parameter/flash_ids = PackedVector3Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 shader_parameter/flash_starts = PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0)
 shader_parameter/game_time = 0.0
 shader_parameter/flash_color = Color(0.15, 1, 0.25, 1)
+shader_parameter/red_flash_ids = PackedVector3Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+shader_parameter/red_flash_starts = PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0)
+shader_parameter/red_flash_color = Color(1, 0.15, 0.1, 1)
 shader_parameter/stripe_width = 5.0
 shader_parameter/stripe_opacity = 0.45
 shader_parameter/negotiation_mode = false
@@ -195,6 +199,12 @@ offset_bottom = -1080.0
 visible = false
 offset_right = -1920.0
 offset_bottom = -1080.0
+
+[node name="StatisticsMenu" parent="CanvasLayer" unique_id=1277860925 instance=ExtResource("17_boyg6")]
+offset_left = 312.0
+offset_top = 56.0
+offset_right = -1608.0
+offset_bottom = -1024.0
 
 [node name="WarBanner" type="CanvasLayer" parent="." unique_id=317580348]
 script = ExtResource("20_36jdj")

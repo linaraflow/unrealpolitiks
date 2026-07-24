@@ -21,7 +21,8 @@ func _ready() -> void:
                      get_node("/root/Game/CanvasLayer/VBoxContainer/ProvinceMenu"),
                      get_node("/root/Game/CanvasLayer/VBoxContainer/DivisionMenu"),
                      get_node("/root/Game/CanvasLayer/TopMenu"),
-                     get_node("/root/Game/CanvasLayer/NotificationMenu")]
+                     get_node("/root/Game/CanvasLayer/NotificationMenu"),
+                     get_node("/root/Game/CanvasLayer/StatisticsMenu")]
 
     leave_button.pressed.connect(_on_leave_button_pressed)
     launch_button.pressed.connect(_on_launch_button_pressed)

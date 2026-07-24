@@ -13,6 +13,10 @@ signal battle_started(province_id: int, sides: Dictionary)
 signal battle_tick(province_id: int, sides: Dictionary)
 signal battle_ended(province_id: int, winner: String)
 
+## Эмитится каждый раз, когда сторона теряет солдат в бою (для StatsManager).
+## country — та сторона, которая понесла потери, amount — сколько людей потеряно за этот тик.
+signal casualties_inflicted(country: String, amount: int)
+
 const BASE_DAMAGE   := 10000        # фиксированный урон от всей стороны (коалиции) за один тик
 const TICK_INTERVAL  := 0.5       # секунды между тиками боя (реального времени)
 const WAR_EXHAUSTION_PER_TICK := 0.01   # усталость, начисляемая стороне за каждый боевой тик, в котором она участвует
@@ -241,7 +245,12 @@ func _process_battle_tick(province_id: int) -> bool:
         dmg_per_enemy = max(dmg_per_enemy, 0)
         
         if not enemies[0] in hit:
+            var hp_before = sides[enemies[0]]["hp"]
             sides[enemies[0]]["hp"] -= dmg_per_enemy
+            # Реальные потери не могут быть больше, чем оставалось HP (иначе статистика "перевыполняется")
+            var real_loss = min(dmg_per_enemy, hp_before)
+            if real_loss > 0:
+                casualties_inflicted.emit(enemies[0], real_loss)
             print("[Combat] Провинция %d | %s → %s: -%d HP (осталось %d) [усталость атакующего: %.2f%%]" % [
                 province_id, attacker, enemies[0], dmg_per_enemy, sides[enemies[0]]["hp"], attacker_fatigue
             ])
