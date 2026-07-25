@@ -16,6 +16,7 @@ signal country_color_changed
 ## Эмитится при установке/переносе столицы страны.
 ## province_id == -1 значит "у страны больше нет провинций" (столицу ставить некуда).
 signal capital_changed(country: String, province_id: int)
+signal country_eliminated(country: String)
 signal factory_built(province_id: int, country: String)
 ## Эмитится, когда у страны уничтожены заводы (удар БПЛА или ракетой). amount — сколько именно уничтожено.
 signal factory_destroyed(province_id: int, country: String, amount: int)
@@ -394,6 +395,14 @@ func annex_all_occupied_by(occupier: String) -> void:
             if current_owner == occupier:
                 to_annex.append(p_id)
 
+    # Запоминаем, у кого именно аннексия отбирает провинции (core_owner ДО перезаписи),
+    # чтобы после аннексии проверить — не остались ли эти страны совсем без земли.
+    var affected_old_owners: Dictionary = {}
+    for p_id in to_annex:
+        var old_core = province_data[p_id].get("core_owner", "")
+        if old_core != "" and old_core != occupier:
+            affected_old_owners[old_core] = true
+
     for p_id in to_annex:
         province_data[p_id]["against_occupation"] = ""
         province_data[p_id]["core_owner"] = occupier   # аннексия узаконивает нового владельца
@@ -401,6 +410,13 @@ func annex_all_occupied_by(occupier: String) -> void:
         province_occupied.emit(p_id, "")
 
     print("[Registry] Полосы убраны с %d провинций %s" % [to_annex.size(), occupier])
+
+    # Аннексия могла лишить кого-то из прежних владельцев ПОСЛЕДНЕЙ провинции —
+    # capture_province() тут не вызывается, поэтому _check_capital_transfer сам
+    # не сработает. Проверяем это здесь явно.
+    for old_owner in affected_old_owners:
+        if not _has_any_province_left(old_owner):
+            _eliminate_country(old_owner)
 
 ## Проверить — оккупирована ли провинция
 func is_occupied(province_id: int) -> bool:
@@ -413,6 +429,14 @@ func get_occupant(province_id: int) -> String:
 # ─── ВОЙНА ────────────────────────────────────────────────────────────────────
 
 func declare_war(attacker: String, defender: String):
+    # Снимок фабрик "на начало войны" — только когда страна входит в войну ИЗ МИРА
+    # (0 активных войн). Пока страна не вернётся к 0 войнам, снимок не обновляется,
+    # даже если по пути она объявит войну ещё кому-то или на неё нападут ещё раз.
+    if war_relations.get(attacker, []).is_empty():
+        countries_data[attacker]["prewar_factories"] = countries_data[attacker].get("factories", 0)
+    if war_relations.get(defender, []).is_empty():
+        countries_data[defender]["prewar_factories"] = countries_data[defender].get("factories", 0)
+
     if not war_relations.has(attacker):
         war_relations[attacker] = []
     if not war_relations.has(defender):
@@ -432,6 +456,18 @@ func declare_war(attacker: String, defender: String):
 func is_at_war(country_a: String, country_b: String) -> bool:
     return war_relations.get(country_a, []).has(country_b)
 
+## Доля фабрик, уничтоженных с начала текущей серии войн (0..1).
+## Возвращает 0, если снимок "довоенных фабрик" ещё не сделан (страна не воевала)
+## или довоенных фабрик было 0 (нечего разрушать в процентах).
+func get_factory_destruction_ratio(country: String) -> float:
+    if not countries_data.has(country):
+        return 0.0
+    var prewar: int = int(countries_data[country].get("prewar_factories", -1))
+    if prewar <= 0:
+        return 0.0
+    var current: int = int(countries_data[country].get("factories", 0))
+    return clamp(1.0 - (float(current) / float(prewar)), 0.0, 1.0)
+
 func end_war(country_a: String, country_b: String) -> void:
     if war_relations.has(country_a):
         war_relations[country_a].erase(country_b)
@@ -441,10 +477,12 @@ func end_war(country_a: String, country_b: String) -> void:
     if war_relations.get(country_a, []).is_empty():
         if countries_data.has(country_a):
             countries_data[country_a]["is_at_war"] = false
+            countries_data[country_a]["prewar_factories"] = -1  # снимок устареет, обновится в следующей войне
 
     if war_relations.get(country_b, []).is_empty():
         if countries_data.has(country_b):
             countries_data[country_b]["is_at_war"] = false
+            countries_data[country_b]["prewar_factories"] = -1
 
     # Останавливаем все текущие бои между этими двумя странами — иначе бой,
     # не имея урона (обе стороны больше не at_war), навсегда "зависает"
@@ -528,6 +566,43 @@ func _save_capital_to_file(country: String, province_id: int) -> void:
     print("[Registry] countries.json обновлён: capital[%s] = %d" % [country, province_id])
 
 
+## Есть ли у страны хоть одна провинция — своя (owner) или "по праву" (core_owner,
+## временно оккупированная, но гарантированно вернётся после мира).
+## ignore_p_id — опционально исключить одну провинцию из проверки (например,
+## ту, что как раз в этот момент захватывается — до того как owner в ней сменился).
+func _has_any_province_left(country: String, ignore_p_id: int = -1) -> bool:
+    for p_id in province_data.keys():
+        if int(p_id) == ignore_p_id:
+            continue
+        var p = province_data[p_id]
+        if p.get("owner", "") == country:
+            return true
+        if p.get("core_owner", p.get("owner", "")) == country:
+            return true
+    return false
+
+## Полное уничтожение страны: убираем столицу, снимаем войны, стираем из countries_data.
+## Вызывать только когда точно установлено, что у страны не осталось НИ одной
+## провинции (ни своей, ни core-owned).
+func _eliminate_country(country: String) -> void:
+    if not countries_data.has(country):
+        return
+
+    print("[Registry] Страна %s потеряла последнюю провинцию (столицу)" % country)
+    # Сначала чистим поле в самих данных — чтобы к моменту сигнала
+    # никто, читающий countries_data напрямую, не увидел старую столицу.
+    countries_data[country]["capital"] = -1
+    # Сигналим -1, чтобы карта убрала звёздочку столицы у уничтоженной страны
+    capital_changed.emit(country, -1)
+
+    # Снимаем со всех оставшихся врагов состояние "война" с мёртвой страной
+    for enemy in war_relations.get(country, []).duplicate():
+        end_war(country, enemy)
+    war_relations.erase(country)
+
+    country_eliminated.emit(country)
+    countries_data.erase(country)
+
 func _check_capital_transfer(captured_p_id: int, old_owner: String) -> void:
     if not countries_data.has(old_owner):
         return
@@ -536,26 +611,74 @@ func _check_capital_transfer(captured_p_id: int, old_owner: String) -> void:
     
     # Если захваченная провинция — это столица
     if current_capital == captured_p_id:
-        var available_provinces = []
-        
-        # Собираем все оставшиеся провинции страны
+        # Провинции, которыми страна владеет ПРЯМО СЕЙЧАС (не оккупированы) —
+        # в первую очередь переносим столицу туда.
+        var owned_provinces: Array = []
+        # Провинции, где страна остаётся ИСТИННЫМ (core) владельцем, но сейчас
+        # оккупированы кем-то другим. Они гарантированно вернутся после мира —
+        # поэтому из-за них страну считать уничтоженной НЕЛЬЗЯ.
+        var core_provinces: Array = []
+
         for p_id in province_data.keys():
-            if province_data[p_id].get("owner", "") == old_owner and int(p_id) != captured_p_id:
-                available_provinces.append(int(p_id))
-                
-        # Если есть куда переносить — выбираем случайную
-        if not available_provinces.is_empty():
-            var new_capital = available_provinces.pick_random()
+            var p = province_data[p_id]
+
+            # "Владение" (owner) у захваченной провинции уже реально сменилось —
+            # её исключаем из owned_provinces.
+            if int(p_id) != captured_p_id and p.get("owner", "") == old_owner:
+                owned_provinces.append(int(p_id))
+
+            # А вот core_owner при обычной оккупации НЕ меняется (меняется только
+            # при аннексии, см. annex_all_occupied_by) — поэтому захваченную
+            # провинцию из этой проверки исключать нельзя: если она "core" страны,
+            # страна формально всё ещё жива и продолжает воевать, даже будучи
+            # оккупированной целиком.
+            #
+            # ВАЖНО: смотрим именно на явно выставленный ключ core_owner (его
+            # ставит ТОЛЬКО occupy_province при военной оккупации), а не на
+            # p.get("core_owner", p.get("owner", "")) с фолбэком на owner.
+            # Если ключа core_owner нет — значит владение провинцией меняется
+            # ОКОНЧАТЕЛЬНО (мирный договор "забрать все территории" / прямой
+            # capture_province, минуя occupy_province), и на момент этой проверки
+            # p["owner"] ещё не переписан на нового владельца (это происходит
+            # чуть позже в capture_province) — поэтому фолбэк на owner ошибочно
+            # засчитывал такую провинцию как "core" старой страны и не давал
+            # её уничтожить, а столица навсегда "застревала" на уже полностью
+            # чужой территории.
+            if p.get("core_owner", "") == old_owner:
+                core_provinces.append(int(p_id))
+
+        # Есть куда перенести столицу среди своих (не оккупированных) провинций
+        if not owned_provinces.is_empty():
+            var new_capital = owned_provinces.pick_random()
             countries_data[old_owner]["capital"] = new_capital
             print("[Registry] Столица %s перенесена в провинцию %d" % [old_owner, new_capital])
             capital_changed.emit(old_owner, new_capital)
-        else:
-            print("[Registry] Страна %s потеряла последнюю провинцию (столицу)" % old_owner)
-            # Сигналим -1, чтобы карта убрала звёздочку столицы у уничтоженной страны
-            capital_changed.emit(old_owner, -1)
+            return
+
+        # Своих (не оккупированных) провинций нет, но страна ещё жива —
+        # у неё остались провинции, которые по праву принадлежат ей и вернутся
+        # после заключения мира. Временно "паркуем" столицу на одной из них.
+        if not core_provinces.is_empty():
+            var parked_capital = core_provinces.pick_random()
+            countries_data[old_owner]["capital"] = parked_capital
+            print("[Registry] %s полностью оккупирована, столица временно перенесена в %d (ждёт освобождения)" % [old_owner, parked_capital])
+            capital_changed.emit(old_owner, parked_capital)
+            return
+
+        # Ни своих, ни core-owned провинций не осталось — страна реально уничтожена.
+        _eliminate_country(old_owner)
 
 
 # ЭКОНОМИКА
+## Точечно корректирует monthly_income страны при изменении численности войск
+## (вызывается при найме в DivisionManager и при потерях в CombatManager —
+## O(1), без обхода всех провинций/стран)
+func adjust_monthly_income_for_troops(country: String, troop_delta: int) -> void:
+    if not countries_data.has(country):
+        return
+    var current = float(countries_data[country].get("monthly_income", 0.0))
+    countries_data[country]["monthly_income"] = current - troop_delta * 100.0
+
 func _process_economy() -> void:
     var to_remove = []
     

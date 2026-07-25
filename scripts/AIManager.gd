@@ -85,7 +85,7 @@ var safe_provinces_list: Array = []
 # Минимальный баланс-резерв, который ИИ НЕ тратит на фабрики (чтобы не уходить в ноль)
 const RESERVE_RATIO        = 0.05   # 5% резерва сверх стоимости
 const FACTORY_COOLDOWN_DAYS = 30    # раз в 30 дней запускаем цикл строительства фабрик
-const FACTORY_BUDGET_FRACTION = 0.6 # ИИ тратит на фабрики до 60% текущего баланса за один заход
+const FACTORY_BUDGET_FRACTION = 0.4 # ИИ тратит на фабрики до 40% текущего баланса за один заход
 const MAX_QUEUE_PER_PROVINCE = 5    # максимум фабрик в очереди одной провинции
 const RECRUIT_COOLDOWN_DAYS = 5     # раз в 5 дней нанимаем войска
 const MIN_RECRUIT_SIZE      = 50    # минимальный размер призыва

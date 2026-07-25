@@ -157,7 +157,7 @@ void fragment() {
     int selected_b = int(selected_province_color.b * 255.0 + 0.5);
     int mask_b     = int(mask.b * 255.0 + 0.5);
 
-    if (selected_r >= 0 && selected_r == mask_r && selected_g == mask_g && selected_b == mask_b) {
+    if (!is_border_pixel && selected_r >= 0 && selected_r == mask_r && selected_g == mask_g && selected_b == mask_b) {
         float t     = highlight_time;
         float alpha = 0.2;
         if (t > 3.0) {

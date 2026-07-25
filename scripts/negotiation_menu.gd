@@ -120,6 +120,14 @@ func _on_send_demands_pressed() -> void:
         ProvinceRegistry.province_occupants.erase(p_id)
         ProvinceRegistry.province_data[p_id]["core_owner"] = settings.active_country
 
+        # Провинция могла быть столицей врага (в т.ч. "припаркованной" туда при
+        # полной оккупации). Раньше это никак не проверялось — core_owner менялся
+        # напрямую, минуя capture_province(), поэтому если забирали ВСЕ провинции
+        # врага, его столица навсегда оставалась висеть на уже нашей территории,
+        # а сама страна не считалась уничтоженной. Теперь по той же логике, что
+        # и при обычном захвате, проверяем перенос/потерю столицы врага.
+        ProvinceRegistry._check_capital_transfer(p_id, _enemy)
+
     for p_id in _occupied_snapshot:
         if not p_id in _claimed:
             var original_owner = _occupied_snapshot[p_id]
@@ -142,6 +150,11 @@ func _on_send_demands_pressed() -> void:
             ProvinceRegistry.province_data[key]["against_occupation"] = ""
             ProvinceRegistry.province_occupants.erase(p_id)
             ProvinceRegistry.province_occupied.emit(p_id, "")
+
+            # Зеркально шагу 1: если этой провинцией была наша столица (или мы
+            # отдаём вообще всю территорию), проверяем перенос/потерю столицы игрока.
+            ProvinceRegistry._check_capital_transfer(p_id, settings.active_country)
+
             print("[Negotiation] Провинция %d передана врагу %s" % [p_id, _enemy])
 
     # 3. Военные репарации — переводим деньги игроку, у врага уходит в минус при нехватке

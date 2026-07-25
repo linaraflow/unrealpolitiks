@@ -34,6 +34,7 @@ var settings = preload("res://new_resource.tres")
 
 
 @onready var _panel: Control = $Panel
+@onready var _negotiation_menu = get_node("/root/Game/CanvasLayer/NegotiationMenu")
 
 @onready var _wars_list: Node = $Panel/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer
 @onready var _war_template: Control = $Panel/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/WarContainer
@@ -220,6 +221,7 @@ func _fill_war_entry(entry: Control, war: Dictionary) -> void:
     var day_label = entry.find_child("DayLabel", true, false)
     var your_label = entry.find_child("YourLabel", true, false)
     var enemy_label = entry.find_child("EnemyLabel", true, false)
+    var negotiation_btn = entry.find_child("Negotiation", true, false)
 
     if again_label:
         again_label.text = "Against %s" % war["enemy"]
@@ -229,6 +231,20 @@ func _fill_war_entry(entry: Control, war: Dictionary) -> void:
         your_label.text = _format_number(war["my_losses"])
     if enemy_label:
         enemy_label.text = _format_number(war["enemy_losses"])
+
+    if negotiation_btn:
+        # Каждый раз при переиспользовании панельки враг мог поменяться —
+        # отвязываем старый обработчик (если был) и вешаем новый с актуальным enemy.
+        for callable in negotiation_btn.pressed.get_connections():
+            negotiation_btn.pressed.disconnect(callable["callable"])
+        negotiation_btn.pressed.connect(_on_negotiation_btn_pressed.bind(war["enemy"]))
+
+
+## Делает то же самое, что _on_negotiation_pressed() в panel.gd:
+## открывает меню переговоров с указанной страной.
+func _on_negotiation_btn_pressed(enemy: String) -> void:
+    close_menu()
+    _negotiation_menu.open_negotiation(enemy)
 
 
 func _get_active_wars(country: String) -> Array:

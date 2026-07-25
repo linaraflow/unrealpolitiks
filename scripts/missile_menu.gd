@@ -37,7 +37,7 @@ func open_missile_mode(enemies: Array) -> void:
     selected_target = -1
 
     Map.enter_missile_mode(enemies)
-    GameClock.paused = true
+    GameClock.lock_pause()
 
     for menu in menu_to_close:
         menu.hide()
@@ -91,7 +91,7 @@ func _on_leave_button_pressed() -> void:
 ## Закрыть меню и вернуть карту/UI в обычный режим.
 func close_missile_mode() -> void:
     Map.exit_missile_mode()  # exit_missile_mode() сам чистит линию цели
-    GameClock.toggle_pause()
+    GameClock.unlock_pause()  # снимаем блокировку, но игра остаётся на паузе
     _enemies = []
     selected_target = -1
 

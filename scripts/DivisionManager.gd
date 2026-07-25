@@ -54,6 +54,9 @@ func recruit(province_id: int, local_pos: Vector2, recruit_amount: int):
     p_data["population"] -= recruit_amount
     p_data["army"]["land"] += recruit_amount
 
+    # Содержание новобранцев сразу ложится на месячный доход страны (O(1))
+    ProvinceRegistry.adjust_monthly_income_for_troops(owner_id, recruit_amount)
+
     if not armies.has(province_id):
         armies[province_id] = []
 
@@ -187,6 +190,9 @@ func kill_percent_in_province(province_id: int, kill_ratio: float) -> void:
         for owner_id in owners_lost:
             total_lost += owners_lost[owner_id]
         p_data["army"]["land"] = max(0, p_data["army"].get("land", 0) - total_lost)
+
+    for owner_id in owners_lost:
+        ProvinceRegistry.adjust_monthly_income_for_troops(owner_id, -owners_lost[owner_id])
 
     for owner_id in owners_lost:
         if CombatManager.active_battles.has(province_id):

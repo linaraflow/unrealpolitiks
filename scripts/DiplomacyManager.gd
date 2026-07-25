@@ -5,6 +5,14 @@ var settings = preload("res://new_resource.tres")
 signal sanctions_imposed(attacker: String, target: String)
 signal sanctions_removed(attacker: String, target: String)
 
+## Эмитится при свержении режима ЛЮБОЙ страны (и ИИ, и игрока — одинаково).
+## Слушайте этот сигнал в UI, чтобы показать ивент/уведомление "режим пал".
+signal regime_collapsed(country: String, old_ideology: String, new_ideology: String)
+
+## Эмитится ТОЛЬКО если рухнувшая страна — игрок.
+## Повесьте на этот сигнал экран game over в GameManager/UI.
+signal player_regime_collapsed(country: String, old_ideology: String, new_ideology: String)
+
 const IDEOLOGIES = {
     "liberalism": {"tax": 1.0, "war": 0.5, "peace": 1.5, "mil": 0.8, "eco": 1.2},
     "parliamentary_republic": {"tax": 1.1, "war": 0.6, "peace": 1.3, "mil": 0.9, "eco": 1.1},
@@ -21,6 +29,43 @@ const IDEOLOGIES = {
 
 # Хранит активные процессы: "sender_target" -> {"sender": String, "target": String, "days_left": int, "type": String}
 var active_processes: Dictionary = {}
+
+# ─── СВЕРЖЕНИЕ РЕЖИМА ──────────────────────────────────────────────────────────
+
+## Пороги устойчивости режима по идеологиям.
+## exhaustion_threshold — усталость от войны (0..100), начиная с которой копится риск.
+## happiness_threshold  — счастье страны (0..100); риск копится, если счастье НИЖЕ этого значения.
+## Авторитарные режимы подавляют недовольство и держатся дольше (высокий exhaustion_threshold,
+## низкий happiness_threshold), демократии зависят от общественного мнения и падают раньше.
+const REGIME_STABILITY = {
+    "liberalism":             {"exhaustion_threshold": 65.0, "happiness_threshold": 35.0},
+    "parliamentary_republic": {"exhaustion_threshold": 65.0, "happiness_threshold": 35.0},
+    "oligarchy":               {"exhaustion_threshold": 70.0, "happiness_threshold": 32.0},
+    "monarchy":                {"exhaustion_threshold": 75.0, "happiness_threshold": 30.0},
+    "socialism":               {"exhaustion_threshold": 78.0, "happiness_threshold": 28.0},
+    "islamic_republic":        {"exhaustion_threshold": 80.0, "happiness_threshold": 25.0},
+    "communism":               {"exhaustion_threshold": 88.0, "happiness_threshold": 20.0},
+    "fascism":                 {"exhaustion_threshold": 90.0, "happiness_threshold": 18.0},
+    "dictatorship":            {"exhaustion_threshold": 90.0, "happiness_threshold": 15.0},
+    "neo_nazism":              {"exhaustion_threshold": 92.0, "happiness_threshold": 15.0},
+    "military_junta":          {"exhaustion_threshold": 92.0, "happiness_threshold": 15.0},
+}
+
+## Пороги по умолчанию для идеологий, которых почему-то нет в REGIME_STABILITY.
+const REGIME_STABILITY_DEFAULT = {"exhaustion_threshold": 80.0, "happiness_threshold": 25.0}
+
+## Базовый и максимальный шанс свержения В ДЕНЬ, когда показатель находится
+## ровно на пороге / в самой критической точке (усталость=100 или счастье=0).
+const REGIME_COLLAPSE_BASE_CHANCE := 0.02
+const REGIME_COLLAPSE_MAX_CHANCE := 0.15
+
+## Сколько усталости "сбрасывается" новому режиму после свержения (переходный период).
+const REGIME_COLLAPSE_EXHAUSTION_RESET := 40.0
+
+## Сколько дней после свержения новый режим "неприкасаем" — не может рухнуть снова
+## (ни от усталости/счастья, ни от разрушенных фабрик). Без этого разрушенные
+## фабрики никуда не деваются и режим будет валиться каждый день подряд.
+const REGIME_COLLAPSE_IMMUNITY_DAYS := 60
 
 func _ready() -> void:
     GameClock.on_day_passed.connect(_on_day_passed_diplomacy)
@@ -39,6 +84,174 @@ func _on_day_passed_diplomacy(_date: Dictionary) -> void:
         elif proc["type"] == "worsen":
             change_relation(proc["sender"], proc["target"], -15.0)
         active_processes.erase(key)
+
+    _tick_regime_immunity()
+    _check_regime_collapses()
+
+## Раз в день уменьшаем счётчик "неприкасаемости" новых режимов.
+func _tick_regime_immunity() -> void:
+    var c_data = ProvinceRegistry.countries_data
+    for country in c_data.keys():
+        var immunity: int = int(c_data[country].get("regime_collapse_immunity_days", 0))
+        if immunity > 0:
+            c_data[country]["regime_collapse_immunity_days"] = immunity - 1
+
+## Пороги устойчивости конкретной страны исходя из её текущей идеологии.
+func get_regime_stability(country: String) -> Dictionary:
+    var c_data = ProvinceRegistry.countries_data
+    var ideology: String = c_data.get(country, {}).get("ideology", "")
+    return REGIME_STABILITY.get(ideology, REGIME_STABILITY_DEFAULT)
+
+## Доля уничтоженных фабрик (от довоенного количества), при превышении которой
+## режим падает гарантированно (это не шанс/день, а прямой триггер, как потеря столицы).
+const REGIME_COLLAPSE_FACTORY_DESTRUCTION_RATIO := 0.5
+
+## Раз в день проверяем всех воюющих стран на риск свержения режима.
+## У каждой идеологии свой предел усталости и свой предел счастья (см. REGIME_STABILITY).
+## Риск копится, если превышен ХОТЯ БЫ ОДИН из двух порогов — берём худший случай.
+## Отдельно: если с начала войны уничтожено больше половины довоенных фабрик —
+## режим падает гарантированно, независимо от усталости/счастья.
+func _check_regime_collapses() -> void:
+    var c_data = ProvinceRegistry.countries_data
+    for country in c_data.keys():
+        var at_war = not ProvinceRegistry.war_relations.get(country, []).is_empty()
+        if not at_war:
+            continue
+
+        if int(c_data[country].get("regime_collapse_immunity_days", 0)) > 0:
+            continue
+
+        if ProvinceRegistry.get_factory_destruction_ratio(country) >= REGIME_COLLAPSE_FACTORY_DESTRUCTION_RATIO:
+            trigger_regime_collapse(country)
+            continue
+
+        var stability = get_regime_stability(country)
+        var exhaustion_threshold: float = stability["exhaustion_threshold"]
+        var happiness_threshold: float = stability["happiness_threshold"]
+
+        var exhaustion: float = ProvinceRegistry.get_war_exhaustion(country)
+        var happiness: float = float(c_data[country].get("happiness", 50.0))
+
+        # Насколько мы за порогом усталости (0..1, 0 = на пороге, 1 = максимум усталости)
+        var t_exhaustion: float = 0.0
+        if exhaustion >= exhaustion_threshold:
+            t_exhaustion = clamp((exhaustion - exhaustion_threshold) / max(100.0 - exhaustion_threshold, 0.001), 0.0, 1.0)
+
+        # Насколько мы ниже порога счастья (0..1, 0 = на пороге, 1 = счастье == 0)
+        var t_happiness: float = 0.0
+        if happiness <= happiness_threshold:
+            t_happiness = clamp((happiness_threshold - happiness) / max(happiness_threshold, 0.001), 0.0, 1.0)
+
+        var t = max(t_exhaustion, t_happiness)
+        if t <= 0.0:
+            continue
+
+        var chance = lerp(REGIME_COLLAPSE_BASE_CHANCE, REGIME_COLLAPSE_MAX_CHANCE, t)
+
+        if randf() < chance:
+            trigger_regime_collapse(country)
+
+## Определяет, является ли страна игроком.
+func _is_player_country(country: String) -> bool:
+    return settings.active_country == country
+
+## ГЛАВНАЯ ФУНКЦИЯ: свергает режим страны.
+## - Меняет идеологию на новую (случайную, если forced_ideology не задан).
+## - Отдаёт все провинции, которые country удерживает оккупацией, их законным владельцам.
+## - Все провинции самой country, которые на момент свержения оккупированы врагом,
+##   окончательно переходят оккупанту (аннексируются).
+## - Если страна — игрок, эмитит player_regime_collapsed (вешайте на это game over).
+## - Если ИИ — просто меняет идеологию и территории, война продолжается.
+func trigger_regime_collapse(country: String, forced_ideology: String = "") -> void:
+    var c_data = ProvinceRegistry.countries_data
+    if not c_data.has(country):
+        return
+
+    var old_ideology: String = c_data[country].get("ideology", "")
+
+    var new_ideology: String = forced_ideology
+    if new_ideology == "" or not IDEOLOGIES.has(new_ideology):
+        new_ideology = _pick_random_ideology(old_ideology)
+
+    c_data[country]["ideology"] = new_ideology
+
+    # Переходный период: новый режим ещё не консолидировал власть, но усталость
+    # частично снимается — иначе страна тут же рухнет второй раз подряд.
+    c_data[country]["war_exhaustion"] = min(
+        ProvinceRegistry.get_war_exhaustion(country),
+        REGIME_COLLAPSE_EXHAUSTION_RESET
+    )
+
+    c_data[country]["regime_collapse_immunity_days"] = REGIME_COLLAPSE_IMMUNITY_DAYS
+
+    _resolve_regime_collapse_territories(country)
+
+    # Если после передела территорий у страны не осталось ни одной провинции
+    # (ни своей, ни оккупированной) — она физически перестала существовать,
+    # даже если официальный мир так и не заключён. Вычёркиваем её полностью,
+    # иначе она будет бесконечно "менять идеологию" без единого клочка земли.
+    if ProvinceRegistry.owner_province_count.get(country, 0) <= 0:
+        print("[Diplomacy] %s потеряла все территории после свержения — страна уничтожена" % country)
+        ProvinceRegistry._eliminate_country(country)
+        return
+
+    print("[Diplomacy] РЕЖИМ СВЕРГНУТ: %s (%s -> %s)" % [country, old_ideology, new_ideology])
+    regime_collapsed.emit(country, old_ideology, new_ideology)
+
+    if _is_player_country(country):
+        player_regime_collapsed.emit(country, old_ideology, new_ideology)
+
+## Случайная идеология, отличная от текущей.
+func _pick_random_ideology(exclude: String) -> String:
+    var options: Array = []
+    for id in IDEOLOGIES.keys():
+        if id != exclude:
+            options.append(id)
+    if options.is_empty():
+        return exclude
+    return options[randi() % options.size()]
+
+## Территориальные последствия свержения режима:
+## 1) провинции, которые country держит оккупацией (её войска стоят на чужой земле) —
+##    возвращаются их истинным владельцам ("фронт сыпется").
+## 2) провинции самой country, которые на данный момент оккупированы врагом —
+##    окончательно закрепляются за оккупантом ("центр больше не может их удержать").
+func _resolve_regime_collapse_territories(country: String) -> void:
+    var province_data = ProvinceRegistry.province_data
+    var province_occupants = ProvinceRegistry.province_occupants
+
+    var to_liberate: Array = []   # провинции, оккупированные country -> вернуть core_owner'у
+    var to_annex: Array = []      # провинции country, оккупированные врагом -> закрепить за оккупантом
+
+    for p_id in province_data.keys():
+        var p = province_data[p_id]
+        var owner: String = p.get("owner", "")
+        var core_owner: String = p.get("core_owner", owner)
+
+        if owner == country and core_owner != country and core_owner != "":
+            # country удерживает чужую провинцию оккупацией
+            to_liberate.append(p_id)
+        elif core_owner == country and owner != country and owner != "" and owner != ProvinceRegistry.SEA_OWNER:
+            # чужая страна удерживает провинцию country
+            to_annex.append(p_id)
+
+    for p_id in to_liberate:
+        var core_owner: String = province_data[p_id].get("core_owner", "")
+        province_data[p_id]["against_occupation"] = ""
+        province_occupants.erase(p_id)
+        ProvinceRegistry.capture_province(p_id, core_owner)
+        ProvinceRegistry.province_occupied.emit(p_id, "")
+
+    for p_id in to_annex:
+        var occupier: String = province_data[p_id].get("owner", "")
+        province_data[p_id]["against_occupation"] = ""
+        province_data[p_id]["core_owner"] = occupier
+        province_occupants.erase(p_id)
+        ProvinceRegistry.province_occupied.emit(p_id, "")
+
+    print("[Diplomacy] Территории после свержения %s: возвращено %d, аннексировано %d" % [
+        country, to_liberate.size(), to_annex.size()
+    ])
 
 func start_relations_process(sender: String, target: String, type: String) -> bool:
     var key = sender + "_" + target

@@ -17,9 +17,15 @@ signal battle_ended(province_id: int, winner: String)
 ## country — та сторона, которая понесла потери, amount — сколько людей потеряно за этот тик.
 signal casualties_inflicted(country: String, amount: int)
 
-const BASE_DAMAGE   := 10000        # фиксированный урон от всей стороны (коалиции) за один тик
+# ═══ ИЗМЕНЕНО ═══════════════════════════════════════════════════════════════
+# Урон зависит от численности армии:
+#   урон стороны за тик = (сумма солдат всех её кружков) × DAMAGE_PER_SOLDIER
+# При DAMAGE_PER_SOLDIER = 1.0: 5000 войск → 5000 урона, 100000 войск → 100000 урона.
+# Хочешь более долгие бои — поставь, например, 0.1 (5000 войск → 500 урона за тик).
+const DAMAGE_PER_SOLDIER := 0.5
+# ════════════════════════════════════════════════════════════════════════════
 const TICK_INTERVAL  := 0.5       # секунды между тиками боя (реального времени)
-const WAR_EXHAUSTION_PER_TICK := 0.01   # усталость, начисляемая стороне за каждый боевой тик, в котором она участвует
+const WAR_EXHAUSTION_PER_TICK := 0.1  # усталость, начисляемая стороне за каждый боевой тик, в котором она участвует
 
 # Активные бои: province_id -> { "sides": { "CountryA": {...}, "CountryB": {...} }, "timer": float }
 # Структура стороны: { "countries": [str], "circles": [ArmyCircle], "hp": int }
@@ -111,7 +117,6 @@ func _start_battle(province_id: int, countries_present: Dictionary) -> void:
     battle_started.emit(province_id, sides)
 
 ## Перестраивает стороны боя без сброса HP (при подходе подкреплений)
-## Перестраивает стороны боя без сброса HP (при подходе подкреплений)
 func _refresh_battle_sides(province_id: int, countries_present: Dictionary) -> void:
     var battle = active_battles[province_id]
     
@@ -171,6 +176,8 @@ func _build_sides(province_id: int, countries_present: Dictionary) -> Dictionary
     
     return sides
 
+## Суммарное число солдат стороны.
+## Используется и для HP, и для расчёта урона (урон = численность × DAMAGE_PER_SOLDIER).
 func _calc_side_max_hp(circles: Array) -> int:
     var total_soldiers := 0
     for circle in circles:
@@ -196,11 +203,10 @@ func _process_all_battles(delta: float) -> void:
 func _process_battle_tick(province_id: int) -> bool:
     var battle = active_battles[province_id]
     var sides: Dictionary = battle["sides"]
-    var side_keys = sides.keys()
     
     # Убираем стороны у которых больше нет кружков в провинции
     var to_remove: Array = []
-    for country in side_keys:
+    for country in sides.keys():
         var valid_circles := _get_valid_circles(sides[country]["circles"], province_id, country)
         sides[country]["circles"] = valid_circles
         if valid_circles.is_empty():
@@ -209,19 +215,30 @@ func _process_battle_tick(province_id: int) -> bool:
     for country in to_remove:
         sides.erase(country)
     
-    if sides.size() < 2:
-        # Бой завершён — победитель тот кто остался
-        var winner = sides.keys()[0] if not sides.is_empty() else ""
+    # ═══ ФИКС ═══ Список сторон берём ПОСЛЕ чистки (раньше использовался
+    # side_keys, снятый до удаления сторон — был риск обращения к мёртвой стороне)
+    var side_keys = sides.keys()
+    
+    # ═══ ФИКС ═══ Бой завершён, если осталась одна сторона ИЛИ оставшиеся
+    # стороны больше ни с кем не воюют (A и B совместно добили общего врага C,
+    # но друг с другом не воюют — раньше такой бой зависал навсегда).
+    if side_keys.size() < 2 or not _has_enemies_pair(sides):
+        var winner: String = side_keys[0] if side_keys.size() == 1 else ""
         print("[Combat] Бой в провинции %d завершён. Победитель: %s" % [province_id, winner])
         battle_ended.emit(province_id, winner)
         return true
     
-    # ── Рассчитываем урон (ФИКСИРОВАННЫЙ НА ВСЮ СТОРОНУ) ─────────────────────
+    # ── Рассчитываем урон: ЗАВИСИТ ОТ ЧИСЛЕННОСТИ ────────────────────────────
+    # Урон стороны = суммарные солдаты × DAMAGE_PER_SOLDIER × (1 - усталость/100).
+    # Считаем ДО применения урона, чтобы все стороны били одновременно
+    # по численности на начало тика.
     var damage_dealt: Dictionary = {}   # country -> damage
     
     for country in sides:
-        # Урон не зависит от количества кружков — вся армия страны в этой провинции наносит ровно BASE_DAMAGE.
-        damage_dealt[country] = BASE_DAMAGE
+        var soldiers := _calc_side_max_hp(sides[country]["circles"])
+        var fatigue := ProvinceRegistry.get_war_exhaustion(country)
+        var dmg := int(soldiers * DAMAGE_PER_SOLDIER * (1.0 - fatigue / 100.0))
+        damage_dealt[country] = max(dmg, 0)
     
     # Применяем урон (все стороны бьют одновременно)
     var to_eliminate: Array = []
@@ -239,10 +256,7 @@ func _process_battle_tick(province_id: int) -> bool:
         if enemies.is_empty():
             continue
         
-        # Усталость от войны снижает урон атакующей стороны: BASE_DAMAGE * (1 - усталость/100)
-        var attacker_fatigue = ProvinceRegistry.get_war_exhaustion(attacker)
-        var dmg_per_enemy = int(BASE_DAMAGE * (1.0 - attacker_fatigue / 100.0))
-        dmg_per_enemy = max(dmg_per_enemy, 0)
+        var dmg_per_enemy: int = damage_dealt[attacker]
         
         if not enemies[0] in hit:
             var hp_before = sides[enemies[0]]["hp"]
@@ -251,14 +265,14 @@ func _process_battle_tick(province_id: int) -> bool:
             var real_loss = min(dmg_per_enemy, hp_before)
             if real_loss > 0:
                 casualties_inflicted.emit(enemies[0], real_loss)
-            print("[Combat] Провинция %d | %s → %s: -%d HP (осталось %d) [усталость атакующего: %.2f%%]" % [
-                province_id, attacker, enemies[0], dmg_per_enemy, sides[enemies[0]]["hp"], attacker_fatigue
+                ProvinceRegistry.adjust_monthly_income_for_troops(enemies[0], -real_loss)
+            print("[Combat] Провинция %d | %s (численность: %d) → %s: -%d HP (осталось %d) [усталость атакующего: %.2f%%]" % [
+                province_id, attacker, _calc_side_max_hp(sides[attacker]["circles"]), enemies[0],
+                dmg_per_enemy, sides[enemies[0]]["hp"], ProvinceRegistry.get_war_exhaustion(attacker)
             ])
             hit.append(enemies[0])
         
         # Атакующая сторона получает усталость от войны за участие в этом тике боя.
-        # Если страна воюет одновременно в нескольких провинциях — усталость суммируется,
-        # так как тик каждой провинции обрабатывается независимо и вызывает этот код отдельно.
         ProvinceRegistry.add_war_exhaustion(attacker, WAR_EXHAUSTION_PER_TICK)
     
     # ── Синхронизируем солдат кружков с текущим HP ───────────────────────────
@@ -277,13 +291,25 @@ func _process_battle_tick(province_id: int) -> bool:
     
     battle_tick.emit(province_id, sides)
     
-    # Если осталась одна или ноль сторон — бой окончен
-    if sides.size() < 2:
-        var winner = sides.keys()[0] if not sides.is_empty() else ""
+    # ═══ ФИКС ═══ Та же проверка после уничтожения проигравших:
+    # если оставшиеся стороны не воюют между собой — бой окончен.
+    var remaining_keys = sides.keys()
+    if remaining_keys.size() < 2 or not _has_enemies_pair(sides):
+        var winner: String = remaining_keys[0] if remaining_keys.size() == 1 else ""
         print("[Combat] Бой в провинции %d завершён. Победитель: %s" % [province_id, winner])
         battle_ended.emit(province_id, winner)
         return true
     
+    return false
+
+## Есть ли среди оставшихся сторон боя хотя бы одна враждующая пара.
+## Если нет — бой считается завершённым (совместная победа / все враги выбиты).
+func _has_enemies_pair(sides: Dictionary) -> bool:
+    var keys = sides.keys()
+    for i in range(keys.size()):
+        for j in range(i + 1, keys.size()):
+            if ProvinceRegistry.is_at_war(keys[i], keys[j]):
+                return true
     return false
 
 ## Синхронизирует солдат кружков с текущим HP стороны

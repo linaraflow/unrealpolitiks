@@ -18,6 +18,10 @@ var year: int = 2012
 var speed_index: int = 1          # текущая скорость (индекс в SPEEDS)
 var paused: bool = true
 
+# Когда true — пробел (и toggle_pause в целом) не может снять/поставить паузу.
+# Включается меню ракет/БПЛА на время своей работы.
+var input_locked: bool = false
+
 var _accumulated: float = 0.0
 
 func _ready():
@@ -59,6 +63,8 @@ func set_speed(index: int):
     emit_signal("on_speed_changed", SPEEDS[speed_index])
 
 func toggle_pause():
+    if input_locked:
+        return
     if settings.negotiation_mode == false:
         if not settings.can_draw:
             return
@@ -68,6 +74,20 @@ func toggle_pause():
 func auto_pause():          # вызывать при важных событиях
     paused = true
     emit_signal("on_pause_changed", paused)
+
+## Поставить игру на паузу и заблокировать её снятие (в т.ч. пробелом),
+## пока не будет вызван unlock_pause(). Использовать при открытии
+## меню ракет/БПЛА.
+func lock_pause() -> void:
+    input_locked = true
+    if not paused:
+        paused = true
+        emit_signal("on_pause_changed", paused)
+
+## Снять блокировку паузы. Сама пауза НЕ снимается — игра остаётся
+## на паузе, пока игрок сам не нажмёт пробел/кнопку скорости.
+func unlock_pause() -> void:
+    input_locked = false
 
 func _days_in_month(m: int, y: int) -> int:
     var days = [31,28,31,30,31,30,31,31,30,31,30,31]

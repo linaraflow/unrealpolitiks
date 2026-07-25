@@ -59,7 +59,7 @@ func open_uav_mode(enemies: Array) -> void:
     _update_labels()
 
     Map.enter_uav_mode(enemies)
-    GameClock.paused = true
+    GameClock.lock_pause()
 
     for menu in menu_to_close:
         menu.hide()
@@ -180,7 +180,7 @@ func _on_leave_button_pressed() -> void:
 ## Закрыть меню и вернуть карту/UI в обычный режим.
 func close_uav_mode() -> void:
     Map.exit_uav_mode()  # exit_uav_mode() сам чистит линии целей
-    GameClock.toggle_pause()
+    GameClock.unlock_pause()  # снимаем блокировку, но игра остаётся на паузе
     _enemies = []
     selected_targets.clear()
     _update_labels()

@@ -5,6 +5,7 @@
 [ext_resource type="Texture2D" uid="uid://dabrkndbh4sy4" path="res://assets/icons_statistics_menu/skull_enemy.svg" id="4_215hw"]
 [ext_resource type="Texture2D" uid="uid://cc82sfcq4meju" path="res://assets/icons_statistics_menu/skull_your.svg" id="4_u7b0n"]
 [ext_resource type="Texture2D" uid="uid://pnu5f4e7gx7l" path="res://assets/icons_statistics_menu/factory_built.svg" id="5_gysw0"]
+[ext_resource type="Texture2D" uid="uid://ci1nwfiect4yt" path="res://assets/icons_statistics_menu/peace.svg" id="5_u7b0n"]
 [ext_resource type="Texture2D" uid="uid://beet5nhsfsxpy" path="res://assets/icons_statistics_menu/factory_destroyed.svg" id="6_nt4dt"]
 [ext_resource type="Texture2D" uid="uid://c7veboj8law5s" path="res://assets/icons_statistics_menu/drone.svg" id="7_hn2dw"]
 [ext_resource type="Texture2D" uid="uid://cqsusenijw8i8" path="res://assets/icons_statistics_menu/rocket.svg" id="8_e0cn8"]
@@ -32,6 +33,21 @@ corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
+corner_detail = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_215hw"]
+content_margin_top = 5.0
+content_margin_bottom = 5.0
+bg_color = Color(0.24840033, 0.24840012, 0.24840015, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.585062, 0.5850621, 0.5850618, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
 corner_detail = 20
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4c1hm"]
@@ -98,7 +114,6 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_u7b0n")
-player_country = "Egypt"
 
 [node name="Panel" type="Panel" parent="." unique_id=83344010]
 layout_mode = 0
@@ -200,6 +215,12 @@ text = "10.000"
 layout_mode = 2
 texture = ExtResource("4_215hw")
 expand_mode = 3
+
+[node name="Negotiation" type="Button" parent="Panel/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/WarContainer/VBoxContainer" unique_id=1319766335]
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_215hw")
+icon = ExtResource("5_u7b0n")
+icon_alignment = 1
 
 [node name="HSeparator" type="HSeparator" parent="Panel/MarginContainer/VBoxContainer" unique_id=2026933307]
 layout_mode = 2

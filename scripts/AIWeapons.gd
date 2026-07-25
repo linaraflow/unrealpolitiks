@@ -84,6 +84,24 @@ static func process_uav_program(country: String) -> void:
     else:
         c_data["products"] = c_data.get("products", 0.0) - cost
 
+## Позиция запуска БПЛА/ракет — берём провинцию, которой страна владеет
+## ПРЯМО СЕЙЧАС (не оккупирована). Если столица не оккупирована — стартуем
+## из неё, иначе берём любую другую свою провинцию. Если своих провинций
+## не осталось вообще (страна полностью оккупирована) — возвращаем null,
+## удар не наносится.
+static func _get_launch_start_pos(country: String, c_data: Dictionary):
+    var owned: Array = AIManager.get_country_provinces(country)
+    if owned.is_empty():
+        return null
+
+    var cap_id = int(c_data.get("capital", 0))
+    var launch_id = cap_id if owned.has(cap_id) else owned[0]
+
+    if not AIManager.settings.province_centers.has(launch_id):
+        return null
+
+    return AIManager.settings.province_centers[launch_id]
+
 static func process_uav_strikes(country: String) -> void:
     if AIManager.uav_launch_cooldowns.has(country):
         return
@@ -108,10 +126,9 @@ static func process_uav_strikes(country: String) -> void:
         if drones_per_target < AIManager.UAV_MIN_BATCH_PER_TARGET:
             return
 
-    var cap_id = int(c_data.get("capital", 0))
-    if not AIManager.settings.province_centers.has(cap_id):
+    var start_pos = _get_launch_start_pos(country, c_data)
+    if start_pos == null:
         return
-    var start_pos: Vector2 = AIManager.settings.province_centers[cap_id]
 
     var total_used = 0
     for target_id in targets:
@@ -213,10 +230,9 @@ static func process_missile_strikes(country: String) -> void:
     if targets.is_empty():
         return
 
-    var cap_id = int(c_data.get("capital", 0))
-    if not AIManager.settings.province_centers.has(cap_id):
+    var start_pos = _get_launch_start_pos(country, c_data)
+    if start_pos == null:
         return
-    var start_pos: Vector2 = AIManager.settings.province_centers[cap_id]
 
     var total_used = 0
     for target_id in targets:
