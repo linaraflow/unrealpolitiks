@@ -10,6 +10,7 @@ signal on_pause_changed(paused)
 
 const SPEEDS = [0, 1, 3, 5, 7, 9]  # x0 (пауза), x1, x3, x5, x10
 const SECONDS_PER_DAY = 2.0       # сколько реальных секунд = 1 игровой день на x1
+const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
 
 var day: int = 1
 var month: int = 1
@@ -109,3 +110,16 @@ func _input(event):
             KEY_3: set_speed(3)
             KEY_4: set_speed(4)
             KEY_5: set_speed(5)
+
+
+
+## RESET
+func reset() -> void:
+    day = 1
+    month = 1
+    year = 2012
+    speed_index = 1
+    paused = true
+    input_locked = false   # важно: снимаем lock_pause(), который поставило collapsed_menu
+    _accumulated = 0.0
+    emit_signal("on_pause_changed", paused)

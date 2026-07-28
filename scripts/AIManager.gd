@@ -297,3 +297,32 @@ func get_random_neighbor_country(country: String) -> String:
                 neighbors.append(owner)
 
     return "" if neighbors.is_empty() else neighbors.pick_random()
+
+
+
+
+## RESET
+func reset() -> void:
+    factory_cooldowns = {}
+    recruitment_cooldowns = {}
+    uav_launch_cooldowns = {}
+    missile_launch_cooldowns = {}
+    country_provinces_cache = {}
+    safe_provinces_cache = {}
+    safe_provinces_list = []
+
+    _build_initial_country_cache()
+
+    pop_chunks = []
+    for i in range(POP_CHUNKS_COUNT):
+        pop_chunks.append([])
+    var idx = 0
+    for p_id_str in ProvinceRegistry.province_data:
+        pop_chunks[idx % POP_CHUNKS_COUNT].append(p_id_str)
+        idx += 1
+    pop_chunk_index = 0
+
+    # Пересчитываем доход всех стран заново — иначе ВВП/monthly_income
+    # остаются "сырыми" дефолтами из countries.json до первого игрового месяца
+    for country in ProvinceRegistry.countries_data:
+        _update_monthly_income(country)

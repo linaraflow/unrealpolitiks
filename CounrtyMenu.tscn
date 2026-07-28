@@ -224,6 +224,20 @@ corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
 corner_detail = 20
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vvsl0"]
+content_margin_top = 3.0
+content_margin_bottom = 3.0
+bg_color = Color(0.12156863, 0.12156863, 0.11764706, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.30990228, 0.3142515, 0.28586113, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
 [node name="CountryMenu" type="Control" unique_id=1494951920]
 custom_minimum_size = Vector2(300, 433)
 layout_mode = 3
@@ -660,7 +674,6 @@ icon = ExtResource("12_p7bm5")
 
 [node name="IdeologySelectionPanel" type="Panel" parent="Panel" unique_id=1096770221]
 unique_name_in_owner = true
-visible = false
 layout_mode = 1
 offset_left = 306.0
 offset_top = 171.0
@@ -693,11 +706,13 @@ layout_mode = 2
 [node name="ChangeBtn" type="Button" parent="Panel/IdeologySelectionPanel/VBoxContainer/HBoxContainer" unique_id=916835276]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_styles/normal = SubResource("StyleBoxFlat_vvsl0")
 text = "Change"
 
 [node name="CloseBtn" type="Button" parent="Panel/IdeologySelectionPanel/VBoxContainer/HBoxContainer" unique_id=561421025]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_styles/normal = SubResource("StyleBoxFlat_vvsl0")
 text = "Close"
 
 [connection signal="mouse_entered" from="Panel/HeaderRow/FlagRect" to="Panel/HeaderRow/FlagRect" method="_on_mouse_entered"]

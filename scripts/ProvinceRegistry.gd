@@ -90,6 +90,8 @@ var MISSILE_KILL_RATIO = settings.MISSILE_KILL_RATIO
 const WAR_EXHAUSTION_MAX          := 100.0
 const WAR_EXHAUSTION_DECAY_PER_DAY := 1.0   # снижение в день, только если страна ни с кем не воюет
 
+var days_in_power: int = 0
+
 func _ready():
     _load_countries()
     _load_province_data()
@@ -116,6 +118,7 @@ func _on_day_passed(_date: Dictionary) -> void:
     _process_uav_orders()
     _process_missile_orders()
     _decay_war_exhaustion()
+    days_in_power += 1
     
 func _on_month_passed(_date: Dictionary) -> void:
     # Переносим сюда, чтобы фриз (если он останется) был только раз в месяц
@@ -218,6 +221,10 @@ func get_province_population(province_id: int) -> int:
 ## Население страны (уже посчитанное, обновляется раз в игровой день)
 func get_country_population(country: String) -> int:
     return int(countries_data.get(country, {}).get("population", 0))
+    
+## Количество дней, которое игрок находится у власти
+func get_days_in_power() -> String:
+    return str(days_in_power)
 
 func _load_province_data():
     if not FileAccess.file_exists("res://scripts/provinces.json"): 
@@ -358,6 +365,22 @@ func occupy_province(province_id: int, occupier: String) -> void:
         capture_province(province_id, occupier)
         province_occupied.emit(province_id, "")
         print("[Registry] Провинция %d освобождена и возвращена %s" % [province_id, occupier])
+        return
+
+    # НОВОЕ: провинция принадлежит ТРЕТЬЕЙ стороне (её true owner — не текущий
+    # контролёр и не новый захватчик). Пример: Германия оккупировала провинцию
+    # Нидерландов, а мы (Польша), воюя с Германией, отбиваем эту провинцию у неё.
+    # Раньше такая провинция просто "наследовалась" новым захватчиком с полосами
+    # третьей страны и потом навсегда зависала под его контролем — её нельзя было
+    # ни забрать в мирном договоре (там сверяют полосы именно с врагом), ни вернуть
+    # обратно. Теперь она сразу автоматически освобождается и возвращается
+    # истинному владельцу, минуя нового захватчика.
+    if core_owner != occupier and core_owner != current_owner:
+        province_data[key]["against_occupation"] = ""
+        province_occupants.erase(province_id)
+        capture_province(province_id, core_owner)
+        province_occupied.emit(province_id, "")
+        print("[Registry] Провинция %d (третья сторона, истинный владелец %s) освобождена при захвате %s" % [province_id, core_owner, occupier])
         return
 
     # Полосы ВСЕГДА показывают истинного владельца, а не последнего контролёра
@@ -994,3 +1017,26 @@ func change_country_color(country: String, new_color: Color) -> void:
     
     # 4. Сообщаем карте, что нужно обновить шейдер
     country_color_changed.emit()
+
+
+
+## RESET
+func reset() -> void:
+    active_missile_orders = {}
+    active_uav_orders = {}
+    active_constructions = {}
+    _production_by_country = {}
+    owner_province_count = {}
+    war_relations = {}
+    province_occupants = {}
+    province_owners = {}
+    province_data = {}
+    countries_data = {}
+    days_in_power = 0
+
+    _load_countries()
+    _load_province_data()
+    _load_province_adjacency()
+    _recalculate_all_populations()
+    _recalculate_all_happiness()
+    _recalculate_all_factories()

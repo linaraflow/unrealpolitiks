@@ -13,6 +13,13 @@
 [ext_resource type="Texture2D" uid="uid://de4b57yabr7i7" path="res://assets/flags/Iran.png" id="10_j86uc"]
 [ext_resource type="Texture2D" uid="uid://c66dtruypl7r6" path="res://assets/icons_uav_menu/create_uav.svg" id="11_kc1aw"]
 [ext_resource type="Texture2D" uid="uid://cui34p0yrac20" path="res://assets/icons_uav_menu/clock.svg" id="12_kc1aw"]
+[ext_resource type="Script" uid="uid://dkeuuydluccbn" path="res://scripts/choose_map_panel.gd" id="14_0x63p"]
+[ext_resource type="Texture2D" uid="uid://dfhhn7d4lgan8" path="res://assets/icons_top_menu/politics.svg" id="15_j05aq"]
+[ext_resource type="Texture2D" uid="uid://c73b54xf2805v" path="res://assets/icons_top_menu/economy.svg" id="16_7roqy"]
+[ext_resource type="Texture2D" uid="uid://b0fe73niun1ta" path="res://assets/icons_top_menu/tick.svg" id="16_oewjf"]
+[ext_resource type="Texture2D" uid="uid://d3j4e53ptnhw" path="res://assets/icons_top_menu/population.svg" id="17_oewjf"]
+[ext_resource type="Texture2D" uid="uid://cbpodqd7f6fwy" path="res://assets/icons_top_menu/map.svg" id="18_111l2"]
+[ext_resource type="Texture2D" uid="uid://8pdjaydd3xqw" path="res://assets/icons_top_menu/arrow.svg" id="19_kphuy"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_p7bm5"]
 bg_color = Color(0.12156863, 0.12156863, 0.11764706, 1)
@@ -216,6 +223,62 @@ corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_36p7p"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1rgov"]
+bg_color = Color(0.10980392, 0.10980392, 0.11764706, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.22745098, 0.22745098, 0.23529412, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_j2iui"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7roqy"]
+bg_color = Color(0.17254902, 0.17254902, 0.18039216, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_oewjf"]
+bg_color = Color(0.17254902, 0.17254902, 0.18039216, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_udkt1"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_111l2"]
+bg_color = Color(0.17254902, 0.17254902, 0.18039216, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kphuy"]
+bg_color = Color(0.17254902, 0.17254902, 0.18039216, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mf8eq"]
+bg_color = Color(0.17254902, 0.17254902, 0.18039216, 1)
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4gysy"]
+bg_color = Color(0.17254902, 0.17254902, 0.18039216, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2drbh"]
+bg_color = Color(0.17254902, 0.17254902, 0.18039216, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
 
 [node name="TopMenu" type="Control" unique_id=462479503]
 layout_mode = 3
@@ -931,6 +994,216 @@ theme_override_font_sizes/font_size = 14
 theme_override_styles/normal = SubResource("StyleBoxFlat_owoy5")
 theme_override_styles/hover = SubResource("StyleBoxFlat_0x63p")
 text = "Order"
+
+[node name="ChooseMapPanel" type="PanelContainer" parent="." unique_id=1830935298]
+layout_mode = 0
+offset_left = 1628.0
+offset_top = 822.0
+offset_right = 1908.0
+offset_bottom = 1068.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_36p7p")
+script = ExtResource("14_0x63p")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ChooseMapPanel" unique_id=1010212145]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="ListPanel" type="PanelContainer" parent="ChooseMapPanel/VBoxContainer" unique_id=321523573]
+clip_contents = true
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_1rgov")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ChooseMapPanel/VBoxContainer/ListPanel" unique_id=26533258]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="ItemPolitics" type="Button" parent="ChooseMapPanel/VBoxContainer/ListPanel/VBoxContainer" unique_id=378092645]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxFlat_j2iui")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_7roqy")
+theme_override_styles/hover = SubResource("StyleBoxFlat_oewjf")
+
+[node name="MarginContainer" type="MarginContainer" parent="ChooseMapPanel/VBoxContainer/ListPanel/VBoxContainer/ItemPolitics" unique_id=964904218]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 8
+
+[node name="HBoxContainer" type="HBoxContainer" parent="ChooseMapPanel/VBoxContainer/ListPanel/VBoxContainer/ItemPolitics/MarginContainer" unique_id=343350428]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 12
+
+[node name="Icon" type="TextureRect" parent="ChooseMapPanel/VBoxContainer/ListPanel/VBoxContainer/ItemPolitics/MarginContainer/HBoxContainer" unique_id=2108411511]
+layout_mode = 2
+texture = ExtResource("15_j05aq")
+stretch_mode = 5
+
+[node name="Label" type="Label" parent="ChooseMapPanel/VBoxContainer/ListPanel/VBoxContainer/ItemPolitics/MarginContainer/HBoxContainer" unique_id=606104873]
+layout_mode = 2
+text = "Politics"
+
+[node name="Spacer" type="Control" parent="ChooseMapPanel/VBoxContainer/ListPanel/VBoxContainer/ItemPolitics/MarginContainer/HBoxContainer" unique_id=2080493389]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="Checkmark" type="TextureRect" parent="ChooseMapPanel/VBoxContainer/ListPanel/VBoxContainer/ItemPolitics/MarginContainer/HBoxContainer" unique_id=342421009]
+layout_mode = 2
+texture = ExtResource("16_oewjf")
+stretch_mode = 5
+
+[node name="HSeparator" type="HSeparator" parent="ChooseMapPanel/VBoxContainer/ListPanel/VBoxContainer" unique_id=954716261]
+layout_mode = 2
+theme_override_constants/separation = 1
+
+[node name="ItemEconomy" type="Button" parent="ChooseMapPanel/VBoxContainer/ListPanel/VBoxContainer" unique_id=1325342682]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxFlat_udkt1")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_111l2")
+theme_override_styles/hover = SubResource("StyleBoxFlat_kphuy")
+
+[node name="MarginContainer" type="MarginContainer" parent="ChooseMapPanel/VBoxContainer/ListPanel/VBoxContainer/ItemEconomy" unique_id=524909444]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 8
+
+[node name="HBoxContainer" type="HBoxContainer" parent="ChooseMapPanel/VBoxContainer/ListPanel/VBoxContainer/ItemEconomy/MarginContainer" unique_id=1444906767]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 12
+
+[node name="Icon" type="TextureRect" parent="ChooseMapPanel/VBoxContainer/ListPanel/VBoxContainer/ItemEconomy/MarginContainer/HBoxContainer" unique_id=1781810771]
+layout_mode = 2
+texture = ExtResource("16_7roqy")
+stretch_mode = 5
+
+[node name="Label" type="Label" parent="ChooseMapPanel/VBoxContainer/ListPanel/VBoxContainer/ItemEconomy/MarginContainer/HBoxContainer" unique_id=325251966]
+layout_mode = 2
+text = "Economy"
+
+[node name="Spacer" type="Control" parent="ChooseMapPanel/VBoxContainer/ListPanel/VBoxContainer/ItemEconomy/MarginContainer/HBoxContainer" unique_id=190252933]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="Checkmark" type="TextureRect" parent="ChooseMapPanel/VBoxContainer/ListPanel/VBoxContainer/ItemEconomy/MarginContainer/HBoxContainer" unique_id=1357173041]
+layout_mode = 2
+texture = ExtResource("16_oewjf")
+stretch_mode = 5
+
+[node name="HSeparator2" type="HSeparator" parent="ChooseMapPanel/VBoxContainer/ListPanel/VBoxContainer" unique_id=314545473]
+layout_mode = 2
+theme_override_constants/separation = 1
+
+[node name="ItemPopulation" type="Button" parent="ChooseMapPanel/VBoxContainer/ListPanel/VBoxContainer" unique_id=478486918]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxFlat_udkt1")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_mf8eq")
+theme_override_styles/hover = SubResource("StyleBoxFlat_mf8eq")
+
+[node name="MarginContainer" type="MarginContainer" parent="ChooseMapPanel/VBoxContainer/ListPanel/VBoxContainer/ItemPopulation" unique_id=1813395981]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 8
+
+[node name="HBoxContainer" type="HBoxContainer" parent="ChooseMapPanel/VBoxContainer/ListPanel/VBoxContainer/ItemPopulation/MarginContainer" unique_id=1567828546]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 12
+
+[node name="Icon" type="TextureRect" parent="ChooseMapPanel/VBoxContainer/ListPanel/VBoxContainer/ItemPopulation/MarginContainer/HBoxContainer" unique_id=306488711]
+layout_mode = 2
+texture = ExtResource("17_oewjf")
+stretch_mode = 5
+
+[node name="Label" type="Label" parent="ChooseMapPanel/VBoxContainer/ListPanel/VBoxContainer/ItemPopulation/MarginContainer/HBoxContainer" unique_id=1399067309]
+layout_mode = 2
+text = "Population"
+
+[node name="Spacer" type="Control" parent="ChooseMapPanel/VBoxContainer/ListPanel/VBoxContainer/ItemPopulation/MarginContainer/HBoxContainer" unique_id=2022822512]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="Checkmark" type="TextureRect" parent="ChooseMapPanel/VBoxContainer/ListPanel/VBoxContainer/ItemPopulation/MarginContainer/HBoxContainer" unique_id=1370604721]
+layout_mode = 2
+texture = ExtResource("16_oewjf")
+stretch_mode = 5
+
+[node name="DropdownPanel" type="PanelContainer" parent="ChooseMapPanel/VBoxContainer" unique_id=958243709]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_1rgov")
+
+[node name="DropdownButton" type="Button" parent="ChooseMapPanel/VBoxContainer/DropdownPanel" unique_id=1396302075]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxFlat_udkt1")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_4gysy")
+theme_override_styles/hover = SubResource("StyleBoxFlat_2drbh")
+
+[node name="MarginContainer" type="MarginContainer" parent="ChooseMapPanel/VBoxContainer/DropdownPanel/DropdownButton" unique_id=1483185800]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 8
+
+[node name="HBoxContainer" type="HBoxContainer" parent="ChooseMapPanel/VBoxContainer/DropdownPanel/DropdownButton/MarginContainer" unique_id=1559439175]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Icon" type="TextureRect" parent="ChooseMapPanel/VBoxContainer/DropdownPanel/DropdownButton/MarginContainer/HBoxContainer" unique_id=23168718]
+layout_mode = 2
+texture = ExtResource("18_111l2")
+stretch_mode = 5
+
+[node name="DropdownLabel" type="Label" parent="ChooseMapPanel/VBoxContainer/DropdownPanel/DropdownButton/MarginContainer/HBoxContainer" unique_id=264903307]
+layout_mode = 2
+text = "Politics"
+
+[node name="OnlyTick" type="CheckBox" parent="ChooseMapPanel/VBoxContainer/DropdownPanel/DropdownButton/MarginContainer/HBoxContainer" unique_id=193713521]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 8
+text = "only your country"
+
+[node name="ArrowIcon" type="TextureRect" parent="ChooseMapPanel/VBoxContainer/DropdownPanel/DropdownButton/MarginContainer/HBoxContainer" unique_id=691331168]
+layout_mode = 2
+texture = ExtResource("19_kphuy")
+stretch_mode = 5
 
 [connection signal="mouse_entered" from="TopPanel/Flag" to="." method="_on_flag_mouse_entered"]
 [connection signal="mouse_exited" from="TopPanel/Flag" to="." method="_on_flag_mouse_exited"]

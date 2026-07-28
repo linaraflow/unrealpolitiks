@@ -52,6 +52,11 @@ var _missile_enemies: Array = []
 ## Слой с дугообразной линией "столица -> цель" для MissileMenu.
 var missile_lines_layer: Node2D
 
+## Слой с цифрами "число заводов" на вражеских провинциях — показывается
+## одновременно с затемнением карты в режимах БПЛА и ракеты (см.
+## _apply_targeting_mask / _clear_targeting_mask).
+var factory_labels_layer: Node2D
+
 # Сохраняем локальные координаты последнего физического клика мыши
 var _last_click_local_pos: Vector2 = Vector2.ZERO
 
@@ -62,6 +67,9 @@ var _last_click_local_pos: Vector2 = Vector2.ZERO
 @onready var FlagRect             = get_node("/root/Game/CanvasLayer/VBoxContainer/CountryMenu/Panel/HeaderRow/FlagRect")
 @onready var ColorPanel           = get_node("/root/Game/CanvasLayer/VBoxContainer/CountryMenu/Panel/HeaderRow/FlagRect/ColorPanel")
 @onready var recruit_slider_panel = get_node("/root/Game/CanvasLayer/VBoxContainer/ProvinceMenu/RecruitSliderPanel")
+@onready var blue                 = get_node("/root/Game/CanvasLayer/BLUE")
+@onready var date                 = get_node("/root/Game/CanvasLayer/TopMenu/TopPanel/DatePanel")
+@onready var choose_map_panel     = get_node("/root/Game/CanvasLayer/TopMenu/ChooseMapPanel")
 
 const IGNORE_IDS = [15307124, 0]
 
@@ -77,6 +85,30 @@ var capital_texture: ImageTexture
 ## country -> p_id провинции, которая сейчас помечена как столица этой страны
 ## (нужно, чтобы при переносе столицы снять метку со старой провинции).
 var capital_province_by_country: Dictionary = {}
+
+# ─── РЕЖИМЫ КАРТЫ (экономика, население и т.п.) ──────────────────────────────
+## mode_texture: 256x256, индексируется так же, как data_texture (по младшим
+## 16 битам p_id = mask.r, mask.g). r-канал = нормализованное 0..1 значение
+## (белый=0, оранжевый=1 в текущем шейдере), alpha>0.5 = провинция участвует.
+enum MapMode { NONE, ECONOMY, POPULATION }
+var current_map_mode: MapMode = MapMode.NONE
+
+var mode_image: Image
+var mode_texture: ImageTexture
+
+## Кэш последнего известного максимума значения активного режима, по которому
+## отнормирован mode_texture. Нужен, чтобы точечно обновлять один пиксель
+## (_update_mode_pixel) без полного перестроения текстуры при каждом
+## отдельном изменении (постройка завода, потери населения при ударе и т.п.).
+var _mode_max_value: int = 1
+var _mode_min_value: int = 0
+
+## Если true — режим ECONOMY/POPULATION раскрашивает градиентом только
+## провинции settings.active_country (min/max считаются в пределах своей
+## территории), все остальные провинции остаются с обычным политическим
+## цветом (alpha=0 в mode_texture). Переключается чекбоксом "только своя
+## страна" в ChooseMapPanel.
+var mode_only_own_country: bool = false
 
 func _ready():
     child_entered_tree.connect(_on_child_entered_tree)
@@ -127,10 +159,20 @@ func _ready():
     missile_lines_layer.name = "MissileLinesLayer"
     add_child(missile_lines_layer)
 
+    # Слой цифр "число заводов" на вражеских провинциях (режимы БПЛА/ракеты)
+    factory_labels_layer = preload("res://scripts/province_factory_labels_layer.gd").new()
+    factory_labels_layer.name = "FactoryLabelsLayer"
+    add_child(factory_labels_layer)
+
     # capital_texture (обводка столичных провинций)
     capital_image = Image.create(256, 256, false, Image.FORMAT_RGBA8)
     capital_image.fill(Color(0, 0, 0, 0))
     capital_texture = ImageTexture.create_from_image(capital_image)
+
+    # mode_texture (режимы карты: экономика и т.п.)
+    mode_image = Image.create(256, 256, false, Image.FORMAT_RGBA8)
+    mode_image.fill(Color(0, 0, 0, 0))
+    mode_texture = ImageTexture.create_from_image(mode_image)
 
     material.set_shader_parameter("tech_map",      tech_tex)
     material.set_shader_parameter("data_texture",  data_texture)
@@ -138,6 +180,8 @@ func _ready():
     material.set_shader_parameter("neg_texture",   neg_texture)
     material.set_shader_parameter("uav_texture",   uav_texture)
     material.set_shader_parameter("capital_texture", capital_texture)
+    material.set_shader_parameter("mode_texture",  mode_texture)
+    material.set_shader_parameter("map_mode_active", false)
     material.set_shader_parameter("country_colors", ProvinceRegistry.country_colors)
 
     # Буфер вспышек "завод построен" — изначально все слоты пустые (id 0,0,0)
@@ -176,6 +220,7 @@ func _ready():
     ProvinceRegistry.country_color_changed.connect(_on_country_color_changed)
     ProvinceRegistry.capital_changed.connect(_on_capital_changed)
     ProvinceRegistry.factory_built.connect(_on_factory_built)
+    ProvinceRegistry.factory_destroyed.connect(_on_factory_destroyed)
     ProvinceRegistry.missile_strike_landed.connect(_on_missile_strike_landed)   # <-- НОВОЕ
     ProvinceRegistry.uav_strike_landed.connect(_on_uav_strike_landed)
 
@@ -433,6 +478,8 @@ func _apply_targeting_mask(enemies: Array) -> void:
 
     uav_texture.update(uav_image)
     material.set_shader_parameter("uav_mode", true)
+
+    _show_enemy_factory_labels(enemies)
     
 
 ## Реакция на удар ракетой — подсвечиваем провинцию красным.
@@ -441,7 +488,11 @@ func _on_missile_strike_landed(p_id: int) -> void:
 
 
 ## Реакция на удар БПЛА — подсвечиваем провинцию красным.
+## destroy_factory() в ProvinceRegistry уменьшает и фабрики, и население этой
+## провинции, поэтому если сейчас активен режим "население" — обновляем цвет.
 func _on_uav_strike_landed(p_id: int) -> void:
+    if current_map_mode == MapMode.POPULATION:
+        _update_mode_pixel(p_id)
     _flash_province_red(p_id)
     
 ## Запускает плавную красную вспышку на провинции p_id
@@ -468,6 +519,39 @@ func _clear_targeting_mask() -> void:
     uav_image.fill(Color(0, 0, 0, 0))
     uav_texture.update(uav_image)
     material.set_shader_parameter("uav_mode", false)
+    _clear_enemy_factory_labels()
+
+
+## Собирает подписи "число заводов" по всем видимым (не затемнённым)
+## вражеским провинциям и отправляет их в factory_labels_layer.
+## Провинции без заводов (0) не подписываются, чтобы не захламлять карту.
+func _show_enemy_factory_labels(enemies: Array) -> void:
+    var entries: Array = []
+    for key in ProvinceRegistry.province_data:
+        var p_id = int(key)
+        if p_id in IGNORE_IDS:
+            continue
+        var p = ProvinceRegistry.province_data[key]
+        var owner = p.get("owner", "")
+        if not (owner in enemies):
+            continue
+
+        var factories = int(p.get("factories", 0))
+        if factories <= 0:
+            continue
+        if not province_centers.has(p_id):
+            continue
+
+        entries.append({"p_id": p_id, "pos": province_centers[p_id], "count": factories})
+
+    if factory_labels_layer:
+        factory_labels_layer.set_labels(entries)
+
+
+## Убирает все подписи "число заводов" (выход из режима прицеливания).
+func _clear_enemy_factory_labels() -> void:
+    if factory_labels_layer:
+        factory_labels_layer.clear_labels()
 
 
 ## Проверить видима ли провинция в режиме прицеливания (БПЛА или ракета).
@@ -648,9 +732,18 @@ func _select_province(px: Color) -> void:
 ## Реакция на ProvinceRegistry.factory_built — подсвечиваем провинцию
 ## своей страны зелёным, когда в ней достроился завод.
 func _on_factory_built(p_id: int, country: String) -> void:
+    if current_map_mode == MapMode.ECONOMY:
+        _update_mode_pixel(p_id)
     if country != settings.active_country:
         return
     _flash_province_green(p_id)
+
+
+## Реакция на ProvinceRegistry.factory_destroyed — если сейчас активен режим
+## карты "экономика", обновляем цвет провинции (число фабрик уменьшилось).
+func _on_factory_destroyed(p_id: int, country: String, amount: int) -> void:
+    if current_map_mode == MapMode.ECONOMY:
+        _update_mode_pixel(p_id)
 
 
 ## Запускает плавную зелёную вспышку на провинции p_id.
@@ -690,6 +783,181 @@ func _on_child_entered_tree(node: Node) -> void:
 
 func _on_country_color_changed() -> void:
     material.set_shader_parameter("country_colors", ProvinceRegistry.country_colors)
+
+
+# ─── РЕЖИМЫ КАРТЫ: ЭКОНОМИКА / НАСЕЛЕНИЕ (белый → оранжевый по значению) ─────
+# Обе раскраски используют одну и ту же mode_texture/_rebuild_mode_texture/
+# _update_mode_pixel — конкретное поле province_data берётся из
+# _mode_field_name() в зависимости от current_map_mode.
+
+## Переключить режим карты. Вызывать из UI (кнопка/выпадающий список режимов).
+## MapMode.NONE       — обычная политическая карта (цвета стран).
+## MapMode.ECONOMY    — раскраска по числу фабрик в провинции (белый → оранжевый).
+## MapMode.POPULATION — раскраска по населению провинции (белый → зелёный).
+func set_map_mode(mode: MapMode) -> void:
+    current_map_mode = mode
+
+    if mode == MapMode.NONE:
+        material.set_shader_parameter("map_mode_active", false)
+        return
+
+    _apply_mode_gradient_colors()
+    _rebuild_mode_texture()
+    material.set_shader_parameter("map_mode_active", true)
+
+
+## Переключить "только своя территория" для текущего режима (вызывается из
+## чекбокса в ChooseMapPanel). Для MapMode.NONE ничего не делает — политическая
+## карта чекбокс игнорирует.
+func set_mode_only_own_country(value: bool) -> void:
+    mode_only_own_country = value
+    if current_map_mode != MapMode.NONE:
+        _rebuild_mode_texture()
+
+
+## У каждого режима свой градиент "низкое значение → высокое значение".
+## Оба цвета — это те же уже существующие шейдерные параметры
+## mode_color_low/mode_color_high, просто мы переустанавливаем их значения
+## при каждом переключении режима (одновременно активен только один режим,
+## так что отдельные uniform'ы под каждый режим не нужны).
+func _apply_mode_gradient_colors() -> void:
+    match current_map_mode:
+        MapMode.ECONOMY:
+            material.set_shader_parameter("mode_color_low",  Color(1.0, 1.0, 1.0))   # белый
+            material.set_shader_parameter("mode_color_high", Color(1.0, 0.55, 0.0))  # оранжевый
+        MapMode.POPULATION:
+            material.set_shader_parameter("mode_color_low",  Color(1.0, 1.0, 1.0))   # белый
+            material.set_shader_parameter("mode_color_high", Color(0.15, 0.75, 0.2)) # зелёный
+
+
+## Возвращает имя поля в province_data, которым сейчас раскрашен режим —
+## единая точка, которую нужно поменять/расширить, если добавится новый режим.
+func _mode_field_name() -> String:
+    match current_map_mode:
+        MapMode.ECONOMY:
+            return "factories"
+        MapMode.POPULATION:
+            return "population"
+        _:
+            return ""
+
+
+## Полностью пересчитывает mode_texture по текущему полю активного режима
+## (одна итерация по province_data + один update() в конце — как и в
+## _paint_all_provinces_from_data, чтобы не тормозить на ~10000 провинций).
+## Вызывается при входе в режим и когда точечное обновление
+## (_update_mode_pixel) обнаруживает новый максимум.
+func _rebuild_mode_texture() -> void:
+    var field = _mode_field_name()
+    if field == "":
+        return
+
+    mode_image.fill(Color(0, 0, 0, 0))
+
+    var only_own = mode_only_own_country
+    var target_country = settings.active_country
+
+    # Считаем min/max поля режима. В обычном режиме min всегда 0 (как раньше:
+    # белый = 0, а не "минимум по миру"). В режиме "только своя страна" и
+    # минимум, и максимум берутся исключительно среди своих провинций —
+    # поэтому белый цвет соответствует минимальному значению именно на своей
+    # территории, а не нулю/минимуму по всему миру.
+    var max_value: int = 1
+    var min_value: int = 0
+
+    if only_own:
+        var first = true
+        for key in ProvinceRegistry.province_data:
+            var p_id = int(key)
+            if p_id in IGNORE_IDS:
+                continue
+            var p = ProvinceRegistry.province_data[key]
+            if p.get("owner", "") != target_country:
+                continue
+            var v = int(p.get(field, 0))
+            if first:
+                min_value = v
+                max_value = v
+                first = false
+            else:
+                if v > max_value:
+                    max_value = v
+                if v < min_value:
+                    min_value = v
+        if max_value <= min_value:
+            max_value = min_value + 1  # избегаем деления на 0, если значение везде одинаковое
+    else:
+        for key in ProvinceRegistry.province_data:
+            var p = ProvinceRegistry.province_data[key]
+            var v = int(p.get(field, 0))
+            if v > max_value:
+                max_value = v
+
+    _mode_max_value = max_value
+    _mode_min_value = min_value
+
+    for key in ProvinceRegistry.province_data:
+        var p_id = int(key)
+        if p_id in IGNORE_IDS:
+            continue
+        var p = ProvinceRegistry.province_data[key]
+        var owner = p.get("owner", "")
+        if owner == ProvinceRegistry.SEA_OWNER:
+            continue  # море не участвует в раскраске режима, alpha=0 — шейдер оставит фон
+
+        if only_own and owner != target_country:
+            # чужая провинция в режиме "только своя страна" — не красим
+            # градиентом, alpha остаётся 0, шейдер покажет обычный цвет страны
+            continue
+
+        var v = int(p.get(field, 0))
+        var value = float(v - min_value) / float(max_value - min_value)  # 0..1
+        value = clamp(value, 0.0, 1.0)
+
+        var r = p_id & 0xFF
+        var g = (p_id >> 8) & 0xFF
+        # alpha=1 помечает "суша, участвует в раскраске текущего режима"
+        mode_image.set_pixel(r, g, Color(value, 0, 0, 1))
+
+    mode_texture.update(mode_image)
+
+
+## Точечно обновляет ОДНУ провинцию в mode_texture (без полного перестроения) —
+## используется, когда режим уже активен и в отдельной провинции поменялось
+## значение поля текущего режима (постройка/разрушение завода, потери
+## населения при ударе и т.п.). Если новое значение превышает текущий
+## максимум _mode_max_value, шкала "0..1" для всех остальных провинций
+## устарела — в этом случае проще перестроить всю текстуру целиком.
+func _update_mode_pixel(p_id: int) -> void:
+    var field = _mode_field_name()
+    if field == "":
+        return
+
+    var p = ProvinceRegistry.province_data.get(p_id, {})
+    var owner = p.get("owner", "")
+
+    if mode_only_own_country and owner != settings.active_country:
+        return  # чужая провинция в этом режиме не красится — трогать нечего
+
+    var v = int(p.get(field, 0))
+
+    # Новое значение вышло за пределы текущей отнормированной шкалы (выше
+    # максимума, а в режиме "только своя страна" — ещё и ниже минимума) —
+    # шкала устарела для всех провинций, проще перестроить текстуру целиком.
+    if v > _mode_max_value or (mode_only_own_country and v < _mode_min_value):
+        _rebuild_mode_texture()
+        return
+
+    var denom = _mode_max_value - _mode_min_value
+    var value = 0.0
+    if denom > 0:
+        value = float(v - _mode_min_value) / float(denom)
+    value = clamp(value, 0.0, 1.0)
+
+    var r = p_id & 0xFF
+    var g = (p_id >> 8) & 0xFF
+    mode_image.set_pixel(r, g, Color(value, 0, 0, 1))
+    mode_texture.update(mode_image)
 
 func _build_province_centers():
     var img_size = tech_image.get_size()
@@ -756,3 +1024,85 @@ func _on_capital_changed(country: String, province_id: int) -> void:
         capital_province_by_country[country] = province_id
 
     capital_texture.update(capital_image)
+    
+## RESET
+## Удаляет все летящие БПЛА и ракеты (и игрока, и ИИ — они все добавляются
+## как дети Map через add_child), плюс чистит линии-траектории.
+func _clear_in_flight_projectiles() -> void:
+    for child in get_children():
+        if child is Sprite2D and child.get_script():
+            var path = child.get_script().resource_path
+            if path in ["res://scripts/uav_drone.gd", "res://scripts/missile.gd"]:
+                child.queue_free()
+    clear_uav_target_lines()
+    if is_instance_valid(missile_lines_layer):
+        missile_lines_layer.clear_line()
+    if is_instance_valid(factory_labels_layer) and factory_labels_layer.has_method("clear"):
+        factory_labels_layer.clear()
+
+    # Если рестарт застал открытым режим прицеливания БПЛА/ракеты —
+    # снимаем затемнение карты и разблокируем клики
+    if uav_mode:
+        exit_uav_mode()
+    if missile_mode:
+        exit_missile_mode()
+
+
+## Закрывает вообще все меню/панели в CanvasLayer, кроме TopMenu.
+## Работает "вслепую" по дереву — новое меню в будущем закроется само,
+## без необходимости дописывать сюда ссылку на него.
+func _close_all_menus() -> void:
+    var canvas_layer = get_node_or_null("/root/Game/CanvasLayer")
+    if not canvas_layer:
+        return
+    _close_menus_recursive(canvas_layer)
+
+
+func _close_menus_recursive(node: Node) -> void:
+    for child in node.get_children():
+        if child is Container:
+            # Контейнер сам не прячем — иначе .show() на его детях
+            # потом ни на что не повлияет (родитель всё равно скрыт).
+            # Спускаемся внутрь и прячем уже конкретные панели.
+            _close_menus_recursive(child)
+        elif child.has_method("hide"):
+            child.hide()
+
+
+func _reset_map_textures() -> void:
+    data_image.fill(Color(0, 0, 0, 0))
+    occup_image.fill(Color(0, 0, 0, 0))
+    neg_image.fill(Color(0, 0, 0, 0))
+    uav_image.fill(Color(0, 0, 0, 0))
+    capital_image.fill(Color(0, 0, 0, 0))
+    mode_image.fill(Color(0, 0, 0, 0))
+    data_texture.update(data_image)
+    occup_texture.update(occup_image)
+    neg_texture.update(neg_image)
+    uav_texture.update(uav_image)
+    capital_texture.update(capital_image)
+    mode_texture.update(mode_image)
+
+## Перезапустить игру
+func restart() -> void:
+    _clear_in_flight_projectiles()
+    _close_all_menus()
+
+    ProvinceRegistry.reset()
+    DivisionManager.reset()
+    GameClock.reset()
+    CombatManager.reset()
+    DiplomacyManager.reset()
+    AIManager.reset()
+
+    _reset_map_textures()
+    _paint_all_provinces_from_data()
+    _init_capital_borders()
+
+    date._on_clock_day_passed({})
+    date._update_speed_label(1)
+    choose_map_panel.reset_to_default()
+
+    settings.active_country = ""
+    settings.can_draw = false
+    blue.show()

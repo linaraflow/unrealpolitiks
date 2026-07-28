@@ -1,0 +1,374 @@
+[gd_scene format=3 uid="uid://cv62nqsyq6fh"]
+
+[ext_resource type="Script" uid="uid://deopxfxwwn0vp" path="res://collapsed_menu.gd" id="1_cch7b"]
+[ext_resource type="Texture2D" uid="uid://ipe3508rojyh" path="res://assets/icons_collapsed_menu/flag_off.svg" id="1_j6c76"]
+[ext_resource type="Texture2D" uid="uid://b407htj74gvax" path="res://assets/icons_collapsed_menu/restart.svg" id="2_ryx64"]
+[ext_resource type="Texture2D" uid="uid://cvbw2bu504x7h" path="res://assets/icons_collapsed_menu/load_save.svg" id="3_cch7b"]
+[ext_resource type="Texture2D" uid="uid://d3t2yvbalggaw" path="res://assets/icons_collapsed_menu/main_menu.svg" id="4_6fdey"]
+[ext_resource type="Texture2D" uid="uid://bwo0s4vlhfg5o" path="res://assets/icons_collapsed_menu/cross.svg" id="5_mxvw5"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vqskk"]
+bg_color = Color(0.10980392, 0.11372549, 0.1254902, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.35156286, 0.35156295, 0.35156265, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+corner_detail = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4c1hm"]
+bg_color = Color(0.10980392, 0.11372549, 0.1254902, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.5729882, 0.57298833, 0.572988, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gpabw"]
+bg_color = Color(0.38328856, 0.39269632, 0.4208661, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.5729882, 0.57298833, 0.572988, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hoxt1"]
+bg_color = Color(0.08507084, 0.08841381, 0.09844289, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.5729882, 0.57298833, 0.572988, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_sq7ub"]
+bg_color = Color(0.38328856, 0.39269632, 0.4208661, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.5729882, 0.57298833, 0.572988, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_74u64"]
+bg_color = Color(0.08507084, 0.08841381, 0.09844289, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.5729882, 0.57298833, 0.572988, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gdksi"]
+bg_color = Color(0.38328856, 0.39269632, 0.4208661, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.5729882, 0.57298833, 0.572988, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_konr4"]
+bg_color = Color(0.08507084, 0.08841381, 0.09844289, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.5729882, 0.57298833, 0.572988, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_nvpnp"]
+bg_color = Color(0.10980392, 0.11372549, 0.1254902, 0)
+border_color = Color(0.5729882, 0.57298833, 0.572988, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_frde4"]
+bg_color = Color(0.38431373, 0.39215687, 0.41960785, 1)
+border_color = Color(0.5729882, 0.57298833, 0.572988, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_oa6cf"]
+bg_color = Color(0.08627451, 0.09019608, 0.09803922, 1)
+border_color = Color(0.5729882, 0.57298833, 0.572988, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="CollapsedMenu" type="Control" unique_id=2106946199]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_cch7b")
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=291987971]
+layout_mode = 0
+offset_right = 1920.0
+offset_bottom = 1080.0
+color = Color(0, 0, 0, 0.19607843)
+
+[node name="PanelContainer" type="PanelContainer" parent="." unique_id=773578330]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -233.5
+offset_top = -274.75
+offset_right = 233.5
+offset_bottom = 274.75
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_vqskk")
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer" unique_id=1066735891]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 32
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 32
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer" unique_id=227626556]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="FlagOffRect" type="TextureRect" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=2144760523]
+layout_mode = 2
+texture = ExtResource("1_j6c76")
+stretch_mode = 5
+
+[node name="MainLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=1540526338]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Regime collapsed"
+horizontal_alignment = 1
+
+[node name="MiniLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=26305460]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7204674, 0.7204675, 0.7204674, 1)
+theme_override_font_sizes/font_size = 14
+text = "Your government has lost control of the country"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=390174829]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=1099466303]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer" unique_id=243015491]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72156864, 0.72156864, 0.72156864, 1)
+text = "Country"
+
+[node name="Spacer" type="Control" parent="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer" unique_id=97524816]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="NameLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer" unique_id=663785521]
+layout_mode = 2
+text = "Russia"
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=1559975597]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer2" unique_id=1683711586]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72156864, 0.72156864, 0.72156864, 1)
+text = "Cause"
+
+[node name="Spacer" type="Control" parent="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer2" unique_id=180506980]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="NameLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer2" unique_id=995593323]
+layout_mode = 2
+text = "Economic collapse"
+
+[node name="HBoxContainer3" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=659389336]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer3" unique_id=777926199]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72156864, 0.72156864, 0.72156864, 1)
+text = "Date"
+
+[node name="Spacer" type="Control" parent="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer3" unique_id=1121674918]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="NameLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer3" unique_id=1614430667]
+layout_mode = 2
+text = "July 27, 2026"
+
+[node name="HBoxContainer4" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=1940389566]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer4" unique_id=696453127]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72156864, 0.72156864, 0.72156864, 1)
+text = "Days in power"
+
+[node name="Spacer" type="Control" parent="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer4" unique_id=1034251065]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="NameLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer4" unique_id=1325938495]
+layout_mode = 2
+text = "8.244"
+
+[node name="HSeparator2" type="HSeparator" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=1541315853]
+layout_mode = 2
+
+[node name="RestartButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=1259699158]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_4c1hm")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_gpabw")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hoxt1")
+icon_alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer/RestartButton" unique_id=1536756824]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 0.5
+offset_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+
+[node name="TextureRect" type="TextureRect" parent="PanelContainer/MarginContainer/VBoxContainer/RestartButton/HBoxContainer" unique_id=293088587]
+layout_mode = 2
+texture = ExtResource("2_ryx64")
+stretch_mode = 5
+
+[node name="Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/RestartButton/HBoxContainer" unique_id=2137130843]
+layout_mode = 2
+text = "Restart"
+
+[node name="SaveButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=1348635006]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_4c1hm")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_sq7ub")
+theme_override_styles/hover = SubResource("StyleBoxFlat_74u64")
+icon_alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer/SaveButton" unique_id=150622115]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 0.5
+offset_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+
+[node name="TextureRect" type="TextureRect" parent="PanelContainer/MarginContainer/VBoxContainer/SaveButton/HBoxContainer" unique_id=1802919475]
+layout_mode = 2
+texture = ExtResource("3_cch7b")
+stretch_mode = 5
+
+[node name="Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/SaveButton/HBoxContainer" unique_id=303651972]
+layout_mode = 2
+text = "Load save"
+
+[node name="MenuButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=1103130670]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_4c1hm")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_gdksi")
+theme_override_styles/hover = SubResource("StyleBoxFlat_konr4")
+icon_alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer/MenuButton" unique_id=949664397]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 0.5
+offset_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+
+[node name="TextureRect" type="TextureRect" parent="PanelContainer/MarginContainer/VBoxContainer/MenuButton/HBoxContainer" unique_id=1722446308]
+layout_mode = 2
+texture = ExtResource("4_6fdey")
+stretch_mode = 5
+
+[node name="Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/MenuButton/HBoxContainer" unique_id=295620750]
+layout_mode = 2
+text = "Main menu"
+
+[node name="ExitButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=103494462]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_nvpnp")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_frde4")
+theme_override_styles/hover = SubResource("StyleBoxFlat_oa6cf")
+icon_alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer/ExitButton" unique_id=887989435]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 0.5
+offset_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+
+[node name="TextureRect" type="TextureRect" parent="PanelContainer/MarginContainer/VBoxContainer/ExitButton/HBoxContainer" unique_id=1684166487]
+layout_mode = 2
+texture = ExtResource("5_mxvw5")
+stretch_mode = 5
+
+[node name="Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/ExitButton/HBoxContainer" unique_id=157452345]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.37413925, 0.37413928, 0.37413922, 1)
+text = "Quit game"
+
+[connection signal="pressed" from="PanelContainer/MarginContainer/VBoxContainer/RestartButton" to="." method="_on_restart_button_pressed"]
+[connection signal="pressed" from="PanelContainer/MarginContainer/VBoxContainer/ExitButton" to="." method="_on_exit_button_pressed"]

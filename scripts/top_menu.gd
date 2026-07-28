@@ -77,6 +77,7 @@ var MISSILE_COMPANY_COST = settings.MISSILE_COMPANY_COST
 @onready var order_missile_button: Button = $PanelMissileOrder/MarginContainer/VBoxContainer/OrderButton
 @onready var missile_launch_button: Button = $PanelMissileOrder/MarginContainer/VBoxContainer/HBoxContainer/LaunchButton
 
+
 # Кэш скорости производства ракет (шт/МЕСЯЦ), пересчитывается при каждом refresh панели заказа
 var _order_missile_speed: float = 0.0
 var _order_missile_cost: float = 0.0

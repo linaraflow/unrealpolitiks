@@ -244,3 +244,18 @@ func set_negotiation_visibility(countries: Array) -> void:
 
             if is_instance_valid(circle.current_path_node):
                 circle.current_path_node.visible = not on_negotiation_territory
+
+
+
+
+## RESET
+## Удаляет все дивизии со сцены (в т.ч. те, что сейчас в движении между провинциями)
+func reset() -> void:
+    for p_id in armies:
+        for circle in armies[p_id]:
+            if is_instance_valid(circle):
+                if is_instance_valid(circle.current_path_node):
+                    circle._stop_current_movement()
+                circle.queue_free()
+    armies = {}
+    army_counters = {}

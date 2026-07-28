@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://d1sj147vs04l7"]
 
 [ext_resource type="Script" uid="uid://cm08kpxleedq3" path="res://scripts/exit_menu.gd" id="1_xn68j"]
-[ext_resource type="Resource" uid="uid://bhx1w7f44qx7h" path="res://new_resource.tres" id="2_d3tli"]
+[ext_resource type="Resource" uid="uid://dpsywpq1i1i6j" path="res://new_resource.tres" id="2_d3tli"]
 
 [node name="Exit_menu" type="Control" unique_id=1693922976]
 layout_mode = 3

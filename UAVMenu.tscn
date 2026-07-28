@@ -2,7 +2,6 @@
 
 [ext_resource type="Script" uid="uid://dbg1y8q83cgjt" path="res://scripts/uav_menu.gd" id="1_ftdrn"]
 [ext_resource type="Texture2D" uid="uid://bkvnam3f32fos" path="res://assets/icons_uav_menu/drone.svg" id="2_7ovbt"]
-[ext_resource type="Texture2D" uid="uid://kbbj0ffkex8y" path="res://assets/icons_uav_menu/rocket.svg" id="3_34ixh"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ftdrn"]
 bg_color = Color(0.12156863, 0.12156863, 0.11764706, 1)
@@ -261,7 +260,7 @@ alignment = 1
 
 [node name="TextureRect" type="TextureRect" parent="PanelContainer/MarginContainer/VBoxContainer/LaunchButton/HBoxContainer" unique_id=1328609469]
 layout_mode = 2
-texture = ExtResource("3_34ixh")
+texture = ExtResource("2_7ovbt")
 expand_mode = 3
 stretch_mode = 3
 

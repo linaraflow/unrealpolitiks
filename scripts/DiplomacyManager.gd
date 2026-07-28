@@ -122,7 +122,7 @@ func _check_regime_collapses() -> void:
             continue
 
         if ProvinceRegistry.get_factory_destruction_ratio(country) >= REGIME_COLLAPSE_FACTORY_DESTRUCTION_RATIO:
-            trigger_regime_collapse(country)
+            trigger_regime_collapse(country, "Economic collapse")
             continue
 
         var stability = get_regime_stability(country)
@@ -149,7 +149,8 @@ func _check_regime_collapses() -> void:
         var chance = lerp(REGIME_COLLAPSE_BASE_CHANCE, REGIME_COLLAPSE_MAX_CHANCE, t)
 
         if randf() < chance:
-            trigger_regime_collapse(country)
+            var cause: String = "Military collapse" if t_exhaustion >= t_happiness else "Social collapse"
+            trigger_regime_collapse(country, cause)
 
 ## Определяет, является ли страна игроком.
 func _is_player_country(country: String) -> bool:
@@ -162,7 +163,7 @@ func _is_player_country(country: String) -> bool:
 ##   окончательно переходят оккупанту (аннексируются).
 ## - Если страна — игрок, эмитит player_regime_collapsed (вешайте на это game over).
 ## - Если ИИ — просто меняет идеологию и территории, война продолжается.
-func trigger_regime_collapse(country: String, forced_ideology: String = "") -> void:
+func trigger_regime_collapse(country: String, cause: String, forced_ideology: String = "") -> void:
     var c_data = ProvinceRegistry.countries_data
     if not c_data.has(country):
         return
@@ -199,7 +200,7 @@ func trigger_regime_collapse(country: String, forced_ideology: String = "") -> v
     regime_collapsed.emit(country, old_ideology, new_ideology)
 
     if _is_player_country(country):
-        player_regime_collapsed.emit(country, old_ideology, new_ideology)
+        player_regime_collapsed.emit(country, old_ideology, new_ideology, cause)
 
 ## Случайная идеология, отличная от текущей.
 func _pick_random_ideology(exclude: String) -> String:
@@ -356,3 +357,10 @@ func get_world_gdp(product_cost: float) -> float:
     for country in ProvinceRegistry.countries_data.keys():
         total_gdp += get_gdp(country, product_cost)
     return max(total_gdp, 1.0) # Защита от деления на ноль
+
+
+
+
+## RESET
+func reset() -> void:
+    active_processes = {}

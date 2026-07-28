@@ -439,3 +439,9 @@ func _battle_has_other_conflicts(sides: Dictionary, country_a: String, country_b
             if ProvinceRegistry.is_at_war(ca, cb):
                 return true
     return false
+
+
+
+## RESET
+func reset() -> void:
+    active_battles = {}

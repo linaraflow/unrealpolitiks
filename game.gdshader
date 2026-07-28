@@ -7,6 +7,12 @@ uniform sampler2D neg_texture : filter_nearest;
 uniform sampler2D uav_texture : filter_nearest;
 uniform sampler2D capital_texture : filter_nearest;  // a>0.5 = провинция является столицей
 
+// ── Режимы карты (экономика и т.п.): r=нормализованное значение 0..1, a>0.5 = участвует ──
+uniform sampler2D mode_texture : filter_nearest;
+uniform bool  map_mode_active = false;
+uniform vec3  mode_color_low  : source_color = vec3(1.0, 1.0, 1.0);   // белый  = 0 фабрик
+uniform vec3  mode_color_high : source_color = vec3(1.0, 0.55, 0.0);  // оранжевый = много фабрик
+
 uniform vec4  country_colors[256];
 uniform vec3  selected_province_color = vec3(-1.0);
 uniform float highlight_time = -1.0;
@@ -67,6 +73,16 @@ void fragment() {
         base_color = country_colors[owner_idx].rgb;
     } else {
         base_color = tex.rgb;
+    }
+
+    // ── Режим карты (экономика и т.п.): перекрашиваем сушу белый→оранжевый ────
+    // Применяется ПОСЛЕ базового цвета страны, но ДО границ/подсветок/вспышек,
+    // поэтому границы, выделение и вспышки остаются видимыми поверх режима.
+    if (map_mode_active && status.a > 0.5) {
+        vec4 mode_status = texture(mode_texture, data_uv);
+        if (mode_status.a > 0.5) {
+            base_color = mix(mode_color_low, mode_color_high, mode_status.r);
+        }
     }
 
     // ── Границы провинций/стран: считаем ЗАРАНЕЕ ──────────────────────────────
