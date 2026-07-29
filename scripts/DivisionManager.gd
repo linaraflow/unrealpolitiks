@@ -154,6 +154,46 @@ func merge_divisions(province_id: int) -> void:
     ProvinceRegistry.province_army_changed.emit(province_id)
     reposition_armies_in_province(province_id)
     
+    
+func merge_specific_divisions(divisions: Array) -> void:
+    var valid: Array = []
+    for d in divisions:
+        if is_instance_valid(d) and not d.is_moving:
+            valid.append(d)
+
+    if valid.size() <= 1:
+        return
+
+    var province_id: int = valid[0].province_id
+    var owner_id: String = valid[0].division_owner
+
+    # На всякий случай отфильтровываем чужие/другие провинции
+    valid = valid.filter(func(d): return d.province_id == province_id and d.division_owner == owner_id)
+    if valid.size() <= 1:
+        return
+
+    var main_circle = valid[0]
+    var total_soldiers := 0
+    for d in valid:
+        total_soldiers += d.soldiers
+    main_circle.soldiers = total_soldiers
+
+    if armies.has(province_id):
+        for i in range(1, valid.size()):
+            var c = valid[i]
+            armies[province_id].erase(c)
+            if is_instance_valid(c.current_path_node):
+                c._stop_current_movement()
+            c.queue_free()
+
+    if CombatManager.active_battles.has(province_id):
+        var sides = CombatManager.active_battles[province_id]["sides"]
+        if sides.has(owner_id):
+            _refresh_combat_hp_manually(province_id, owner_id)
+
+    ProvinceRegistry.province_army_changed.emit(province_id)
+    reposition_armies_in_province(province_id)
+    
 ## Уничтожает kill_ratio (0..1) личного состава ВСЕХ дивизий в провинции
 ## (используется ракетным ударом: kill_ratio = 0.9 → уничтожает 90% людей).
 ## Дивизии, у которых солдат осталось <= 0, удаляются полностью.

@@ -57,6 +57,7 @@ var war_stats: Dictionary = {}
 
 
 func _ready() -> void:
+    show() # корневой узел всегда должен оставаться видимым, прячем только _panel
     _panel.visible = false
 
     _war_template.visible = false
@@ -91,6 +92,13 @@ func _ready() -> void:
 ## Открыть/закрыть панель статистики. Вызывайте это из кнопки, где бы она теперь
 ## ни лежала (сейчас — panel.gd, $HeaderRow/StatisticButton).
 func toggle_menu() -> void:
+    # ВАЖНО: map.gd:_close_all_menus() (вызывается из restart()) обходит
+    # CanvasLayer и делает child.hide() на КОРНЕВОМ узле StatisticsMenu
+    # (а не на _panel) — т.к. сам StatisticsMenu это Control, а не Container.
+    # Из-за этого после рестарта visible=false остаётся у родителя навсегда,
+    # и _panel.visible=true уже ничего не даёт — скрытый родитель не рисует
+    # детей. Поэтому здесь всегда возвращаем видимость самому узлу.
+    show()
     _panel.visible = not _panel.visible
     if _panel.visible:
         _refresh()
@@ -100,6 +108,33 @@ func toggle_menu() -> void:
 ## а также автоматически при нажатии любой кнопки в TopMenu — см. _connect_close_on_buttons)
 func close_menu() -> void:
     _panel.visible = false
+
+
+## Полный сброс статистики (вызывать из map.gd:restart()).
+## Обнуляет и войны, и еженедельные цифры, прячет лишние war-панельки из
+## пула обратно до одного (оригинального) шаблона и, если панель сейчас
+## открыта, сразу перерисовывает её нулями.
+func reset() -> void:
+    weekly_stats.clear()
+    war_stats.clear()
+
+    # Лишние задублированные war-панельки не удаляем (см. комментарий у
+    # _war_entries выше — чтобы не плодить duplicate()/queue_free()), просто
+    # прячем все, кроме оригинального шаблона, и откатываем пул к [_war_template].
+    for entry in _war_entries:
+        entry.visible = false
+    _war_entries = [_war_template]
+
+    if _active_wars_count_label:
+        _active_wars_count_label.text = "0"
+
+    _set_value_label(_built_panel, "+0")
+    _set_value_label(_destroyed_panel, "-0")
+    _set_value_label(_uav_panel, "0")
+    _set_value_label(_rockets_panel, "0")
+
+    if _panel.visible:
+        _refresh()
 
 
 ## Рекурсивно подключает close_menu() к сигналу pressed каждой кнопки внутри node.

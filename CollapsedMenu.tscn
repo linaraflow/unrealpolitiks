@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://cv62nqsyq6fh"]
 
-[ext_resource type="Script" uid="uid://deopxfxwwn0vp" path="res://collapsed_menu.gd" id="1_cch7b"]
 [ext_resource type="Texture2D" uid="uid://ipe3508rojyh" path="res://assets/icons_collapsed_menu/flag_off.svg" id="1_j6c76"]
 [ext_resource type="Texture2D" uid="uid://b407htj74gvax" path="res://assets/icons_collapsed_menu/restart.svg" id="2_ryx64"]
+[ext_resource type="Script" uid="uid://cn005e086lpv6" path="res://scripts/collapsed_menu.gd" id="3_6fdey"]
 [ext_resource type="Texture2D" uid="uid://cvbw2bu504x7h" path="res://assets/icons_collapsed_menu/load_save.svg" id="3_cch7b"]
 [ext_resource type="Texture2D" uid="uid://d3t2yvbalggaw" path="res://assets/icons_collapsed_menu/main_menu.svg" id="4_6fdey"]
 [ext_resource type="Texture2D" uid="uid://bwo0s4vlhfg5o" path="res://assets/icons_collapsed_menu/cross.svg" id="5_mxvw5"]
@@ -135,7 +135,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_cch7b")
+script = ExtResource("3_6fdey")
 
 [node name="ColorRect" type="ColorRect" parent="." unique_id=291987971]
 layout_mode = 0

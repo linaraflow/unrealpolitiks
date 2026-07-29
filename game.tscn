@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" uid="uid://uh1sd1fvacpa" path="res://CounrtyMenu.tscn" id="6_mfdv2"]
 [ext_resource type="Resource" uid="uid://dpsywpq1i1i6j" path="res://new_resource.tres" id="6_ryrav"]
 [ext_resource type="PackedScene" uid="uid://b50l3xjltcm0l" path="res://DivisionMenu.tscn" id="7_80cx4"]
+[ext_resource type="PackedScene" uid="uid://j7vowtqh1w7b" path="res://ControlDivisionsMenu.tscn" id="8_hb5m1"]
 [ext_resource type="PackedScene" uid="uid://cbj0ixihecpff" path="res://ProvinceMenu.tscn" id="8_j5wjh"]
 [ext_resource type="PackedScene" uid="uid://d1sj147vs04l7" path="res://Exit_menu.tscn" id="8_mfdv2"]
 [ext_resource type="PackedScene" uid="uid://b14dkd4blc7n5" path="res://DevMenu.tscn" id="9_80cx4"]
@@ -26,6 +27,7 @@
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_fc0e3"]
 shader = ExtResource("1_feb5d")
 shader_parameter/tech_map = SubResource("CompressedTexture2D_iotsf")
+shader_parameter/distribute_mode = false
 shader_parameter/map_mode_active = false
 shader_parameter/mode_color_low = Color(1, 1, 1, 1)
 shader_parameter/mode_color_high = Color(1, 0.55, 0, 1)
@@ -112,14 +114,6 @@ texture = ExtResource("2_215e1")
 script = ExtResource("3_hb5m1")
 settings = ExtResource("6_ryrav")
 
-[node name="SelectionBox" type="Control" parent="." unique_id=1158140647]
-layout_mode = 3
-anchors_preset = 0
-offset_right = 3840.0
-offset_bottom = 2160.0
-mouse_filter = 2
-script = ExtResource("5_x5p1p")
-
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=2005519769]
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer" unique_id=1878594333]
@@ -140,6 +134,8 @@ layout_mode = 2
 [node name="DivisionMenu" parent="CanvasLayer/VBoxContainer" unique_id=770860264 instance=ExtResource("7_80cx4")]
 custom_minimum_size = Vector2(300, 189)
 layout_mode = 2
+
+[node name="ControlDivisionsMenu" parent="CanvasLayer" unique_id=2119087097 instance=ExtResource("8_hb5m1")]
 
 [node name="DevMenu" parent="CanvasLayer" unique_id=1311671348 instance=ExtResource("9_80cx4")]
 anchors_preset = 1
@@ -212,6 +208,16 @@ offset_left = 312.0
 offset_top = 56.0
 offset_right = -1608.0
 offset_bottom = -1024.0
+
+[node name="SelectionBox" type="Control" parent="CanvasLayer" unique_id=1158140647]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("5_x5p1p")
 
 [node name="WarBanner" type="CanvasLayer" parent="." unique_id=317580348]
 script = ExtResource("20_36jdj")

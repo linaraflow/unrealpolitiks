@@ -5,6 +5,8 @@ uniform sampler2D data_texture   : filter_nearest;   // r=owner_idx, a>0.5 = own
 uniform sampler2D occup_texture  : filter_nearest;   // r=occupier_idx, a>0.5 = occupied
 uniform sampler2D neg_texture : filter_nearest;
 uniform sampler2D uav_texture : filter_nearest;
+uniform sampler2D distribute_texture : filter_nearest;
+uniform bool distribute_mode = false;
 uniform sampler2D capital_texture : filter_nearest;  // a>0.5 = провинция является столицей
 
 // ── Режимы карты (экономика и т.п.): r=нормализованное значение 0..1, a>0.5 = участвует ──
@@ -244,6 +246,16 @@ void fragment() {
         vec4 uav = texture(uav_texture, data_uv);
         if (uav.a < 0.5) {
             base_color = base_color * 0.25;
+        }
+    }
+    
+    // ── Режим распределения дивизий: подсвечиваем выбранные провинции ─────────
+    // Используем тот же визуальный стиль, что и обычное статичное выделение
+    // провинции (чёрный тинт alpha=0.2), чтобы выглядело как "selected".
+    if (distribute_mode && !is_border_pixel) {
+        vec4 dstat = texture(distribute_texture, data_uv);
+        if (dstat.a > 0.5) {
+            base_color = mix(base_color, vec3(0.0), 0.2);
         }
     }
 

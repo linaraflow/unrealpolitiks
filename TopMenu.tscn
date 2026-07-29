@@ -986,7 +986,7 @@ layout_mode = 2
 size_flags_horizontal = 10
 theme_override_colors/font_color = Color(0.8862745, 0.69411767, 0.23529412, 1)
 theme_override_font_sizes/font_size = 14
-text = "📦10.000"
+text = "📦 10.000"
 
 [node name="OrderButton" type="Button" parent="PanelMissileOrder/MarginContainer/VBoxContainer" unique_id=1324691844]
 layout_mode = 2

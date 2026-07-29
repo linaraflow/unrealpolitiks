@@ -38,6 +38,11 @@ var _uav_enemies: Array = []
 var uav_image: Image
 var uav_texture: ImageTexture
 
+
+var distribute_mode: bool = false
+var distribute_image: Image
+var distribute_texture: ImageTexture
+
 ## Слой с линиями "столица -> цель" и бегущими по ним стрелочками (UAVMenu).
 ## Создаётся как child-нода в _ready(), координаты — как у province_centers.
 var uav_lines_layer: Node2D
@@ -158,6 +163,12 @@ func _ready():
     missile_lines_layer = preload("res://scripts/missile_lines_layer.gd").new()
     missile_lines_layer.name = "MissileLinesLayer"
     add_child(missile_lines_layer)
+    
+    distribute_image = Image.create(256, 256, false, Image.FORMAT_RGBA8)
+    distribute_image.fill(Color(0, 0, 0, 0))
+    distribute_texture = ImageTexture.create_from_image(distribute_image)
+    material.set_shader_parameter("distribute_texture", distribute_texture)
+    material.set_shader_parameter("distribute_mode", false)
 
     # Слой цифр "число заводов" на вражеских провинциях (режимы БПЛА/ракеты)
     factory_labels_layer = preload("res://scripts/province_factory_labels_layer.gd").new()
@@ -275,7 +286,14 @@ func _input(event: InputEvent):
     if get_viewport().gui_get_hovered_control() != null:
         return
 
-    if event.button_index == MOUSE_BUTTON_LEFT:
+    # ВАЖНО: это срабатывает на КАЖДОЕ отпускание ЛКМ на карте — в том числе
+    # и в момент, когда ты отпускаешь мышь после перетаскивания selection box.
+    # Раньше здесь выделение чистилось безусловно, без проверки Shift, и это
+    # стирало результат selection_box.gd ДО того, как он успевал добавить туда
+    # новых юнитов (т.к. _input() выполняется раньше _unhandled_input()).
+    # Из-за этого стакинг через Shift не работал никогда — сброс происходил
+    # тут, а не в selection_box.gd. Добавляем ту же проверку Shift, что и там.
+    if event.button_index == MOUSE_BUTTON_LEFT and not Input.is_key_pressed(KEY_SHIFT) and not distribute_mode:
         SelectionManager.clear_selection()
 
     var coords = _get_map_coords()
@@ -296,7 +314,8 @@ func _input(event: InputEvent):
         return
     if missile_mode and not _is_targeting_visible(p_id, _missile_enemies):
         return
-
+    if distribute_mode and not _is_own_province(p_id):
+        return
     # Запоминаем точную локальную позицию клика
     _last_click_local_pos = get_local_mouse_position()
 
@@ -327,7 +346,11 @@ func _handle_left_click(p_id, px, province_info, current_owner):
     if missile_mode:
         get_node("/root/Game/CanvasLayer/MissileMenu").on_province_clicked(p_id)
         return
-
+    
+    if distribute_mode:
+        get_node("/root/Game/CanvasLayer/ControlDivisionsMenu").on_distribute_province_clicked(p_id)
+        return
+    
     # РЕЖИМ ПЕРЕГОВОРОВ: передаём клик в меню и выходим
     if settings.negotiation_mode:
         get_node("/root/Game/CanvasLayer/NegotiationMenu").on_province_clicked(p_id)
@@ -356,6 +379,9 @@ func _handle_left_click(p_id, px, province_info, current_owner):
 func _handle_right_click(p_id, px, province_info, current_owner):
     print("ПКМ на провинции: ", p_id, " owner: ", current_owner)
     print("Есть выделенная дивизия: ", SelectionManager.has_selection())
+    
+    if distribute_mode:
+        return
 
     if SelectionManager.has_selection():
         var target_pos = province_centers.get(p_id, to_local(get_global_mouse_position()))
@@ -559,6 +585,29 @@ func _is_targeting_visible(p_id: int, enemies: Array) -> bool:
     var p = ProvinceRegistry.province_data.get(p_id, {})
     var owner = p.get("owner", "")
     return owner == settings.active_country or owner in enemies
+  
+  
+func _is_own_province(p_id: int) -> bool:
+    return ProvinceRegistry.province_data.get(p_id, {}).get("owner", "") == settings.active_country
+
+func enter_distribute_mode() -> void:
+    distribute_mode = true
+    distribute_image.fill(Color(0, 0, 0, 0))
+    distribute_texture.update(distribute_image)
+    material.set_shader_parameter("distribute_mode", true)
+
+func exit_distribute_mode() -> void:
+    distribute_mode = false
+    distribute_image.fill(Color(0, 0, 0, 0))
+    distribute_texture.update(distribute_image)
+    material.set_shader_parameter("distribute_mode", false)
+
+## Подсвечивает/снимает подсветку провинции, выбранной в DistributePanel.
+func set_distribute_province_highlighted(p_id: int, highlighted: bool) -> void:
+    var r = p_id & 0xFF
+    var g = (p_id >> 8) & 0xFF
+    distribute_image.set_pixel(r, g, Color(1, 0, 0, 1) if highlighted else Color(0, 0, 0, 0))
+    distribute_texture.update(distribute_image)
 
 
 ## Обновляет линии "столица -> выбранная вражеская провинция" с бегущими
@@ -1046,6 +1095,8 @@ func _clear_in_flight_projectiles() -> void:
         exit_uav_mode()
     if missile_mode:
         exit_missile_mode()
+    if distribute_mode:
+        exit_distribute_mode()
 
 
 ## Закрывает вообще все меню/панели в CanvasLayer, кроме TopMenu.
@@ -1076,13 +1127,15 @@ func _reset_map_textures() -> void:
     uav_image.fill(Color(0, 0, 0, 0))
     capital_image.fill(Color(0, 0, 0, 0))
     mode_image.fill(Color(0, 0, 0, 0))
+    distribute_image.fill(Color(0, 0, 0, 0))
     data_texture.update(data_image)
     occup_texture.update(occup_image)
     neg_texture.update(neg_image)
     uav_texture.update(uav_image)
     capital_texture.update(capital_image)
     mode_texture.update(mode_image)
-
+    distribute_texture.update(distribute_image)
+    
 ## Перезапустить игру
 func restart() -> void:
     _clear_in_flight_projectiles()
@@ -1094,6 +1147,10 @@ func restart() -> void:
     CombatManager.reset()
     DiplomacyManager.reset()
     AIManager.reset()
+
+    var statistics_menu = get_node_or_null("/root/Game/CanvasLayer/StatisticsMenu")
+    if statistics_menu:
+        statistics_menu.reset()
 
     _reset_map_textures()
     _paint_all_provinces_from_data()

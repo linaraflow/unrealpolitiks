@@ -313,7 +313,7 @@ func _update_order_preview(value: float) -> void:
     order_time_label.text = "%.0f days" % ceil(days)
 
     var price: float = amount * _order_uav_cost
-    order_price_label.text = ProvinceRegistry._format_number(price) + " products"
+    order_price_label.text = "📦 " + ProvinceRegistry._format_number(price) + " products"
 
 
 func _on_order_button_pressed() -> void:
@@ -481,7 +481,7 @@ func _update_missile_order_preview(value: float) -> void:
     order_missile_time_label.text = "%.1f months" % months
 
     var price: float = amount * _order_missile_cost
-    order_missile_price_label.text = ProvinceRegistry._format_number(price) + " products"
+    order_missile_price_label.text = "📦 " + ProvinceRegistry._format_number(price) + " products"
 
 
 func _on_order_missile_button_pressed() -> void:
