@@ -1,10 +1,9 @@
 [gd_scene format=3 uid="uid://b14dkd4blc7n5"]
 
 [ext_resource type="Script" uid="uid://b26xug05pplnl" path="res://scripts/dev_menu.gd" id="1_c1jpb"]
-[ext_resource type="Resource" uid="uid://bhx1w7f44qx7h" path="res://new_resource.tres" id="2_c1jpb"]
+[ext_resource type="Resource" uid="uid://dpsywpq1i1i6j" path="res://new_resource.tres" id="2_c1jpb"]
 
 [node name="DevMenu" type="Control" unique_id=1311671348]
-visible = false
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -59,6 +58,21 @@ text = "+money"
 layout_mode = 2
 theme_override_font_sizes/font_size = 9
 text = "all div. selectable"
+
+[node name="ProductsLabel" type="Label" parent="Panel/VBoxContainer" unique_id=156922378]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "Products: "
+
+[node name="UAVLabel" type="Label" parent="Panel/VBoxContainer" unique_id=487912560]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "UAV: "
+
+[node name="RocketLabel" type="Label" parent="Panel/VBoxContainer" unique_id=950990008]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "Rocket: "
 
 [connection signal="pressed" from="Panel/VBoxContainer/DevRecruitButton" to="." method="_on_dev_recruit_button_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/HBoxContainer/WarButton" to="." method="_on_war_button_pressed"]

@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://b50l3xjltcm0l"]
 
 [ext_resource type="Script" uid="uid://bdxmg2pw1f4l7" path="res://scripts/division_menu.gd" id="1_myptv"]
-[ext_resource type="Resource" uid="uid://bhx1w7f44qx7h" path="res://new_resource.tres" id="2_gmcrd"]
+[ext_resource type="Resource" uid="uid://dpsywpq1i1i6j" path="res://new_resource.tres" id="2_gmcrd"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gmcrd"]
 bg_color = Color(0.12156863, 0.12156863, 0.11764706, 1)
@@ -15,6 +15,7 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 corner_detail = 20
+shadow_size = 2
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_jtvnc"]
 

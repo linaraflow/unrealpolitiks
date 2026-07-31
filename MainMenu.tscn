@@ -1,0 +1,212 @@
+[gd_scene format=3 uid="uid://kj67nr0vohd7"]
+
+[ext_resource type="Script" uid="uid://7y676w0g8m3" path="res://scripts/GridLines.gd" id="1"]
+[ext_resource type="Script" uid="uid://c1t82bd2661gi" path="res://scripts/MainMenu.gd" id="1_h7a2f"]
+[ext_resource type="Script" uid="uid://bg5qocnt2fbc3" path="res://scripts/Globe.gd" id="2"]
+
+[sub_resource type="StyleBoxFlat" id="ButtonNormal"]
+bg_color = Color(0.09, 0.09, 0.09, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.3, 0.3, 0.3, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="ButtonPressed"]
+bg_color = Color(0.05, 0.05, 0.05, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.3, 0.3, 0.3, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="ButtonHover"]
+bg_color = Color(0.14, 0.14, 0.14, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.55, 0.47, 0.29, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[node name="MainMenu" type="Control" unique_id=2137485192]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_h7a2f")
+
+[node name="Background" type="ColorRect" parent="." unique_id=1395223442]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.051, 0.055, 0.063, 1)
+
+[node name="GridLines" type="Control" parent="." unique_id=387445002]
+modulate = Color(1, 1, 1, 0.35)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1")
+line_color = Color(0.56, 0.63, 0.55, 1)
+
+[node name="GlobePivot" type="Control" parent="." unique_id=996892333]
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+grow_horizontal = 0
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("2")
+radius = 300.0
+visible_fraction = 0.866
+
+[node name="Vignette" type="ColorRect" parent="." unique_id=738915616]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 0.001)
+
+[node name="TopRightMenu" type="Button" parent="." unique_id=198798185]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -56.0
+offset_top = 16.0
+offset_right = -16.0
+offset_bottom = 48.0
+grow_horizontal = 0
+text = "..."
+
+[node name="ContentMargin" type="MarginContainer" parent="." unique_id=1282815626]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_top = -238.5
+offset_right = 521.0
+offset_bottom = 238.5
+grow_vertical = 2
+theme_override_constants/margin_left = 64
+theme_override_constants/margin_top = 40
+theme_override_constants/margin_right = 64
+theme_override_constants/margin_bottom = 40
+
+[node name="ContentBox" type="VBoxContainer" parent="ContentMargin" unique_id=2021533591]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="TitleLabel" type="Label" parent="ContentMargin/ContentBox" unique_id=263376051]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.94, 0.93, 0.9, 1)
+theme_override_font_sizes/font_size = 40
+text = "UNREALPOLITIKS"
+
+[node name="SubtitleLabel" type="Label" parent="ContentMargin/ContentBox" unique_id=424089864]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.5, 0.5, 1)
+theme_override_font_sizes/font_size = 14
+text = "G R A N D   S T R A T E G Y"
+
+[node name="Spacer" type="Control" parent="ContentMargin/ContentBox" unique_id=1733849679]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+
+[node name="MenuList" type="VBoxContainer" parent="ContentMargin/ContentBox" unique_id=573221165]
+custom_minimum_size = Vector2(320, 0)
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="NewGame" type="Button" parent="ContentMargin/ContentBox/MenuList" unique_id=2016970223]
+custom_minimum_size = Vector2(0, 46)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_styles/normal = SubResource("ButtonNormal")
+theme_override_styles/pressed = SubResource("ButtonPressed")
+theme_override_styles/hover = SubResource("ButtonHover")
+text = "New game"
+
+[node name="Continue" type="Button" parent="ContentMargin/ContentBox/MenuList" unique_id=76352830]
+custom_minimum_size = Vector2(0, 46)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_styles/normal = SubResource("ButtonNormal")
+theme_override_styles/pressed = SubResource("ButtonPressed")
+theme_override_styles/hover = SubResource("ButtonHover")
+text = "Continue"
+
+[node name="LoadGame" type="Button" parent="ContentMargin/ContentBox/MenuList" unique_id=1311373072]
+custom_minimum_size = Vector2(0, 46)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_styles/normal = SubResource("ButtonNormal")
+theme_override_styles/pressed = SubResource("ButtonPressed")
+theme_override_styles/hover = SubResource("ButtonHover")
+text = "Load game"
+
+[node name="Settings" type="Button" parent="ContentMargin/ContentBox/MenuList" unique_id=979759188]
+custom_minimum_size = Vector2(0, 46)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_styles/normal = SubResource("ButtonNormal")
+theme_override_styles/pressed = SubResource("ButtonPressed")
+theme_override_styles/hover = SubResource("ButtonHover")
+text = "Settings"
+
+[node name="Exit" type="Button" parent="ContentMargin/ContentBox/MenuList" unique_id=2019902261]
+custom_minimum_size = Vector2(0, 46)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_styles/normal = SubResource("ButtonNormal")
+theme_override_styles/pressed = SubResource("ButtonPressed")
+theme_override_styles/hover = SubResource("ButtonHover")
+text = "Exit"
+
+[node name="VersionLabel" type="Label" parent="." unique_id=1010935648]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -80.0
+offset_top = -32.0
+offset_right = -16.0
+offset_bottom = -12.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_colors/font_color = Color(0.45, 0.45, 0.45, 1)
+theme_override_font_sizes/font_size = 12
+text = "v0.1.0"
+
+[connection signal="pressed" from="ContentMargin/ContentBox/MenuList/NewGame" to="." method="_on_new_game_pressed"]
+[connection signal="pressed" from="ContentMargin/ContentBox/MenuList/Settings" to="." method="_on_settings_pressed"]
+[connection signal="pressed" from="ContentMargin/ContentBox/MenuList/Exit" to="." method="_on_exit_pressed"]

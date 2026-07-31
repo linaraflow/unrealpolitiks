@@ -24,7 +24,7 @@ func _on_pressed():
             hide()
             #get_parent().queue_free()
         GameClock.paused = false
-        get_node("/root/Game/CanvasLayer/TopMenu/TopPanel/DatePanel/PauseButton").icon = load("res://assets/pause_opened.png")
+        get_node("/root/Game/CanvasLayer/TopMenu/TopPanel/DatePanel/HBoxContainer/PauseButton").icon = load("res://assets/pause_opened.png")
         TopMenu.update(text)
         TopMenu.show()
         CountryPanel.update_info()

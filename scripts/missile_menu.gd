@@ -129,6 +129,7 @@ func _on_launch_button_pressed() -> void:
     missile.target_pos = target_pos
     missile.control_pos = MissileLinesLayer.compute_arc_control(start_pos, target_pos)
     missile.target_p_id = selected_target
+    missile.attacker_country = settings.active_country
 
     Map.add_child(missile)
 

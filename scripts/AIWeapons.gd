@@ -134,7 +134,7 @@ static func process_uav_strikes(country: String) -> void:
     for target_id in targets:
         if not AIManager.settings.province_centers.has(target_id):
             continue
-        launch_uav_wave(start_pos, target_id, drones_per_target)
+        launch_uav_wave(start_pos, target_id, drones_per_target, country)
         total_used += drones_per_target
 
     if total_used > 0:
@@ -142,7 +142,7 @@ static func process_uav_strikes(country: String) -> void:
         ProvinceRegistry.uav_order_changed.emit(country)
         AIManager.uav_launch_cooldowns[country] = AIManager.UAV_LAUNCH_COOLDOWN_DAYS
 
-static func launch_uav_wave(start_pos: Vector2, target_id: int, amount: int) -> void:
+static func launch_uav_wave(start_pos: Vector2, target_id: int, amount: int, attacker_country: String = "") -> void:
     if not is_instance_valid(AIManager.Map):
         return
 
@@ -152,6 +152,7 @@ static func launch_uav_wave(start_pos: Vector2, target_id: int, amount: int) -> 
     drone.target_pos  = AIManager.settings.province_centers[target_id]
     drone.target_p_id = target_id
     drone.amount      = amount
+    drone.attacker_country = attacker_country
 
     AIManager.Map.add_child(drone)
 
@@ -238,7 +239,7 @@ static func process_missile_strikes(country: String) -> void:
     for target_id in targets:
         if not AIManager.settings.province_centers.has(target_id):
             continue
-        launch_missile_wave(start_pos, target_id)
+        launch_missile_wave(start_pos, target_id, country)
         total_used += 1
 
     if total_used > 0:
@@ -246,7 +247,7 @@ static func process_missile_strikes(country: String) -> void:
         ProvinceRegistry.missile_order_changed.emit(country)
         AIManager.missile_launch_cooldowns[country] = AIManager.MISSILE_STRIKE_COOLDOWN_DAYS
 
-static func launch_missile_wave(start_pos: Vector2, target_id: int) -> void:
+static func launch_missile_wave(start_pos: Vector2, target_id: int, attacker_country: String = "") -> void:
     if not is_instance_valid(AIManager.Map):
         return
 
@@ -258,5 +259,6 @@ static func launch_missile_wave(start_pos: Vector2, target_id: int) -> void:
     missile.target_pos   = target_pos
     missile.control_pos  = MissileLinesLayer.compute_arc_control(start_pos, target_pos)
     missile.target_p_id  = target_id
+    missile.attacker_country = attacker_country
 
     AIManager.Map.add_child(missile)

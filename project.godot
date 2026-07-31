@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="Unrealpolitiks"
-run/main_scene="uid://ij512lr78ddd"
+run/main_scene="uid://kj67nr0vohd7"
 config/features=PackedStringArray("4.7", "Forward Plus")
 config/icon="res://icon.svg"
 
@@ -29,12 +29,12 @@ CombatManager="*uid://bwb4w72r5ooxs"
 AIManager="*uid://bmbwfaixh8rv8"
 DiplomacyManager="*uid://b1flbgjeri3ew"
 DiscordRPCLoader="*uid://dn1sfm0vrbeah"
+SettingsManager="*uid://bhky7qy30h1tw"
 
 [display]
 
 window/size/viewport_width=1920
 window/size/viewport_height=1080
-window/size/mode=3
 window/stretch/mode="canvas_items"
 
 [editor_plugins]

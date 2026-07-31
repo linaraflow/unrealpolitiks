@@ -1,8 +1,8 @@
 extends Node
 
 var settings = preload("res://new_resource.tres")
-@onready var DivisionMenu = get_node("/root/Game/CanvasLayer/VBoxContainer/DivisionMenu")
-@onready var ControlDivisionsMenu = get_node("/root/Game/CanvasLayer/ControlDivisionsMenu")
+var DivisionMenu: Control
+var ControlDivisionsMenu: Control
 
 var _menu_visible_state: bool = false
 var _menu_tween: Tween

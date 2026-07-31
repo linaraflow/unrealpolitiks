@@ -19199,18 +19199,6 @@
   "factories": 6,
   "happiness": 84
  },
- "9653": {
-  "owner": "Canada",
-  "name": "",
-  "army": {
-   "land": 0
-  },
-  "recruite_cost": 50000,
-  "against_occupation": "",
-  "population": 69130,
-  "factories": 1,
-  "happiness": 64
- },
  "8698": {
   "owner": "Canada",
   "name": "",

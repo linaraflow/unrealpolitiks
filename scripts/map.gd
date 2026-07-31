@@ -75,6 +75,7 @@ var _last_click_local_pos: Vector2 = Vector2.ZERO
 @onready var blue                 = get_node("/root/Game/CanvasLayer/BLUE")
 @onready var date                 = get_node("/root/Game/CanvasLayer/TopMenu/TopPanel/DatePanel")
 @onready var choose_map_panel     = get_node("/root/Game/CanvasLayer/TopMenu/ChooseMapPanel")
+@onready var DevMenu     = get_node("/root/Game/CanvasLayer/DevMenu")
 
 const IGNORE_IDS = [15307124, 0]
 
@@ -116,6 +117,8 @@ var _mode_min_value: int = 0
 var mode_only_own_country: bool = false
 
 func _ready():
+    AIManager.Map = self
+    
     child_entered_tree.connect(_on_child_entered_tree)
     
     var tech_tex = load("res://TechMap_alpha_06.png")
@@ -265,7 +268,7 @@ func _process(delta: float) -> void:
 
 
 func _input(event: InputEvent):
-    if event is InputEventKey and event.pressed and not event.is_echo() and event.keycode == KEY_V and not settings.negotiation_mode:
+    if event.is_action_pressed("hide_all_divisions") and not event.is_echo() and not settings.negotiation_mode:
         divisions_hidden = not divisions_hidden
         _update_divisions_visibility()
         return
@@ -364,6 +367,7 @@ func _handle_left_click(p_id, px, province_info, current_owner):
     CountryPanel.show()
     CountryPanel.update_info()
     FlagRect.update()
+    DevMenu.update()
     if settings.negotiation_mode == false:
         CountryPanel.update_info()
         DivisionMenu.update_info(province_info)
@@ -401,6 +405,7 @@ func _handle_right_click(p_id, px, province_info, current_owner):
     ProvinceMenu.update_info(province_info)
     CountryPanel.update_info()
     FlagRect.update()
+    DevMenu.update()
 
 
 # ─── РЕЖИМ ПЕРЕГОВОРОВ ────────────────────────────────────────────────────────
@@ -510,7 +515,8 @@ func _apply_targeting_mask(enemies: Array) -> void:
 
 ## Реакция на удар ракетой — подсвечиваем провинцию красным.
 func _on_missile_strike_landed(p_id: int) -> void:
-    _flash_province_red(p_id)
+    # _flash_province_red(p_id)   Красит провинцию в красный
+    _spawn_explosion(p_id)
 
 
 ## Реакция на удар БПЛА — подсвечиваем провинцию красным.
@@ -538,6 +544,14 @@ func _flash_province_red(p_id: int) -> void:
 
     material.set_shader_parameter("red_flash_ids", _red_flash_ids)
     material.set_shader_parameter("red_flash_starts", _red_flash_starts)
+    
+## Спавнит одноразовую анимацию взрыва в центре провинции p_id.
+func _spawn_explosion(p_id: int) -> void:
+    if not province_centers.has(p_id):
+        return
+    var fx = preload("res://scripts/explosion_effect.gd").new()
+    fx.position = province_centers[p_id]
+    add_child(fx)
 
 
 ## УНИВЕРСАЛЬНАЯ функция снятия затемнения карты (общая для БПЛА и ракет).

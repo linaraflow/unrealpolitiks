@@ -1,6 +1,7 @@
 [gd_scene format=4 uid="uid://ij512lr78ddd"]
 
 [ext_resource type="Shader" uid="uid://xn8w8kgxotvn" path="res://game.gdshader" id="1_feb5d"]
+[ext_resource type="Script" uid="uid://feiatnv7udqg" path="res://scripts/game.gd" id="1_x5p1p"]
 [ext_resource type="Texture2D" uid="uid://d4av1ydgjmb2n" path="res://VisualMap_alpha_03.png" id="2_215e1"]
 [ext_resource type="Script" uid="uid://mxtsm64ad2jr" path="res://scripts/map.gd" id="3_hb5m1"]
 [ext_resource type="Script" uid="uid://s5wqfaaqwfp" path="res://scripts/selection_box.gd" id="5_x5p1p"]
@@ -105,6 +106,7 @@ corner_radius_top_right = 3
 
 [node name="Game" type="Node2D" unique_id=1162060292]
 texture_filter = 1
+script = ExtResource("1_x5p1p")
 
 [node name="Map" type="Sprite2D" parent="." unique_id=750627191]
 material = SubResource("ShaderMaterial_fc0e3")
@@ -117,10 +119,15 @@ settings = ExtResource("6_ryrav")
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=2005519769]
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer" unique_id=1878594333]
-offset_left = 6.0
-offset_top = 56.0
-offset_right = 306.0
-offset_bottom = 935.0
+anchors_preset = -1
+anchor_left = 0.003
+anchor_top = 0.052
+anchor_right = 0.003
+anchor_bottom = 0.052
+offset_left = 0.23999977
+offset_top = -0.15999985
+offset_right = 300.24
+offset_bottom = 878.84
 theme_override_constants/separation = 6
 
 [node name="CountryMenu" parent="CanvasLayer/VBoxContainer" unique_id=1494951920 instance=ExtResource("6_mfdv2")]
@@ -172,26 +179,21 @@ settings = ExtResource("6_ryrav")
 [node name="CollapsedMenu" parent="CanvasLayer" unique_id=2106946199 instance=ExtResource("18_e36ub")]
 visible = false
 
-[node name="Exit_menu" parent="CanvasLayer" unique_id=1693922976 instance=ExtResource("8_mfdv2")]
-process_mode = 3
-visible = false
-
 [node name="NegotiationMenu" parent="CanvasLayer" unique_id=1683955890 instance=ExtResource("14_e8heu")]
 visible = false
-offset_right = -1497.0
 
 [node name="NotificationMenu" parent="CanvasLayer" unique_id=1559544385 instance=ExtResource("14_rvswv")]
-offset_left = 1583.0
-offset_top = 56.0
-offset_right = -337.0
-offset_bottom = -1024.0
+anchors_preset = -1
+anchor_left = 0.994
+anchor_top = 0.052
+anchor_right = 0.994
+anchor_bottom = 0.052
+offset_left = -325.47998
+offset_top = -0.15999985
+offset_right = -0.47998047
+offset_bottom = 324.84
 
 [node name="TopMenu" parent="CanvasLayer" unique_id=462479503 instance=ExtResource("16_rvswv")]
-anchors_preset = 0
-anchor_right = 0.0
-anchor_bottom = 0.0
-grow_horizontal = 1
-grow_vertical = 1
 
 [node name="UAVMenu" parent="CanvasLayer" unique_id=147817782 instance=ExtResource("15_e8heu")]
 visible = false
@@ -200,14 +202,21 @@ offset_bottom = -1080.0
 
 [node name="MissileMenu" parent="CanvasLayer" unique_id=1934150878 instance=ExtResource("16_boyg6")]
 visible = false
-offset_right = -1920.0
-offset_bottom = -1080.0
 
 [node name="StatisticsMenu" parent="CanvasLayer" unique_id=1277860925 instance=ExtResource("17_boyg6")]
-offset_left = 312.0
-offset_top = 56.0
-offset_right = -1608.0
-offset_bottom = -1024.0
+anchors_preset = -1
+anchor_left = 0.162
+anchor_top = 0.052
+anchor_right = 0.162
+anchor_bottom = 0.052
+offset_left = 0.95999146
+offset_top = -0.15999985
+offset_right = 300.96
+offset_bottom = 399.84
+
+[node name="Exit_menu" parent="CanvasLayer" unique_id=1693922976 instance=ExtResource("8_mfdv2")]
+process_mode = 3
+visible = false
 
 [node name="SelectionBox" type="Control" parent="CanvasLayer" unique_id=1158140647]
 layout_mode = 3

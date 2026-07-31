@@ -6,7 +6,7 @@ var text_color_inactive = Color(0.7, 0.7, 0.7)
 var icon_color_inactive = Color("8e8e93")
 var accent_color = Color("0a84ff")
 
-# ====== ДАННЫЕ ПУНКТОВ (порядок должен совпадать с порядком кнопок в сцене) ======
+# ====== ДАННЫЕ ПУНКТОВ ======
 var menu_items = ["Politics", "Economy", "Population"]
 
 var selected_index = 0
@@ -16,8 +16,10 @@ var expanded = false
 var list_full_height = 0
 var is_animating = false
 
-# ====== ССЫЛКИ НА НОДЫ (пути соответствуют твоей иерархии) ======
+# ====== ССЫЛКИ НА НОДЫ ======
+@onready var main_vbox: VBoxContainer = $VBoxContainer
 @onready var list_panel: PanelContainer = $VBoxContainer/ListPanel
+@onready var list_vbox: VBoxContainer = $VBoxContainer/ListPanel/VBoxContainer
 
 @onready var item_politics: Button = $VBoxContainer/ListPanel/VBoxContainer/ItemPolitics
 @onready var item_economy: Button = $VBoxContainer/ListPanel/VBoxContainer/ItemEconomy
@@ -29,16 +31,16 @@ var is_animating = false
 @onready var only_tick: CheckBox = $VBoxContainer/DropdownPanel/DropdownButton/MarginContainer/HBoxContainer/OnlyTick
 @onready var arrow_icon: TextureRect = $VBoxContainer/DropdownPanel/DropdownButton/MarginContainer/HBoxContainer/ArrowIcon
 
-# Заглушка на месте чекбокса для Politics: обычный Control с
-# size_flags_horizontal = EXPAND_FILL, занимает то же место в HBoxContainer,
-# чтобы при скрытии OnlyTick раскладка (например, положение ArrowIcon) не
-# прыгала. Создаётся кодом в _ready(), в сцене её заводить не нужно.
 var only_tick_spacer: Control
 
 @onready var Map = get_node("/root/Game/Map")
 
 
 func _ready():
+    # Разрешаем кликам проходить сквозь фоновые контейнеры к карте
+    mouse_filter = Control.MOUSE_FILTER_IGNORE
+    main_vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
     item_buttons = [item_politics, item_economy, item_population]
 
     for i in item_buttons.size():
@@ -47,7 +49,7 @@ func _ready():
     dropdown_button.pressed.connect(_on_dropdown_pressed)
     only_tick.toggled.connect(_on_only_tick_toggled)
 
-    # Создаём Control-заглушку рядом с OnlyTick в том же HBoxContainer
+    # Создаём Control-заглушку рядом с OnlyTick
     only_tick_spacer = Control.new()
     only_tick_spacer.name = "OnlyTickSpacer"
     only_tick_spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -60,18 +62,16 @@ func _ready():
     arrow_icon.pivot_offset = arrow_icon.size / 2.0
     arrow_icon.resized.connect(func(): arrow_icon.pivot_offset = arrow_icon.size / 2.0)
 
-    # Выставляем состояние по умолчанию (первый пункт выбран)
     _update_selection_visuals(selected_index)
     dropdown_label.text = menu_items[selected_index]
 
-    # На Politics чекбокс "только своя страна" не имеет смысла — прячем его
-    # и показываем на его месте Control-заглушку с Expand
     _set_only_tick_visible(selected_index != 0)
 
     call_deferred("_cache_list_height")
 
 
 func _cache_list_height():
+    list_panel.visible = true
     await get_tree().process_frame
     list_full_height = list_panel.size.y
     list_panel.clip_contents = true
@@ -79,9 +79,13 @@ func _cache_list_height():
     if expanded:
         list_panel.custom_minimum_size.y = list_full_height
         list_panel.modulate.a = 1.0
+        list_panel.visible = true
     else:
         list_panel.custom_minimum_size.y = 0.0
         list_panel.modulate.a = 0.0
+        list_panel.visible = false
+
+    _set_list_interactable(expanded)
 
 
 # ====== ВЫБОР ПУНКТА МЕНЮ ======
@@ -91,7 +95,7 @@ func _on_item_pressed(index: int):
     dropdown_label.text = menu_items[index]
 
     match index:
-        0: # Politics — чекбокс тут не нужен, прячем и сбрасываем
+        0: # Politics
             only_tick.set_pressed_no_signal(false)
             _set_only_tick_visible(false)
             Map.set_mode_only_own_country(false)
@@ -109,16 +113,34 @@ func _on_only_tick_toggled(pressed: bool):
     Map.set_mode_only_own_country(pressed)
 
 
-## Показывает OnlyTick и прячет заглушку (или наоборот). Заглушка держит
-## Expand-раскладку в HBoxContainer, пока чекбокса нет (режим Politics).
 func _set_only_tick_visible(visible_: bool) -> void:
     only_tick.visible = visible_
     only_tick_spacer.visible = not visible_
 
 
-## Полный сброс панели к дефолту — вызывается из Map.restart(). Выбирает
-## Politics, прячет/сбрасывает чекбокс "только своя страна" и сворачивает
-## список без анимации (на рестарте она не нужна).
+## Управляет кликабельностью списка и правильно распределяет mouse_filter
+func _set_list_interactable(interactable: bool) -> void:
+    # Фоновая панель списка реагирует на мышь только при разворачивании
+    list_panel.mouse_filter = Control.MOUSE_FILTER_STOP if interactable else Control.MOUSE_FILTER_IGNORE
+    if list_vbox:
+        list_vbox.mouse_filter = Control.MOUSE_FILTER_PASS if interactable else Control.MOUSE_FILTER_IGNORE
+
+    for btn in item_buttons:
+        btn.disabled = not interactable
+        btn.mouse_filter = Control.MOUSE_FILTER_STOP if interactable else Control.MOUSE_FILTER_IGNORE
+        # Все внутренности кнопки (текст, иконка) ДОЛЖНЫ игнорировать мышь,
+        # чтобы не блокировать клик по самой кнопке!
+        _set_children_mouse_ignore(btn)
+
+
+## Вспомогательная функция: делает все внутренние элементы кнопки прозрачными для мыши
+func _set_children_mouse_ignore(node: Node) -> void:
+    for child in node.get_children():
+        if child is Control:
+            child.mouse_filter = Control.MOUSE_FILTER_IGNORE
+            _set_children_mouse_ignore(child)
+
+
 func reset_to_default() -> void:
     selected_index = 0
     _update_selection_visuals(0)
@@ -135,6 +157,8 @@ func reset_to_default() -> void:
         arrow_icon.rotation_degrees = 0.0
         list_panel.custom_minimum_size.y = 0.0
         list_panel.modulate.a = 0.0
+        list_panel.visible = false
+        _set_list_interactable(false)
 
 
 func _update_selection_visuals(index: int):
@@ -164,12 +188,19 @@ func _on_dropdown_pressed():
     tween.tween_property(arrow_icon, "rotation_degrees", 180.0 if expanded else 0.0, 0.25)
 
     if expanded:
+        list_panel.visible = true
         list_panel.custom_minimum_size.y = 0
         list_panel.modulate.a = 0.0
+        _set_list_interactable(true)
         tween.tween_property(list_panel, "custom_minimum_size:y", list_full_height, 0.25).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
         tween.tween_property(list_panel, "modulate:a", 1.0, 0.2)
     else:
+        _set_list_interactable(false)
         tween.tween_property(list_panel, "custom_minimum_size:y", 0.0, 0.25).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
         tween.tween_property(list_panel, "modulate:a", 0.0, 0.15)
 
-    tween.finished.connect(func(): is_animating = false)
+    tween.finished.connect(func():
+        is_animating = false
+        if not expanded:
+            list_panel.visible = false
+    )

@@ -77,6 +77,8 @@ var MISSILE_COMPANY_COST = settings.MISSILE_COMPANY_COST
 @onready var order_missile_button: Button = $PanelMissileOrder/MarginContainer/VBoxContainer/OrderButton
 @onready var missile_launch_button: Button = $PanelMissileOrder/MarginContainer/VBoxContainer/HBoxContainer/LaunchButton
 
+@onready var ai_army_tick: CheckBox = $TopPanel/AIArmyContainer/CheckBox
+
 
 # Кэш скорости производства ракет (шт/МЕСЯЦ), пересчитывается при каждом refresh панели заказа
 var _order_missile_speed: float = 0.0
@@ -100,6 +102,9 @@ func _ready() -> void:
     launch_button.pressed.connect(_on_launch_button_pressed)
     missile_launch_button.pressed.connect(_on_missile_launch_button_pressed)
     ProvinceRegistry.uav_order_changed.connect(_on_uav_order_changed)
+
+    ai_army_tick.toggled.connect(_on_ai_army_tick_toggled)
+    AIManager.player_ai_army_enabled = ai_army_tick.button_pressed
 
     missile_label.pressed.connect(_on_missile_label_pressed)
     create_missile_button.pressed.connect(_on_create_missile_button_pressed)
@@ -138,6 +143,12 @@ func _close_other_top_panels(keep_open: Array = []) -> void:
 ## Кнопка TopMenu/TopPanel/Flag — открывает/закрывает панель статистики.
 ## Перед открытием закрываем остальные панели TopMenu (UAV/Missile/Products),
 ## чтобы не было двух открытых одновременно.
+## Чекбокс "AI Army" в TopPanel — включает/выключает автоматическое движение
+## армии игрока по тем же правилам, что использует ИИ (AIMilitary.process_military_movement).
+func _on_ai_army_tick_toggled(toggled_on: bool) -> void:
+    AIManager.player_ai_army_enabled = toggled_on
+
+
 func _on_flag_button_pressed() -> void:
     _close_other_top_panels()
     statistics_menu.toggle_menu()

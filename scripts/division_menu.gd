@@ -6,6 +6,7 @@ extends Control
 @onready var recruit_btn = get_node("/root/Game/CanvasLayer/ProvinceMenu/Panel/RecruitButton")
 
 func _ready() -> void:
+    SelectionManager.DivisionMenu = self
     hide()
     
 func update_info(data: Dictionary) -> void:

@@ -8,10 +8,15 @@ extends Control
 @onready var left_country: OptionButton = $Panel/VBoxContainer/HBoxContainer/LeftCountry
 @onready var right_country: OptionButton = $Panel/VBoxContainer/HBoxContainer/RightCountry
 @onready var balance_label = get_node_or_null("/root/Game/CanvasLayer/TopMenu/TopPanel/BalanceLabel")
+@onready var products_label: Label = $Panel/VBoxContainer/ProductsLabel
+@onready var uav_label: Label = $Panel/VBoxContainer/UAVLabel
+@onready var rocket_label: Label = $Panel/VBoxContainer/RocketLabel
 
 var countries: Array = []
 
 func _ready():
+    hide()
+    
     for country in ProvinceRegistry.countries_data:
         countries.append(country)
 
@@ -23,7 +28,15 @@ func _ready():
     # По умолчанию выберем разные страны, чтобы не воевать с самим собой
     left_country.selected = 0
     right_country.selected = 1
-
+    
+func update():
+    if ProvinceRegistry.province_data[settings.last_clicked_province_id].get("owner", "") == "sea":
+        return
+        
+    products_label.text = "product: " + str(ProvinceRegistry.countries_data[ProvinceRegistry.province_data[settings.last_clicked_province_id].get("owner", "")].get("products", ""))
+    uav_label.text = "uav: " + str(ProvinceRegistry.countries_data[ProvinceRegistry.province_data[settings.last_clicked_province_id].get("owner", "")].get("uav", ""))
+    rocket_label.text = "missiles: " + str(ProvinceRegistry.countries_data[ProvinceRegistry.province_data[settings.last_clicked_province_id].get("owner", "")].get("missile", ""))
+    
 func _input(event: InputEvent):
     if event is InputEventKey and event.pressed and not event.echo:
         if event.keycode == KEY_INSERT:

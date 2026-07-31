@@ -17,6 +17,13 @@ signal country_color_changed
 ## province_id == -1 значит "у страны больше нет провинций" (столицу ставить некуда).
 signal capital_changed(country: String, province_id: int)
 signal country_eliminated(country: String)
+## Эмитится РОВНО ОДИН РАЗ в момент, когда owner_province_count страны падает до 0 —
+## то есть не осталось НИ ОДНОЙ провинции с owner == country (все либо оккупированы,
+## либо забраны навсегда). Не путать с country_eliminated: страна может быть ещё
+## "жива" (у неё остались core-owned провинции, которые вернутся после мира), но
+## текущей территории под контролем у неё уже нет — именно это отслеживает сигнал.
+## Сбрасывается (можно словить снова), если страна отвоюет хоть одну провинцию обратно.
+signal country_lost_all_provinces(country: String)
 signal factory_built(province_id: int, country: String)
 ## Эмитится, когда у страны уничтожены заводы (удар БПЛА или ракетой). amount — сколько именно уничтожено.
 signal factory_destroyed(province_id: int, country: String, amount: int)
@@ -45,6 +52,9 @@ var country_colors: Array[Color] = []
 var province_data: Dictionary = {}
 var province_adjacency: Dictionary = {}
 var owner_province_count: Dictionary = {}  # "Germany" -> 3
+# Страны, для которых country_lost_all_provinces уже эмитился и ещё не сброшен
+# (сбрасывается, когда страна снова получает хотя бы одну провинцию).
+var _lost_provinces_notified: Dictionary = {}
 # Словарь: "Страна" -> ["Враг1", "Враг2"]
 var war_relations: Dictionary = {}
 
@@ -60,6 +70,21 @@ const SEA_OWNER := "sea"
 ## (не пустой, не "sea", и присутствует в countries_data)
 func _is_real_country_owner(owner: String) -> bool:
     return owner != "" and owner != SEA_OWNER
+
+## Проверяет owner_province_count страны и эмитит country_lost_all_provinces РОВНО
+## ОДИН РАЗ, когда счётчик падает до 0. Если страна потом отвоюет провинцию —
+## флаг сбрасывается, и при повторной потере всех территорий сигнал сработает снова.
+## Вызывать после ЛЮБОГО изменения owner_province_count[country].
+func _check_province_loss(country: String) -> void:
+    if not _is_real_country_owner(country):
+        return
+    if owner_province_count.get(country, 0) > 0:
+        _lost_provinces_notified.erase(country)
+        return
+    if _lost_provinces_notified.has(country):
+        return
+    _lost_provinces_notified[country] = true
+    country_lost_all_provinces.emit(country)
 
 var _factories_dirty: bool = true
 var _production_by_country: Dictionary = {}
@@ -312,9 +337,9 @@ func _load_countries():
 # ─── ЗАХВАТ (полная передача владения) ────────────────────────────────────────
 
 func capture(from_country: String, to_country: String) -> void:
-    for p_id in province_owners:
+    for p_id in province_owners.keys().duplicate():
         if province_owners[p_id] == from_country:
-            _set_owner(p_id, to_country)
+            capture_province(p_id, to_country)
 
 func capture_province(province_id: int, new_owner: String) -> void:
     var old_owner = province_data[province_id].get("owner", "")
@@ -330,6 +355,14 @@ func capture_province(province_id: int, new_owner: String) -> void:
     owner_province_count[new_owner] = owner_province_count.get(new_owner, 0) + 1
     _set_owner(province_id, new_owner)
     province_data[province_id]["owner"] = new_owner
+
+    # ВАЖНО: вызывать после того, как все поля выше уже обновлены — эмит сигнала
+    # ниже может синхронно вызвать код, который что-то стирает из countries_data
+    # (например, элиминацию страны), и делать это нужно только когда capture_province
+    # уже полностью не зависит от собственных локальных переменных.
+    if old_owner != "":
+        _check_province_loss(old_owner)
+    _check_province_loss(new_owner)
 
 func _set_owner(p_id: int, new_owner: String) -> void:
     province_owners[p_id] = new_owner
@@ -611,6 +644,11 @@ func _eliminate_country(country: String) -> void:
     if not countries_data.has(country):
         return
 
+    # Подстраховка: если страна дошла до полного уничтожения путём, который не
+    # проходит через capture_province (аннексия при свержении режима и т.п.),
+    # эмит через guard всё равно сработает (и не задублируется, если уже сработал).
+    _check_province_loss(country)
+
     print("[Registry] Страна %s потеряла последнюю провинцию (столицу)" % country)
     # Сначала чистим поле в самих данных — чтобы к моменту сигнала
     # никто, читающий countries_data напрямую, не увидел старую столицу.
@@ -696,11 +734,22 @@ func _check_capital_transfer(captured_p_id: int, old_owner: String) -> void:
 ## Точечно корректирует monthly_income страны при изменении численности войск
 ## (вызывается при найме в DivisionManager и при потерях в CombatManager —
 ## O(1), без обхода всех провинций/стран)
+##
+## ВАЖНО: помимо точечной правки monthly_income (для мгновенного эффекта на баланс),
+## накапливаем ту же поправку в "troop_upkeep" — её обязан учитывать
+## AIManager._calculate_monthly_income() при ежемесячном полном пересчёте.
+## Иначе полный пересчёт (раз в месяц / при reset) отбрасывает базу
+## "население × налог" и стирает все точечные поправки от найма/потерь войск.
 func adjust_monthly_income_for_troops(country: String, troop_delta: int) -> void:
     if not countries_data.has(country):
         return
+    var upkeep_delta = troop_delta * 100.0
+
     var current = float(countries_data[country].get("monthly_income", 0.0))
-    countries_data[country]["monthly_income"] = current - troop_delta * 100.0
+    countries_data[country]["monthly_income"] = current - upkeep_delta
+
+    var upkeep = float(countries_data[country].get("troop_upkeep", 0.0))
+    countries_data[country]["troop_upkeep"] = upkeep + upkeep_delta
 
 func _process_economy() -> void:
     var to_remove = []
@@ -923,7 +972,9 @@ func start_factory_construction(p_id: int, country: String) -> bool:
     
     
 # ДРОНЫ / РАКЕТЫ
-func destroy_factory(p_id: int, amount: int = 1) -> void:
+## attacker_country — страна, чей БПЛА нанёс удар. Если указана и является реальной страной,
+## ей начисляется продукт за каждую уничтоженную фабрику: destroyed * product_cost * 12.
+func destroy_factory(p_id: int, amount: int = 1, attacker_country: String = "") -> void:
     if not province_data.has(p_id): 
         return
         
@@ -944,6 +995,13 @@ func destroy_factory(p_id: int, amount: int = 1) -> void:
                 
         print("[Registry] Фабрик уничтожено: ", destroyed, " в провинции ", p_id)
         factory_destroyed.emit(p_id, owner, destroyed)
+
+        # НАГРАДА АТАКУЮЩЕМУ: за каждую уничтоженную фабрику — product_cost * 12 продукта
+        if _is_real_country_owner(attacker_country) and countries_data.has(attacker_country):
+            var product_cost: float = settings.product_cost
+            var reward: float = destroyed * 12.0
+            countries_data[attacker_country]["products"] = countries_data[attacker_country].get("products", 0.0) + reward
+            print("[Registry] %s получил %.2f продукта за уничтожение %d фабрик" % [attacker_country, reward, destroyed])
         
     # НАСЕЛЕНИЕ
     var kill_pop = settings.KILLS_PER_DRONE * amount
@@ -954,7 +1012,7 @@ func destroy_factory(p_id: int, amount: int = 1) -> void:
                 
     uav_strike_landed.emit(p_id)
     
-func missile_strike(province_id: int) -> void:
+func missile_strike(province_id: int, attacker_country: String = "") -> void:
     if not province_data.has(province_id):
         return
 
@@ -970,6 +1028,12 @@ func missile_strike(province_id: int) -> void:
                 countries_data[owner]["factories"] = max(0, countries_data[owner].get("factories", 0) - current_factories)
         print("[Registry] Ракетный удар: уничтожено фабрик ", current_factories, " в провинции ", province_id)
         factory_destroyed.emit(province_id, owner, current_factories)
+
+        # НАГРАДА АТАКУЮЩЕМУ: за каждую уничтоженную фабрику — 36 продукта
+        if _is_real_country_owner(attacker_country) and countries_data.has(attacker_country):
+            var reward: float = current_factories * 36.0
+            countries_data[attacker_country]["products"] = countries_data[attacker_country].get("products", 0.0) + reward
+            print("[Registry] %s получил %.2f продукта за уничтожение %d фабрик (ракета)" % [attacker_country, reward, current_factories])
 
     # ДИВИЗИИ — уничтожение 90% личного состава в провинции
     DivisionManager.kill_percent_in_province(province_id, MISSILE_KILL_RATIO)
@@ -1027,6 +1091,7 @@ func reset() -> void:
     active_constructions = {}
     _production_by_country = {}
     owner_province_count = {}
+    _lost_provinces_notified = {}
     war_relations = {}
     province_occupants = {}
     province_owners = {}

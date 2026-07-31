@@ -13,6 +13,18 @@ func _ready() -> void:
     hide()
     
     DiplomacyManager.player_regime_collapsed.connect(_show_menu)
+    # Если игрок потерял вообще все провинции (всё оккупировано/забрано), но
+    # свержение режима по каким-то причинам не сработало (страна ещё воюет,
+    # regime_collapse_immunity_days и т.п.) — всё равно показываем game over.
+    ProvinceRegistry.country_lost_all_provinces.connect(_on_country_lost_all_provinces)
+
+
+func _on_country_lost_all_provinces(country: String) -> void:
+    if country != settings.active_country:
+        return
+    if visible:
+        return
+    _show_menu(country, "", "", "Territorial collapse")
 
 
 func update(cause):

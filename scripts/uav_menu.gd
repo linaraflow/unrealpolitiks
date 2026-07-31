@@ -223,6 +223,8 @@ func _on_launch_button_pressed() -> void:
 
         # Передаем системное количество дронов внутрь скрипта
         drone.amount = drones_per_target
+        # Страна-атакующий, чтобы за уничтоженные фабрики начислялся продукт
+        drone.attacker_country = settings.active_country
 
         Map.add_child(drone)
 

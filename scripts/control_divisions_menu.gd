@@ -22,6 +22,7 @@ var _distribute_active: bool = false
 var _distribute_provinces: Array[int] = []   # порядок кликов = порядок присвоения
 
 func _ready() -> void:
+    SelectionManager.ControlDivisionsMenu = self
     DistributePanel.hide()
     hide()
 

@@ -22,6 +22,7 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 corner_detail = 20
+shadow_size = 2
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_edmow"]
 content_margin_left = 10.0
@@ -113,16 +114,18 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 script = ExtResource("1_u7b0n")
 
 [node name="Panel" type="Panel" parent="." unique_id=83344010]
-layout_mode = 0
+layout_mode = 1
+anchors_preset = -1
 offset_right = 300.0
 offset_bottom = 400.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_wdwn2")
 
 [node name="MarginContainer" type="MarginContainer" parent="Panel" unique_id=769726397]
-layout_mode = 0
+layout_mode = 1
 offset_right = 300.0
 offset_bottom = 400.0
 theme_override_constants/margin_left = 15

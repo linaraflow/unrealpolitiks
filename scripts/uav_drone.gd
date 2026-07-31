@@ -5,6 +5,7 @@ var settings = preload("res://new_resource.tres")
 var target_pos: Vector2
 var target_p_id: int
 var amount: int = 1 # Системное количество дронов в этой текстуре
+var attacker_country: String = "" # Страна, запустившая удар (для начисления продукта за уничтоженные фабрики)
 var base_speed: float = settings.UAV_SPEED
 
 func _ready() -> void:
@@ -28,6 +29,6 @@ func _process(delta: float) -> void:
         position = position.move_toward(target_pos, move_dist)
 
 func _arrive() -> void:
-    # Передаем системное количество урона в провинцию
-    ProvinceRegistry.destroy_factory(target_p_id, amount)
+    # Передаем системное количество урона в провинцию + страну-атакующего для награды продуктом
+    ProvinceRegistry.destroy_factory(target_p_id, amount, attacker_country)
     queue_free()

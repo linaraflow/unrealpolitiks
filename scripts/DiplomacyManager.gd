@@ -69,6 +69,9 @@ const REGIME_COLLAPSE_IMMUNITY_DAYS := 60
 
 func _ready() -> void:
     GameClock.on_day_passed.connect(_on_day_passed_diplomacy)
+    # НЕ подключать country_lost_all_provinces сюда напрямую на trigger_regime_collapse:
+    # у trigger_regime_collapse обязательный параметр cause, которого сигнал не передаёт.
+    # Слушайте country_lost_all_provinces отдельно (например, в GameManager) для game over.
 
 func _on_day_passed_diplomacy(_date: Dictionary) -> void:
     var completed: Array = []

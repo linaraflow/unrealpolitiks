@@ -46,6 +46,22 @@ func _ready():
     _setup_queue_toast()
     hide()
 
+# Хоткеи R/W/E работают только если это меню сейчас реально открыто для
+# провинции, которой владеет игрок (actions_section.visible уже считает это
+# в update_info — совпадает с условием, при котором видны сами кнопки).
+func _unhandled_input(event: InputEvent) -> void:
+    if not visible or not actions_section.visible:
+        return
+
+    if Input.is_action_just_pressed("build_factory"):
+        _on_build_factory_button_pressed()
+
+    if Input.is_action_just_pressed("summon_troops"):
+        _on_recruit_button_pressed()
+
+    if Input.is_action_just_pressed("summon_max_troops_province"):
+        _on_instant_max_recruit()
+
 # Создаёт плавающую надпись, привязанную к низу ЭКРАНА (не панели), поэтому
 # она не двигается и не масштабируется вместе с картой/камерой и не зависит
 # от изменения размера панели ProvinceMenu.
@@ -226,6 +242,46 @@ func _on_recruit_button_pressed() -> void:
     var balance = ProvinceRegistry.countries_data[owner]["balance"]
 
     recruit_slider_panel.open_menu(province_id, local_pos, pop, balance)
+
+# --- instant max recruit (E) -------------------------------------------------
+# Считает максимум войск, которые можно призвать прямо сейчас — ограничение
+# по деньгам ИЛИ по 1% населения провинции, что меньше — и призывает сразу,
+# минуя слайдер. Логика (цена за солдата, порог в 100 человек, сам вызов
+# призыва, списание баланса, просадка happiness) продублирована из
+# recruit_slider_panel.gd, чтобы результат был идентичен ручному призыву
+# через слайдер на максимум.
+func _on_instant_max_recruit() -> void:
+    var province_id = settings.last_clicked_province_id
+    var local_pos = settings.local_mouse
+
+    if province_id == -1:
+        return
+
+    var p_data = ProvinceRegistry.province_data.get(province_id, {})
+    var pop = p_data.get("population", 0)
+    var owner = p_data.get("owner", "")
+    var balance = ProvinceRegistry.countries_data[owner]["balance"]
+
+    var pop_limit = int(pop * 0.01)
+    var money_limit = int(balance / settings.COST_PER_SOLDIER)
+    var amount = min(pop_limit, money_limit)
+
+    if amount < 100:
+        show_queue_toast("Not enough money or population to recruit (min. 100)", COLOR_BAD)
+        return
+
+    var cost = int(amount * settings.COST_PER_SOLDIER)
+    var happiness_drain_per_1k = 0.1
+
+    DivisionManager.recruit(province_id, local_pos, amount)
+    ProvinceRegistry.countries_data[owner]["balance"] -= cost
+    var happiness_drain = (float(amount) / 1000.0) * happiness_drain_per_1k
+    var province_happiness = ProvinceRegistry.province_data[province_id]["happiness"]
+    ProvinceRegistry.province_data[province_id]["happiness"] = max(0.0, province_happiness - happiness_drain)
+
+    balance_label.balance_update()
+    update_army_info()
+    show_queue_toast("Recruited %d troops" % amount, COLOR_GOOD)
 
 func update_army_info():
     var p_data = ProvinceRegistry.province_data.get(settings.last_clicked_province_id, {})

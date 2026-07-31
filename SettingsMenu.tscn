@@ -1,0 +1,128 @@
+[gd_scene format=3 uid="uid://cc7jh4mja8rdv"]
+
+[ext_resource type="Script" uid="uid://crw4jaexs7j2x" path="res://scripts/SettingsMenu.gd" id="1"]
+
+[sub_resource type="StyleBoxFlat" id="PanelBg"]
+content_margin_left = 24.0
+content_margin_top = 20.0
+content_margin_right = 24.0
+content_margin_bottom = 20.0
+bg_color = Color(0.07, 0.07, 0.08, 0.97)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.3, 0.3, 0.3, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_svoao"]
+content_margin_left = 25.0
+content_margin_top = 20.0
+bg_color = Color(0.08468992, 0.08468994, 0.08468988, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="SettingsMenu" type="Control" unique_id=821874824]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="Dim" type="ColorRect" parent="." unique_id=1663345497]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.55)
+
+[node name="Panel" type="PanelContainer" parent="." unique_id=552839254]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -493.0
+offset_top = -298.5
+offset_right = 493.0
+offset_bottom = 298.5
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("PanelBg")
+
+[node name="Root" type="VBoxContainer" parent="Panel" unique_id=274634994]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="TitleLabel" type="Label" parent="Panel/Root" unique_id=1842169154]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.92, 0.92, 0.9, 1)
+theme_override_font_sizes/font_size = 22
+text = "Settings"
+
+[node name="Tabs" type="TabContainer" parent="Panel/Root" unique_id=593124774]
+custom_minimum_size = Vector2(0, 380)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_svoao")
+current_tab = 4
+
+[node name="Graphics" type="VBoxContainer" parent="Panel/Root/Tabs" unique_id=1496483292]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 6
+metadata/_tab_index = 0
+
+[node name="Interface" type="VBoxContainer" parent="Panel/Root/Tabs" unique_id=1324321702]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 6
+metadata/_tab_index = 1
+
+[node name="Gameplay" type="VBoxContainer" parent="Panel/Root/Tabs" unique_id=1981160919]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 6
+metadata/_tab_index = 2
+
+[node name="Sound" type="VBoxContainer" parent="Panel/Root/Tabs" unique_id=509312588]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 6
+metadata/_tab_index = 3
+
+[node name="Controls" type="VBoxContainer" parent="Panel/Root/Tabs" unique_id=1231663013]
+layout_mode = 2
+theme_override_constants/separation = 6
+metadata/_tab_index = 4
+
+[node name="ButtonsRow" type="HBoxContainer" parent="Panel/Root" unique_id=1066019358]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 2
+
+[node name="ResetButton" type="Button" parent="Panel/Root/ButtonsRow" unique_id=1385896466]
+layout_mode = 2
+text = "Reset"
+
+[node name="SaveButton" type="Button" parent="Panel/Root/ButtonsRow" unique_id=839138443]
+layout_mode = 2
+text = "Save"
+
+[node name="BackButton" type="Button" parent="Panel/Root/ButtonsRow" unique_id=126872098]
+layout_mode = 2
+text = "Back"
+
+[connection signal="pressed" from="Panel/Root/ButtonsRow/ResetButton" to="." method="_on_reset_pressed"]
+[connection signal="pressed" from="Panel/Root/ButtonsRow/SaveButton" to="." method="_on_save_pressed"]
+[connection signal="pressed" from="Panel/Root/ButtonsRow/BackButton" to="." method="_on_back_pressed"]

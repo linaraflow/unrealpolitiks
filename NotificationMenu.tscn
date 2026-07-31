@@ -2,6 +2,14 @@
 
 [ext_resource type="Script" uid="uid://bg8eolukieet4" path="res://notification_menu.gd" id="1_f0py6"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8n20h"]
+bg_color = Color(0.15294118, 0.15294118, 0.15294118, 0.6745098)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+shadow_size = 2
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4c1hm"]
 bg_color = Color(0.12591082, 0.12591085, 0.12591076, 1)
 corner_radius_top_left = 3
@@ -20,12 +28,14 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 script = ExtResource("1_f0py6")
 
 [node name="NotificationPanel" type="Panel" parent="." unique_id=180607034]
 layout_mode = 0
 offset_right = 325.0
 offset_bottom = 325.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_8n20h")
 
 [node name="TopPanel" type="Panel" parent="NotificationPanel" unique_id=1232175972]
 layout_mode = 0

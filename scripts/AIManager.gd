@@ -27,12 +27,10 @@ extends Node
 
 var settings = preload("res://new_resource.tres")
 
-@onready var balance_label = get_node_or_null(
-    "/root/Game/CanvasLayer/TopMenu/TopPanel/BalanceLabel"
-)
+var balance_label: Label = null
 
 ## Нужен, чтобы визуально запускать спрайты дронов (как это делает uav_menu.gd)
-@onready var Map = get_node_or_null("/root/Game/Map")
+var Map: Sprite2D
 
 const UAVDroneScript = preload("res://scripts/uav_drone.gd")
 const MissileScript   = preload("res://scripts/missile.gd")
@@ -46,6 +44,10 @@ var factory_cooldowns: Dictionary = {}
 
 ## Кулдаун найма войск: country -> дней до следующего найма
 var recruitment_cooldowns: Dictionary = {}
+
+## Если true — армия игрока (settings.active_country) тоже двигается автоматически,
+## как у обычного ИИ (управляется чекбоксом ai_army_tick в TopMenu).
+var player_ai_army_enabled: bool = false
 
 ## Кулдаун ударов БПЛА: country -> дней до следующего залпа
 var uav_launch_cooldowns: Dictionary = {}
@@ -153,6 +155,12 @@ func _on_day_passed(_date: Dictionary) -> void:
 
     for country in ProvinceRegistry.countries_data:
         if country == settings.active_country:
+            # Игрок обычно управляется вручную и пропускает весь ИИ-блок.
+            # Но если включен чекбокс "AI Army" — обрабатываем его армию
+            # точно так же, как это делает обычный ИИ (движение войск),
+            # не трогая при этом экономику/дипломатию/закупки игрока.
+            if player_ai_army_enabled:
+                AIMilitary.process_military_movement(country)
             continue
 
         var c_data = ProvinceRegistry.countries_data[country]
@@ -188,8 +196,8 @@ func _on_day_passed(_date: Dictionary) -> void:
         if (current_day + country_index) % 3 == 0:
             AIMilitary.process_recruitment(country)
 
-        # 6. Движение войск — раз в 4 дня
-        if (current_day + country_index) % 4 == 0:
+        # 6. Движение войск — раз в 1 дня
+        if (current_day + country_index) % 1 == 0:
             AIMilitary.process_military_movement(country)
 
         # 7. Запуск БПЛА по врагу — раз в 2 дня
@@ -238,10 +246,20 @@ func _update_monthly_income(country: String) -> void:
     c_data["monthly_income"] = _calculate_monthly_income(country)
 
 func _calculate_monthly_income(country: String) -> float:
+    var c_data    = ProvinceRegistry.countries_data[country]
     var total_pop = _get_country_population(country)
-    var ideology  = ProvinceRegistry.countries_data[country].get("ideology", "liberalism")
+    var ideology  = c_data.get("ideology", "liberalism")
     var tax_mult  = DiplomacyManager.IDEOLOGIES[ideology]["tax"]
-    return float(total_pop) * 1.0 * tax_mult
+    var base_income = float(total_pop) * 1.0 * tax_mult
+
+    # Содержание войск начисляется точечно (O(1)) при найме/потерях через
+    # ProvinceRegistry.adjust_monthly_income_for_troops(), которая копит его
+    # в "troop_upkeep". Полный пересчёт ОБЯЗАН вычесть накопленный upkeep,
+    # иначе он "теряется" при каждом ежемесячном пересчёте дохода
+    # (баг: доход после призыва падал, а на следующий месяц откатывался назад).
+    var troop_upkeep = float(c_data.get("troop_upkeep", 0.0))
+
+    return base_income - troop_upkeep
 
 # -----------------------------------------------------------------------------
 # 4. ОБЩИЕ ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ (используются несколькими модулями)
