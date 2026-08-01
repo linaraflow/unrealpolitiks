@@ -218,6 +218,7 @@ theme_override_constants/separation = 14
 [node name="DistributeButton" type="Button" parent="VBoxContainer/MainPanel/MarginContainer/HBoxContainer" unique_id=291716752]
 layout_mode = 2
 size_flags_horizontal = 3
+focus_mode = 0
 theme_override_styles/normal = SubResource("StyleBoxFlat_4c1hm")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_8n20h")
 theme_override_styles/hover = SubResource("StyleBoxFlat_c20sc")
@@ -227,6 +228,7 @@ icon_alignment = 1
 [node name="MergeButton" type="Button" parent="VBoxContainer/MainPanel/MarginContainer/HBoxContainer" unique_id=646567157]
 layout_mode = 2
 size_flags_horizontal = 3
+focus_mode = 0
 theme_override_styles/normal = SubResource("StyleBoxFlat_4c1hm")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_2tn0d")
 theme_override_styles/hover = SubResource("StyleBoxFlat_ay1q4")
@@ -236,6 +238,7 @@ icon_alignment = 1
 [node name="SplitButton" type="Button" parent="VBoxContainer/MainPanel/MarginContainer/HBoxContainer" unique_id=468992242]
 layout_mode = 2
 size_flags_horizontal = 3
+focus_mode = 0
 theme_override_styles/normal = SubResource("StyleBoxFlat_4c1hm")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_pdc1e")
 theme_override_styles/hover = SubResource("StyleBoxFlat_lu5eh")
@@ -275,6 +278,7 @@ text = "16"
 
 [node name="ConfirmButton" type="Button" parent="VBoxContainer/DistributePanel/MarginContainer/VBoxContainer" unique_id=359186253]
 layout_mode = 2
+focus_mode = 0
 theme_override_font_sizes/font_size = 12
 theme_override_styles/normal = SubResource("StyleBoxFlat_qganp")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_ujaaa")

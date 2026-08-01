@@ -176,9 +176,6 @@ text = "Choose Country"
 script = ExtResource("13_i2p71")
 settings = ExtResource("6_ryrav")
 
-[node name="CollapsedMenu" parent="CanvasLayer" unique_id=2106946199 instance=ExtResource("18_e36ub")]
-visible = false
-
 [node name="NegotiationMenu" parent="CanvasLayer" unique_id=1683955890 instance=ExtResource("14_e8heu")]
 visible = false
 
@@ -194,6 +191,9 @@ offset_right = -0.47998047
 offset_bottom = 324.84
 
 [node name="TopMenu" parent="CanvasLayer" unique_id=462479503 instance=ExtResource("16_rvswv")]
+
+[node name="CollapsedMenu" parent="CanvasLayer" unique_id=2106946199 instance=ExtResource("18_e36ub")]
+visible = false
 
 [node name="UAVMenu" parent="CanvasLayer" unique_id=147817782 instance=ExtResource("15_e8heu")]
 visible = false

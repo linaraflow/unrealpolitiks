@@ -9,6 +9,8 @@ var settings = preload("res://new_resource.tres")
 
 @onready var Map = get_node("/root/Game/Map")
 
+const MAIN_SCENE := preload("res://MainMenu.tscn")
+
 func _ready() -> void:
     hide()
     
@@ -60,3 +62,8 @@ func _on_restart_button_pressed() -> void:
 
 func _on_exit_button_pressed() -> void:
     get_tree().quit()
+
+
+func _on_menu_button_pressed() -> void:
+    restart()
+    get_tree().change_scene_to_packed(MAIN_SCENE)

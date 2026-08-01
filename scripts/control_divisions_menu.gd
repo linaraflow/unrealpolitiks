@@ -45,7 +45,7 @@ func _on_army_changed(_p_id: int, _division = null) -> void:
         _refresh_ui()
 
 func _refresh_ui() -> void:
-    QuanLabel.text = str(SelectionManager.get_selected_soldiers_total())
+    QuanLabel.text = ProvinceRegistry._format_number(str(SelectionManager.get_selected_soldiers_total()), ".")
     MergeButton.disabled = not SelectionManager.can_merge_selected()
     DistributeButton.disabled = not SelectionManager.has_selection()
 

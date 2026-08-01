@@ -131,7 +131,7 @@ func _ready():
     DiscordRPC.app_id = 1518316614397853736  # ваш Application ID
     DiscordRPC.details = "Playing"
     DiscordRPC.state = "Taking over the world"
-    DiscordRPC.large_image = "logo"
+    DiscordRPC.large_image = "screenshot_2026-07-13_141225"
     DiscordRPC.start_timestamp = int(Time.get_unix_time_from_system())
     DiscordRPC.refresh()  # обязательно вызывать после каждого изменения полей
     
