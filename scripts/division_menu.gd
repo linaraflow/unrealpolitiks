@@ -34,11 +34,6 @@ func update_info(data: Dictionary) -> void:
             country_armies[owner].append(circle)
 
     if country_soldiers.is_empty():
-        # Если провинция морская и дивизий в ней нет — меню не нужно, скрываем его
-        if data.get("owner", "") == "sea":
-            hide()
-            return
-
         var no_divisions_label = Label.new()
         no_divisions_label.text = "No divisions"
         no_divisions_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

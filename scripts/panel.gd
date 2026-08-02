@@ -197,10 +197,6 @@ func update_info():
     var is_myself = (owner_name == settings.active_country)
     var at_war = ProvinceRegistry.is_at_war(settings.active_country, owner_name)
 
-    # Статистика имеет смысл только для своей страны — если смотрим чужую, закрываем панель
-    if not is_myself:
-        StatisticsMenu.close_menu()
-
     if not is_myself:
         _update_relations_bar(DiplomacyManager.get_relation(settings.active_country, owner_name))
 
@@ -287,6 +283,8 @@ func _populate_ideology_list() -> void:
     for ideo in ideologies:
         var btn = Button.new()
         btn.text = ideo.capitalize()
+        btn.mouse_entered.connect(_on_ideology_selection_panel_mouse_entered)
+        btn.mouse_exited.connect(_on_ideology_selection_panel_mouse_exited)
         btn.pressed.connect(_on_ideology_button_pressed.bind(btn, ideo))
         ideology_list.add_child(btn)
 
@@ -321,3 +319,14 @@ func _on_change_btn_pressed() -> void:
 func _on_close_btn_pressed() -> void:
     ideology_panel.visible = false
     selected_ideology = ""
+
+
+
+
+
+func _on_ideology_selection_panel_mouse_entered() -> void:
+    settings.is_mouse_over_ui = true
+
+
+func _on_ideology_selection_panel_mouse_exited() -> void:
+    settings.is_mouse_over_ui = false

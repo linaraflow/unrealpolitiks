@@ -57,6 +57,8 @@ var war_stats: Dictionary = {}
 
 
 func _ready() -> void:
+    print("STATS MENU settings id: ", settings.get_instance_id())
+
     show() # корневой узел всегда должен оставаться видимым, прячем только _panel
     _panel.visible = false
 
@@ -349,3 +351,13 @@ func _war_key(a: String, b: String) -> String:
 
 func _format_number(value: int) -> String:
     return ProvinceRegistry._format_number(value, ".")
+
+
+func _on_panel_mouse_entered() -> void:
+    print("PANEL entered")
+    settings.is_mouse_over_ui = true
+
+
+func _on_panel_mouse_exited() -> void:
+    print("PANEL exited")
+    settings.is_mouse_over_ui = false

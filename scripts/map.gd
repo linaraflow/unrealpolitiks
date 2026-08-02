@@ -76,6 +76,8 @@ var _last_click_local_pos: Vector2 = Vector2.ZERO
 @onready var date                 = get_node("/root/Game/CanvasLayer/TopMenu/TopPanel/DatePanel")
 @onready var choose_map_panel     = get_node("/root/Game/CanvasLayer/TopMenu/ChooseMapPanel")
 @onready var DevMenu     = get_node("/root/Game/CanvasLayer/DevMenu")
+@onready var GameRoot     = get_node("/root/Game")
+@onready var MainContainre     = get_node("/root/Game/CanvasLayer/VBoxContainer")
 
 const IGNORE_IDS = [15307124, 0]
 
@@ -274,7 +276,7 @@ func _input(event: InputEvent):
         return
 
     # Enter — сделать последнюю нажатую провинцию столицей её владельца
-    if event is InputEventKey and event.pressed and not event.is_echo() \
+    """if event is InputEventKey and event.pressed and not event.is_echo() \
             and (event.keycode == KEY_ENTER or event.keycode == KEY_KP_ENTER):
         var p_id = settings.last_clicked_province_id
         var owner = ProvinceRegistry.province_data.get(p_id, {}).get("owner", "")
@@ -282,9 +284,14 @@ func _input(event: InputEvent):
             ProvinceRegistry.set_capital(owner, p_id)
         else:
             print("[Map] Enter: у последней нажатой провинции нет владельца")
-        return
+        return"""
 
     if not event is InputEventMouseButton or event.pressed:
+        return
+    if event.button_index != MOUSE_BUTTON_LEFT and event.button_index != MOUSE_BUTTON_RIGHT:
+        # Игнорируем среднюю кнопку/колёсико и любые другие кнопки мыши —
+        # обработка клика по карте (в т.ч. скрытие/показ HUD-панели) должна
+        # реагировать только на ЛКМ и ПКМ.
         return
     if get_viewport().gui_get_hovered_control() != null:
         return
@@ -306,7 +313,25 @@ func _input(event: InputEvent):
 
 
     if p_id in IGNORE_IDS:
+        # Клик по совсем пустому фону карты (вне провинций вообще) — любой
+        # кнопкой мыши — прячем HUD-панель, как по хоткею hide_ui в game.gd.
+        if GameRoot and GameRoot.has_method("hide_panel"):
+            GameRoot.hide_panel()
         return
+
+    var province_info = ProvinceRegistry.province_data.get(p_id, {})
+    var current_owner = province_info.get("owner", "")
+    
+    if not current_owner == "sea":
+        MainContainre.show()
+
+    # ВАЖНО: раньше тут прятался/показывался весь hud_panel (родитель
+    # CountryMenu/ProvinceMenu/DivisionMenu) целиком в зависимости от
+    # клика по морю/суше. Это конфликтовало с точечным показом нужного
+    # меню в _handle_left_click/_handle_right_click — DivisionMenu не мог
+    # показаться при клике по морю, т.к. его родитель был спрятан.
+    # Видимость конкретных меню теперь полностью определяется в
+    # _handle_left_click/_handle_right_click, hud_panel трогать не нужно.
 
     # НОВОЕ: в режиме переговоров блокируем клики по затемнённым провинциям
     if settings.negotiation_mode and not _is_province_visible_in_negotiation(p_id):
@@ -321,9 +346,6 @@ func _input(event: InputEvent):
         return
     # Запоминаем точную локальную позицию клика
     _last_click_local_pos = get_local_mouse_position()
-
-    var province_info = ProvinceRegistry.province_data.get(p_id, {})
-    var current_owner = province_info.get("owner", "")
 
     print("Clicked Province ID: ", p_id, " Owner: ", current_owner,
           " Occupant: ", ProvinceRegistry.get_occupant(p_id),
@@ -363,21 +385,42 @@ func _handle_left_click(p_id, px, province_info, current_owner):
     settings.local_mouse = local_mouse
     settings.last_clicked_province_id = p_id
     _select_province(px)
+
+    # До выбора страны (can_draw == false) — показываем ТОЛЬКО CountryMenu,
+    # ProvinceMenu и DivisionMenu должны быть скрыты.
+    if not settings.can_draw:
+        get_node("../CanvasLayer/BLUE").text = current_owner if current_owner != "sea" else "Choose Country"
+        CountryPanel.show()
+        CountryPanel.update_info()
+        FlagRect.update()
+        DevMenu.update()
+        ProvinceMenu.hide()
+        DivisionMenu.hide()
+        CountryMenu.show()
+        return
+
+    # Клик по морю (страна уже выбрана, settings.can_draw == true) —
+    # показываем ТОЛЬКО DivisionMenu, CountryMenu и ProvinceMenu скрыты.
+    if current_owner == "sea":
+        if settings.negotiation_mode == false:
+            DivisionMenu.update_info(province_info)
+        CountryMenu.hide()
+        ProvinceMenu.hide()
+        DivisionMenu.show()
+        return
+
+    # Клик по обычной (не морской) провинции — показываем CountryMenu
+    # (инфо о владельце) вместе с ProvinceMenu, DivisionMenu скрыт.
     ProvinceMenu.update_info(province_info)
     CountryPanel.show()
     CountryPanel.update_info()
     FlagRect.update()
     DevMenu.update()
+    DivisionMenu.hide()
+    CountryMenu.show()
     if settings.negotiation_mode == false:
-        CountryPanel.update_info()
         DivisionMenu.update_info(province_info)
-
-        if not settings.can_draw:
-            get_node("../CanvasLayer/BLUE").text = current_owner if current_owner != "sea" else "Choose Country"
-            CountryMenu.show()
-            return
-        elif current_owner != "sea":
-            ProvinceMenu.show()
+        ProvinceMenu.show()
 
 
 func _handle_right_click(p_id, px, province_info, current_owner):
@@ -400,9 +443,23 @@ func _handle_right_click(p_id, px, province_info, current_owner):
 
     settings.last_clicked_province_id = p_id
     _select_province(px)
+
+    # Клик по морю (can_draw == true) — показываем ТОЛЬКО DivisionMenu.
+    if current_owner == "sea":
+        if settings.negotiation_mode == false:
+            DivisionMenu.update_info(province_info)
+        CountryMenu.hide()
+        ProvinceMenu.hide()
+        DivisionMenu.show()
+        return
+
     if settings.negotiation_mode == false:
         DivisionMenu.update_info(province_info)
     ProvinceMenu.update_info(province_info)
+    ProvinceMenu.show()
+    DivisionMenu.show()
+    CountryMenu.show()
+    CountryPanel.show()
     CountryPanel.update_info()
     FlagRect.update()
     DevMenu.update()

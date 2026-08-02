@@ -36,6 +36,7 @@ var _core_line: Line2D
 
 
 func _ready() -> void:
+    z_index = 2
     texture = preload("res://assets/icons_uav_menu/missile_main.png")
     var tex_size = texture.get_size()
     scale = Vector2(20.0 / tex_size.x, 20.0 / tex_size.y)
@@ -86,7 +87,8 @@ func _make_trail_line(width: float, color: Color) -> Line2D:
     grad.set_color(0, Color(color.r, color.g, color.b, 0.0))
     grad.set_color(1, color)
     line.gradient = grad
-
+    line.z_index = 2
+    
     return line
 
 

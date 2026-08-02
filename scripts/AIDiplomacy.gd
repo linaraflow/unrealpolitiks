@@ -25,6 +25,20 @@ static func try_make_peace(country: String, c_data: Dictionary, enemies: Array) 
 
     if randf() < (0.10 * peace_mult):
         var target_enemy = enemies.pick_random()
+        
+        # --- НОВАЯ ЛОГИКА ОЦЕНКИ ПРЕИМУЩЕСТВА ---
+        var ai_army = float(AIManager.get_country_total_soldiers(country))
+        var enemy_army = float(AIManager.get_country_total_soldiers(target_enemy))
+        
+        var ai_gdp = ProvinceRegistry.get_gdp(country)
+        var enemy_gdp = ProvinceRegistry.get_gdp(target_enemy)
+        
+        # Если армия ИИ >= 1.5 от вражеской ИЛИ ВВП ИИ >= 1.5 от вражеского, 
+        # то ИИ отказывается заключать мир.
+        if ai_army >= enemy_army * 1.5 or ai_gdp >= enemy_gdp * 1.5:
+            return
+        # ------------------------------------------
+
         if target_enemy != AIManager.settings.active_country:
             # Если у одной из сторон есть провинция, до которой нельзя добраться
             # нормально (только через свои провинции или море) — мир не заключаем,

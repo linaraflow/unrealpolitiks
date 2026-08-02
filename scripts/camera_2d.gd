@@ -10,7 +10,6 @@ signal zoom_changed(new_zoom: Vector2)
 var min_zoom: float = 1.0
 var map_rect: Rect2
 var is_dragging: bool = false
-var is_mouse_over_ui: bool = false
 
 func _ready():
     var map = get_parent().get_node("Map")
@@ -29,10 +28,15 @@ func _update_min_zoom():
     min_zoom = max(zoom_x, zoom_y)  # чтобы карта всегда заполняла экран
     zoom = Vector2(min_zoom, min_zoom)
 
+func _is_mouse_over_gui() -> bool:
+    # Спрашиваем у Viewport'а напрямую, без флагов и сигналов —
+    # никакой гонки между mouse_entered/exited и _unhandled_input.
+    return get_viewport().gui_get_hovered_control() != null
+
 func _unhandled_input(event):
     if event is InputEventMouseButton:
-        if settings.is_mouse_over_ui:
-            return # если мышка над нужным ui
+        if _is_mouse_over_gui():
+            return # мышка над любым UI-контролом прямо сейчас
 
         if event.button_index == MOUSE_BUTTON_WHEEL_UP:
             _set_zoom(zoom.x + zoom_speed)

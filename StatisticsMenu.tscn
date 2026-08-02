@@ -363,3 +363,6 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.5411765, 0.54509807, 0.5529412, 1)
 theme_override_font_sizes/font_size = 12
 text = "rockets"
+
+[connection signal="mouse_entered" from="Panel" to="." method="_on_panel_mouse_entered"]
+[connection signal="mouse_exited" from="Panel" to="." method="_on_panel_mouse_exited"]

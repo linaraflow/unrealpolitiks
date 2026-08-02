@@ -736,7 +736,7 @@
     },
     "Chad": {
         "balance": 50000.0,
-        "capital": 5197.0,
+        "capital": 8975.0,
         "color": [
             0.0,
             61.0,
@@ -988,7 +988,7 @@
     },
     "DR Congo": {
         "balance": 50000.0,
-        "capital": 3800.0,
+        "capital": 4890.0,
         "color": [
             0.0,
             127.0,
@@ -2395,7 +2395,7 @@
     },
     "Mexico": {
         "balance": 50000.0,
-        "capital": 5911,
+        "capital": 5911.0,
         "color": [
             0.0,
             104.0,
@@ -3466,7 +3466,7 @@
     },
     "Sudan": {
         "balance": 50000.0,
-        "capital": 3183.0,
+        "capital": 7973,
         "color": [
             245.0,
             130.0,

@@ -114,6 +114,24 @@ func on_province_clicked(p_id: int) -> void:
     _update_country_info()
 
 func _on_send_demands_pressed() -> void:
+    # --- ЛОГИКА ОТКАЗА ИИ ОТ МИРА С ИГРОКОМ ---
+    var my_country = settings.active_country
+    
+    var ai_army = float(AIManager.get_country_total_soldiers(_enemy))
+    var player_army = float(AIManager.get_country_total_soldiers(my_country))
+    
+    var ai_gdp = ProvinceRegistry.get_gdp(_enemy)
+    var player_gdp = ProvinceRegistry.get_gdp(my_country)
+    
+    if ai_army >= player_army * 1.5 or ai_gdp >= player_gdp * 1.5:
+        print("[Negotiation] ИИ отказывается от мира! Он превосходит вас в силе.")
+        # Добавляем уведомление для игрока (если есть UI)
+        # get_node("/root/Game/CanvasLayer/NotificationMenu").show_message("Враг отказывается от переговоров!")
+        
+        # Вместо _close() вызываем откат изменений и закрытие меню:
+        _on_close_button_pressed()
+        return
+    # ------------------------------------------
     # 1. Обработка провинций, которые игрок захватил у врага (оставляем без изменений)
     for p_id in _claimed:
         ProvinceRegistry.province_data[p_id]["against_occupation"] = ""
@@ -160,7 +178,7 @@ func _on_send_demands_pressed() -> void:
     # 3. Военные репарации — переводим деньги игроку, у врага уходит в минус при нехватке
     if _reparations_active:
         var amount = int(ReparationsSlider.value)
-        var my_country = settings.active_country
+        my_country = settings.active_country
 
         if ProvinceRegistry.countries_data.has(my_country):
             ProvinceRegistry.countries_data[my_country]["balance"] = ProvinceRegistry.countries_data[my_country].get("balance", 0.0) + amount
@@ -172,7 +190,7 @@ func _on_send_demands_pressed() -> void:
 
     # 4. Смена идеологии врага на идеологию игрока (принудительно, без учёта стоимости)
     if _ideology_change_active:
-        var my_country = settings.active_country
+        my_country = settings.active_country
         if ProvinceRegistry.countries_data.has(my_country) and ProvinceRegistry.countries_data.has(_enemy):
             var my_ideology = ProvinceRegistry.countries_data[my_country].get("ideology", "")
             if my_ideology != "" and DiplomacyManager.IDEOLOGIES.has(my_ideology):
