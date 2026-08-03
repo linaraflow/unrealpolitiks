@@ -38,7 +38,7 @@ func _on_gui_input(event: InputEvent) -> void:
 
 
 func _toggle_color_menu() -> void:
-    if owner_name == null or owner_name == "" or owner_name == "unknown":
+    if owner_name == null or owner_name == "" or owner_name == "unknown" or settings.can_draw == false:
         return
 
     if _color_panel.visible:

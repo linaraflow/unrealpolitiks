@@ -123,6 +123,7 @@ func setup(map_node: Node2D) -> void:
 
 
 func _ready() -> void:
+    z_index = 200
     top_level = false  # обязано жить в той же системе координат, что и Map
 
     if ProvinceRegistry.has_signal("province_captured"):

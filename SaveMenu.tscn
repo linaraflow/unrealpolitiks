@@ -211,6 +211,7 @@ stretch_mode = 5
 [node name="GDPLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/SaveContainer/MarginContainer/HBoxContainer/VBoxContainer/HBoxContainer" unique_id=1481445369]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.5411765, 0.54509807, 0.5529412, 1)
+theme_override_fonts/font = ExtResource("4_fcu4g")
 theme_override_font_sizes/font_size = 12
 text = "$412B"
 
@@ -226,6 +227,7 @@ stretch_mode = 5
 [node name="TimeLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/SaveContainer/MarginContainer/HBoxContainer" unique_id=534187372]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.5411765, 0.54509807, 0.5529412, 1)
+theme_override_fonts/font = ExtResource("4_fcu4g")
 theme_override_font_sizes/font_size = 12
 text = "2 hours ago"
 vertical_alignment = 1
