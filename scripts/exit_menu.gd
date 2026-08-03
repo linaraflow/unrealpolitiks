@@ -2,6 +2,8 @@ extends Control # Или CanvasLayer, смотря какой тип у корн
 
 @export var settings: Resource
 
+const MAIN_SCENE := preload("res://MainMenu.tscn")
+
 func _ready():
     # Скрываем меню при запуске игры
     hide()
@@ -33,3 +35,15 @@ func _on_continue_button_pressed() -> void:
 
 func _on_exit_button_pressed() -> void:
     get_tree().quit()
+
+
+func _on_save_button_pressed() -> void:
+    var save_menu := get_node("/root/Game/CanvasLayer/SaveMenu")
+    save_menu.open_for_save()
+
+
+func _on_main_button_pressed() -> void:
+    hide()
+    get_tree().paused = false
+    get_node("/root/Game/Map").restart()
+    get_tree().change_scene_to_packed(MAIN_SCENE)

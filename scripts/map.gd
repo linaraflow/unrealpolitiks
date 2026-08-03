@@ -125,40 +125,58 @@ func _ready():
     
     child_entered_tree.connect(_on_child_entered_tree)
     
+    # -----------------------------------------------------------------
+    # ✅ СОЗДАЁМ СЛОЙ НАДПИСЕЙ СТРАН СРАЗУ (ДО ЛЮБЫХ AWAIT)
+    # -----------------------------------------------------------------
+    country_labels_layer = preload("res://scripts/country_labels_layer.gd").new()
+    country_labels_layer.name = "CountryLabelsLayer"
+    add_child(country_labels_layer)
+    country_labels_layer.setup(self)
+    # -----------------------------------------------------------------
+    
     var tech_tex = load("res://TechMap_alpha_06.png")
     tech_image = tech_tex.get_image()
 
-    # НОВОЕ: больше не используем вручную нарисованную визуальную карту.
-    # Вместо неё — сплошная заливка (цвет "моря"/фона), а вся суша красится
-    # шейдером через data_texture по данным из provinces.json.
     var base_size = tech_image.get_size()
     var base_img = Image.create(base_size.x, base_size.y, false, Image.FORMAT_RGB8)
-    base_img.fill(Color8(9, 20, 33))  # цвет моря/фона — подставь свой
+    base_img.fill(Color8(9, 20, 33))
     texture = ImageTexture.create_from_image(base_img)
 
-    await get_tree().process_frame
-    var path: Array = PathCache.find_path_cached(129, 134, settings.active_country)
-    print("Путь 5 -> 21: ", path)
-
-    # data_texture (владение)
+    # -----------------------------------------------------------------
+    # ✅ СОЗДАЁМ ВСЕ КАРТИНКИ И ТЕКСТУРЫ СРАЗУ (ДО ЛЮБЫХ AWAIT)
+    # -----------------------------------------------------------------
     data_image = Image.create(256, 256, false, Image.FORMAT_RGBA8)
     data_image.fill(Color(0, 0, 0, 0))
     data_texture = ImageTexture.create_from_image(data_image)
 
-    # occup_texture (оккупация)
     occup_image = Image.create(256, 256, false, Image.FORMAT_RGBA8)
     occup_image.fill(Color(0, 0, 0, 0))
     occup_texture = ImageTexture.create_from_image(occup_image)
 
-    # neg_texture (режим переговоров)
     neg_image = Image.create(256, 256, false, Image.FORMAT_RGBA8)
     neg_image.fill(Color(0, 0, 0, 0))
     neg_texture = ImageTexture.create_from_image(neg_image)
 
-    # uav_texture (режим прицеливания: БПЛА и ракеты)
     uav_image = Image.create(256, 256, false, Image.FORMAT_RGBA8)
     uav_image.fill(Color(0, 0, 0, 0))
     uav_texture = ImageTexture.create_from_image(uav_image)
+
+    distribute_image = Image.create(256, 256, false, Image.FORMAT_RGBA8)
+    distribute_image.fill(Color(0, 0, 0, 0))
+    distribute_texture = ImageTexture.create_from_image(distribute_image)
+
+    capital_image = Image.create(256, 256, false, Image.FORMAT_RGBA8)
+    capital_image.fill(Color(0, 0, 0, 0))
+    capital_texture = ImageTexture.create_from_image(capital_image)
+
+    mode_image = Image.create(256, 256, false, Image.FORMAT_RGBA8)
+    mode_image.fill(Color(0, 0, 0, 0))
+    mode_texture = ImageTexture.create_from_image(mode_image)
+    # -----------------------------------------------------------------.
+
+    await get_tree().process_frame
+    var path: Array = PathCache.find_path_cached(129, 134, settings.active_country)
+    print("Путь 5 -> 21: ", path)
 
     # Слой линий/стрелочек БПЛА — добавляем как child, чтобы использовать
     # ту же локальную систему координат, что и province_centers.
@@ -170,10 +188,7 @@ func _ready():
     missile_lines_layer = preload("res://scripts/missile_lines_layer.gd").new()
     missile_lines_layer.name = "MissileLinesLayer"
     add_child(missile_lines_layer)
-    
-    distribute_image = Image.create(256, 256, false, Image.FORMAT_RGBA8)
-    distribute_image.fill(Color(0, 0, 0, 0))
-    distribute_texture = ImageTexture.create_from_image(distribute_image)
+
     material.set_shader_parameter("distribute_texture", distribute_texture)
     material.set_shader_parameter("distribute_mode", false)
 
@@ -181,16 +196,6 @@ func _ready():
     factory_labels_layer = preload("res://scripts/province_factory_labels_layer.gd").new()
     factory_labels_layer.name = "FactoryLabelsLayer"
     add_child(factory_labels_layer)
-
-    # capital_texture (обводка столичных провинций)
-    capital_image = Image.create(256, 256, false, Image.FORMAT_RGBA8)
-    capital_image.fill(Color(0, 0, 0, 0))
-    capital_texture = ImageTexture.create_from_image(capital_image)
-
-    # mode_texture (режимы карты: экономика и т.п.)
-    mode_image = Image.create(256, 256, false, Image.FORMAT_RGBA8)
-    mode_image.fill(Color(0, 0, 0, 0))
-    mode_texture = ImageTexture.create_from_image(mode_image)
 
     material.set_shader_parameter("tech_map",      tech_tex)
     material.set_shader_parameter("data_texture",  data_texture)
@@ -262,10 +267,6 @@ func _ready():
 
     _restore_occupation_from_data()
     
-    country_labels_layer = preload("res://scripts/country_labels_layer.gd").new()
-    country_labels_layer.name = "CountryLabelsLayer"
-    add_child(country_labels_layer)
-    country_labels_layer.setup(self)
     country_labels_layer.rebuild()
 
 func _process(delta: float) -> void:

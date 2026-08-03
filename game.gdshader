@@ -57,6 +57,7 @@ uniform float country_border_width  : hint_range(0.5, 6.0) = 2.0;   // в тек
 // ── Столичные провинции: та же граница провинции, но ШИРЕ ───────────────────
 uniform float capital_border_width : hint_range(0.5, 12.0) = 3.0;   // в тексклях tech_map, вместо province_border_width для столиц
 
+
 void fragment() {
     vec4 mask = texture(tech_map,    UV);
     vec4 tex  = texture(TEXTURE,     UV);
@@ -267,6 +268,7 @@ void fragment() {
             base_color = mix(base_color, province_border_color.rgb, province_border_color.a);
         }
     }
+    
 
     COLOR = vec4(base_color, tex.a);
 }

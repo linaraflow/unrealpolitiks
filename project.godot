@@ -30,6 +30,7 @@ AIManager="*uid://bmbwfaixh8rv8"
 DiplomacyManager="*uid://b1flbgjeri3ew"
 DiscordRPCLoader="*uid://dn1sfm0vrbeah"
 SettingsManager="*uid://bhky7qy30h1tw"
+SaveManager="*uid://bnfeaymf1xmc3"
 
 [display]
 

@@ -2,6 +2,43 @@
 
 [ext_resource type="Script" uid="uid://cm08kpxleedq3" path="res://scripts/exit_menu.gd" id="1_xn68j"]
 [ext_resource type="Resource" uid="uid://dpsywpq1i1i6j" path="res://new_resource.tres" id="2_d3tli"]
+[ext_resource type="FontVariation" uid="uid://cuvy4x6nihfev" path="res://fonts/PrimaryFont.tres" id="3_d3tli"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_p64cw"]
+bg_color = Color(0.15487596, 0.154876, 0.15487587, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.58431375, 0.58431375, 0.58431375, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_d3tli"]
+bg_color = Color(0.11858145, 0.11858136, 0.11858136, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.58431375, 0.58431375, 0.58431375, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xw7um"]
+bg_color = Color(0.14044744, 0.14044747, 0.14044738, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.58431375, 0.58431375, 0.58431375, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
 
 [node name="Exit_menu" type="Control" unique_id=1693922976]
 layout_mode = 3
@@ -27,25 +64,52 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -103.6875
-offset_top = -55.4375
-offset_right = 103.6875
-offset_bottom = 55.4375
+offset_left = -103.0
+offset_top = -104.75
+offset_right = 103.0
+offset_bottom = 104.75
 grow_horizontal = 2
 grow_vertical = 2
-size_flags_horizontal = 4
 theme_override_constants/separation = 6
 alignment = 1
 
 [node name="Continue_button" type="Button" parent="VBoxContainer" unique_id=1677101099]
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_fonts/font = ExtResource("3_d3tli")
+theme_override_styles/normal = SubResource("StyleBoxFlat_p64cw")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_d3tli")
+theme_override_styles/hover = SubResource("StyleBoxFlat_xw7um")
 text = "Continue"
+
+[node name="Save_button" type="Button" parent="VBoxContainer" unique_id=401994286]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_fonts/font = ExtResource("3_d3tli")
+theme_override_styles/normal = SubResource("StyleBoxFlat_p64cw")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_d3tli")
+theme_override_styles/hover = SubResource("StyleBoxFlat_xw7um")
+text = "Save"
+
+[node name="Main_button" type="Button" parent="VBoxContainer" unique_id=669967659]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_fonts/font = ExtResource("3_d3tli")
+theme_override_styles/normal = SubResource("StyleBoxFlat_p64cw")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_d3tli")
+theme_override_styles/hover = SubResource("StyleBoxFlat_xw7um")
+text = "Main Menu"
 
 [node name="Exit_button" type="Button" parent="VBoxContainer" unique_id=926170686]
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_fonts/font = ExtResource("3_d3tli")
+theme_override_styles/normal = SubResource("StyleBoxFlat_p64cw")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_d3tli")
+theme_override_styles/hover = SubResource("StyleBoxFlat_xw7um")
 text = "Exit"
 
 [connection signal="pressed" from="VBoxContainer/Continue_button" to="." method="_on_continue_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/Save_button" to="." method="_on_save_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/Main_button" to="." method="_on_main_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/Exit_button" to="." method="_on_exit_button_pressed"]

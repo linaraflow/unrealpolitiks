@@ -17,6 +17,8 @@ var drag_start_global: Vector2 = Vector2.ZERO
 var drag_end_global: Vector2 = Vector2.ZERO
 
 func _ready() -> void:
+    SaveManager.SelectionBox = self
+    
     mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 # === ГЛАВНЫЙ ФИКС ===

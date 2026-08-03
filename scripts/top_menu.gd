@@ -89,6 +89,8 @@ var _order_missile_cost: float = 0.0
 
 
 func _ready() -> void:
+    SaveManager.TopMenu = self
+    
     hide()
     panel_uav_empty.hide()
     panel_uav_order.hide()

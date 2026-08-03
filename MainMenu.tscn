@@ -214,5 +214,7 @@ theme_override_font_sizes/font_size = 12
 text = "v0.1.0"
 
 [connection signal="pressed" from="ContentMargin/ContentBox/MenuList/NewGame" to="." method="_on_new_game_pressed"]
+[connection signal="pressed" from="ContentMargin/ContentBox/MenuList/Continue" to="." method="_on_continue_pressed"]
+[connection signal="pressed" from="ContentMargin/ContentBox/MenuList/LoadGame" to="." method="_on_load_game_pressed"]
 [connection signal="pressed" from="ContentMargin/ContentBox/MenuList/Settings" to="." method="_on_settings_pressed"]
 [connection signal="pressed" from="ContentMargin/ContentBox/MenuList/Exit" to="." method="_on_exit_pressed"]

@@ -5,6 +5,7 @@ extends Label
 
 func _ready() -> void:
     AIManager.balance_label = self
+    SaveManager.balance_label = self
     balance_update()
 
 
