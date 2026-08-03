@@ -144,7 +144,7 @@ static func process_military_movement(country: String) -> void:
         for army_check in DivisionManager.armies.get(p_id, []):
             if is_instance_valid(army_check) and army_check.division_owner == country:
                 own_division_count += 1
-        if own_division_count > 4:
+        if own_division_count > 4 and country != AIManager.settings.active_country:
             DivisionManager.merge_divisions(p_id)
 
         for army in DivisionManager.armies.get(p_id, []):
