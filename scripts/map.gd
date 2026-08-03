@@ -62,6 +62,8 @@ var missile_lines_layer: Node2D
 ## _apply_targeting_mask / _clear_targeting_mask).
 var factory_labels_layer: Node2D
 
+var country_labels_layer: Node2D
+
 # Сохраняем локальные координаты последнего физического клика мыши
 var _last_click_local_pos: Vector2 = Vector2.ZERO
 
@@ -259,6 +261,12 @@ func _ready():
         )
 
     _restore_occupation_from_data()
+    
+    country_labels_layer = preload("res://scripts/country_labels_layer.gd").new()
+    country_labels_layer.name = "CountryLabelsLayer"
+    add_child(country_labels_layer)
+    country_labels_layer.setup(self)
+    country_labels_layer.rebuild()
 
 func _process(delta: float) -> void:
     if _highlight_elapsed >= 0.0:
@@ -273,6 +281,19 @@ func _input(event: InputEvent):
     if event.is_action_pressed("hide_all_divisions") and not event.is_echo() and not settings.negotiation_mode:
         divisions_hidden = not divisions_hidden
         _update_divisions_visibility()
+        var divisions_bind_name: String = SettingsManager.keybinds.get("hide_all_divisions", "V")
+        var divisions_toast_text: String = "Hide divisions (%s)" % divisions_bind_name if divisions_hidden else "Show divisions (%s)" % divisions_bind_name
+        if is_instance_valid(ProvinceMenu):
+            ProvinceMenu.show_queue_toast(divisions_toast_text)
+        return
+
+    if event.is_action_pressed("hide_country_labels") and not event.is_echo():
+        if is_instance_valid(country_labels_layer):
+            country_labels_layer.visible = not country_labels_layer.visible
+            var bind_name: String = SettingsManager.keybinds.get("hide_country_labels", "B")
+            var toast_text: String = "Hide names (%s)" % bind_name if not country_labels_layer.visible else "Show names (%s)" % bind_name
+            if is_instance_valid(ProvinceMenu):
+                ProvinceMenu.show_queue_toast(toast_text)
         return
 
     # Enter — сделать последнюю нажатую провинцию столицей её владельца
@@ -1225,6 +1246,7 @@ func restart() -> void:
 
     _reset_map_textures()
     _paint_all_provinces_from_data()
+    country_labels_layer.rebuild()
     _init_capital_borders()
 
     date._on_clock_day_passed({})

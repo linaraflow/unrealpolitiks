@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://bhn7610u0q4gq" path="res://scripts/ProvinceMenu.gd" id="1_ehxlg"]
 [ext_resource type="Texture2D" uid="uid://bibgkkv8ss0yu" path="res://assets/icons_province_menu/population.svg" id="3_ddf8l"]
+[ext_resource type="FontVariation" uid="uid://eqbeyus3g4j1" path="res://fonts/new_font_variation.tres" id="3_kgwgh"]
 [ext_resource type="Texture2D" uid="uid://daeuasg27vao2" path="res://assets/icons_province_menu/factory.svg" id="4_kgwgh"]
 [ext_resource type="Resource" uid="uid://dpsywpq1i1i6j" path="res://new_resource.tres" id="4_lsrs6"]
 [ext_resource type="Script" uid="uid://bk0y6lyt1mnn7" path="res://scripts/recruit_slider_panel.gd" id="4_n6hjb"]
@@ -178,12 +179,14 @@ layout_mode = 2
 
 [node name="NameLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer/HeaderRow" unique_id=1640279133]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("3_kgwgh")
 text = "Prague"
 
 [node name="OwnerLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer/HeaderRow" unique_id=329666651]
 layout_mode = 2
 size_flags_horizontal = 10
 theme_override_colors/font_color = Color(0.53333336, 0.53333336, 0.53333336, 1)
+theme_override_fonts/font = ExtResource("3_kgwgh")
 theme_override_font_sizes/font_size = 12
 text = "Czech republic"
 vertical_alignment = 1
@@ -210,6 +213,7 @@ stretch_mode = 3
 
 [node name="PopulationLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer/StatsRow/PopulationBox/VBoxContainer" unique_id=730039095]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("3_kgwgh")
 theme_override_font_sizes/font_size = 13
 text = "6.83 m"
 horizontal_alignment = 1
@@ -232,6 +236,7 @@ stretch_mode = 3
 
 [node name="FactoriesLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer/StatsRow/FactoriesBox/VBoxContainer" unique_id=1422748411]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("3_kgwgh")
 theme_override_font_sizes/font_size = 13
 text = "10 factories"
 horizontal_alignment = 1
@@ -262,6 +267,7 @@ modulate = Color(0.5312036, 0.8550829, 0.99999994, 1)
 layout_mode = 2
 offset_transform_enabled = true
 focus_mode = 0
+theme_override_fonts/font = ExtResource("3_kgwgh")
 theme_override_font_sizes/font_size = 13
 theme_override_styles/normal = SubResource("StyleBoxFlat_iy337")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_ddf8l")
@@ -275,6 +281,7 @@ expand_icon = true
 modulate = Color(1, 0.8670949, 0.4712301, 1)
 layout_mode = 2
 focus_mode = 0
+theme_override_fonts/font = ExtResource("3_kgwgh")
 theme_override_font_sizes/font_size = 13
 theme_override_styles/normal = SubResource("StyleBoxFlat_y5c12")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_7oiae")

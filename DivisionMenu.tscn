@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://bdxmg2pw1f4l7" path="res://scripts/division_menu.gd" id="1_myptv"]
 [ext_resource type="Resource" uid="uid://dpsywpq1i1i6j" path="res://new_resource.tres" id="2_gmcrd"]
+[ext_resource type="FontVariation" uid="uid://eqbeyus3g4j1" path="res://fonts/new_font_variation.tres" id="3_p02ug"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gmcrd"]
 bg_color = Color(0.12156863, 0.12156863, 0.11764706, 1)
@@ -42,6 +43,7 @@ offset_top = 9.96
 offset_right = 35.0
 offset_bottom = 32.960003
 grow_horizontal = 2
+theme_override_fonts/font = ExtResource("3_p02ug")
 text = "🪖 Divisions"
 
 [node name="LandDivisionsPanel" type="Panel" parent="Panel" unique_id=1153273632]

@@ -4,6 +4,7 @@
 [ext_resource type="Script" uid="uid://cv45tpmdyfloj" path="res://scripts/control_divisions_menu.gd" id="1_8n20h"]
 [ext_resource type="Texture2D" uid="uid://1c2265uom0tf" path="res://assets/icons_control_divisions_menu/people.svg" id="2_8n20h"]
 [ext_resource type="Texture2D" uid="uid://bryoqoa0gu0k7" path="res://assets/icons_control_divisions_menu/merge.svg" id="2_vqe8p"]
+[ext_resource type="FontVariation" uid="uid://eqbeyus3g4j1" path="res://fonts/new_font_variation.tres" id="3_c20sc"]
 [ext_resource type="Texture2D" uid="uid://qjpqrtjwqtkq" path="res://assets/icons_control_divisions_menu/split.svg" id="3_rkv8n"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ydoha"]
@@ -195,6 +196,7 @@ stretch_mode = 5
 
 [node name="Label" type="Label" parent="VBoxContainer/QuanPanel/MarginContainer/HBoxContainer" unique_id=770950881]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("3_c20sc")
 theme_override_font_sizes/font_size = 10
 text = "selected soliders: 128"
 
@@ -267,6 +269,7 @@ layout_mode = 2
 [node name="Label" type="Label" parent="VBoxContainer/DistributePanel/MarginContainer/VBoxContainer/HBoxContainer" unique_id=1161635577]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.72156864, 0.72156864, 0.72156864, 1)
+theme_override_fonts/font = ExtResource("3_c20sc")
 theme_override_font_sizes/font_size = 10
 text = "selected provinces"
 
@@ -279,6 +282,7 @@ text = "16"
 [node name="ConfirmButton" type="Button" parent="VBoxContainer/DistributePanel/MarginContainer/VBoxContainer" unique_id=359186253]
 layout_mode = 2
 focus_mode = 0
+theme_override_fonts/font = ExtResource("3_c20sc")
 theme_override_font_sizes/font_size = 12
 theme_override_styles/normal = SubResource("StyleBoxFlat_qganp")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_ujaaa")

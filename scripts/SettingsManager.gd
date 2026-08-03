@@ -41,6 +41,7 @@ var keybinds: Dictionary = {
     "summon_max_troops_province": "E",
     "hide_ui": "Tab",
     "hide_all_divisions": "V",
+    "hide_country_labels": "B",
 }
 
 func _ready() -> void:
@@ -233,7 +234,7 @@ func _default_keybind(action_key: String) -> String:
         "zoom_in": "Wheel Up", "zoom_out": "Wheel Down", "pause": "Space",
         "build_factory": "R", "summon_troops": "W",
         "summon_max_troops_province": "E", "hide_ui": "Tab",
-        "hide_all_divisions": "V",
+        "hide_all_divisions": "V", "hide_country_labels": "B",
     }
     return defaults.get(action_key, "?")
 

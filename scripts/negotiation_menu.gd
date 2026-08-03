@@ -116,21 +116,25 @@ func on_province_clicked(p_id: int) -> void:
 func _on_send_demands_pressed() -> void:
     # --- ЛОГИКА ОТКАЗА ИИ ОТ МИРА С ИГРОКОМ ---
     var my_country = settings.active_country
-    
-    var ai_army = float(AIManager.get_country_total_soldiers(_enemy))
-    var player_army = float(AIManager.get_country_total_soldiers(my_country))
-    
-    var ai_gdp = ProvinceRegistry.get_gdp(_enemy)
-    var player_gdp = ProvinceRegistry.get_gdp(my_country)
-    
-    if ai_army >= player_army * 1.5 or ai_gdp >= player_gdp * 1.5:
-        print("[Negotiation] ИИ отказывается от мира! Он превосходит вас в силе.")
-        # Добавляем уведомление для игрока (если есть UI)
-        # get_node("/root/Game/CanvasLayer/NotificationMenu").show_message("Враг отказывается от переговоров!")
-        
-        # Вместо _close() вызываем откат изменений и закрытие меню:
-        _on_close_button_pressed()
-        return
+
+    # Если у врага 0 провинций — он в любом случае принимает мир
+    var enemy_provinces = ProvinceRegistry.owner_province_count.get(_enemy, 0)
+
+    if enemy_provinces > 0:
+        var ai_army = float(AIManager.get_country_total_soldiers(_enemy))
+        var player_army = float(AIManager.get_country_total_soldiers(my_country))
+
+        var ai_gdp = ProvinceRegistry.get_gdp(_enemy)
+        var player_gdp = ProvinceRegistry.get_gdp(my_country)
+
+        if ai_army >= player_army * 1.5 or ai_gdp >= player_gdp * 1.5:
+            print("[Negotiation] ИИ отказывается от мира! Он превосходит вас в силе.")
+            # Добавляем уведомление для игрока (если есть UI)
+            # get_node("/root/Game/CanvasLayer/NotificationMenu").show_message("Враг отказывается от переговоров!")
+
+            # Вместо _close() вызываем откат изменений и закрытие меню:
+            _on_close_button_pressed()
+            return
     # ------------------------------------------
     # 1. Обработка провинций, которые игрок захватил у врага (оставляем без изменений)
     for p_id in _claimed:

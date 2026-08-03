@@ -54,6 +54,9 @@ var _order_uav_cost: float = 0.0
 @onready var empty_missile_flag_icon: TextureRect = $PanelMissileEmpty/MarginContainer/VBoxContainer/HBoxContainer/FlagIcon
 @onready var empty_missile_label: Label = $PanelMissileEmpty/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/MissileLabel
 
+@onready var missile_company_price_label: Label = $PanelMissileEmpty/MarginContainer/VBoxContainer/CreateButton/MarginContainer/HBoxContainer/PriceLabel
+@onready var uav_company_price_label: Label = $PanelUAVEmpty/MarginContainer/VBoxContainer/CreateButton/MarginContainer/HBoxContainer/PriceLabel
+
 var MISSILE_COMPANY_COST = settings.MISSILE_COMPANY_COST
 
 @onready var order_missile_label: Label = $PanelMissileOrder/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/MissileLabel
@@ -129,6 +132,9 @@ func _ready() -> void:
         order_missile_button.add_theme_stylebox_override("pressed", order_missile_button_normal_style)
     var order_missile_button_normal_color := order_missile_button.get_theme_color("font_color")
     order_missile_button.add_theme_color_override("font_disabled_color", order_missile_button_normal_color)
+    
+    uav_company_price_label.text = "$" + str(ProvinceRegistry._format_number(settings.UAV_COMPANY_COST, "."))
+    missile_company_price_label.text = "$" + str(ProvinceRegistry._format_number(settings.MISSILE_COMPANY_COST, "."))
 
 
 ## Прячет все панели TopMenu (UAV/Missile/Products), кроме перечисленных в keep_open.

@@ -74,6 +74,9 @@ func _setup_queue_toast() -> void:
     queue_toast.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
     queue_toast.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
     queue_toast.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+    var toast_font = load("res://fonts/new_font_variation.tres")
+    if toast_font:
+        queue_toast.add_theme_font_override("font", toast_font)
     queue_toast.add_theme_font_size_override("font_size", 22)
     queue_toast.add_theme_color_override("font_outline_color", Color.BLACK)
     queue_toast.add_theme_constant_override("outline_size", 6)

@@ -5,6 +5,7 @@
 [ext_resource type="Texture2D" uid="uid://cax3w4hq1ih2k" path="res://assets/flags/Germany.png" id="3_l08fj"]
 [ext_resource type="Script" uid="uid://rs2yte7mkhc7" path="res://scripts/flag_rect.gd" id="4_xs2co"]
 [ext_resource type="Texture2D" uid="uid://cqy3mllueh8u4" path="res://assets/icons_country_menu/stability.svg" id="5_qw2xt"]
+[ext_resource type="FontVariation" uid="uid://eqbeyus3g4j1" path="res://fonts/new_font_variation.tres" id="5_r840y"]
 [ext_resource type="Texture2D" uid="uid://bs6vygkcp8s8t" path="res://assets/icons_country_menu/war_exhaustion.svg" id="6_l4hfs"]
 [ext_resource type="Texture2D" uid="uid://brpc2r1ap1q8a" path="res://assets/icons_country_menu/sanctions.svg" id="7_w0v6l"]
 [ext_resource type="Texture2D" uid="uid://dn1tgl5053my8" path="res://assets/icons_country_menu/impose.svg" id="8_p7bm5"]
@@ -323,12 +324,14 @@ theme_override_constants/separation = 0
 
 [node name="CountryLabel" type="Label" parent="Panel/HeaderRow/TitleBox" unique_id=1384884281]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("5_r840y")
 theme_override_font_sizes/font_size = 16
 text = "Germany"
 
 [node name="ProvincesLabel" type="Label" parent="Panel/HeaderRow/TitleBox" unique_id=1943410449]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.5330367, 0.5330367, 0.5330367, 1)
+theme_override_fonts/font = ExtResource("5_r840y")
 theme_override_font_sizes/font_size = 10
 text = "Provinces: 12"
 
@@ -351,11 +354,13 @@ layout_mode = 2
 [node name="PopulationCaption" type="Label" parent="Panel/StatsCardsRow/PopulationCard/VBoxContainer" unique_id=1499956374]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.53333336, 0.53333336, 0.53333336, 1)
+theme_override_fonts/font = ExtResource("5_r840y")
 theme_override_font_sizes/font_size = 10
 text = "Population"
 
 [node name="PopulationLabel" type="Label" parent="Panel/StatsCardsRow/PopulationCard/VBoxContainer" unique_id=987333652]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("5_r840y")
 theme_override_font_sizes/font_size = 14
 text = "83.2 mln"
 
@@ -370,11 +375,13 @@ layout_mode = 2
 [node name="GDPCaption" type="Label" parent="Panel/StatsCardsRow/GDPCard/VBoxContainer" unique_id=166147027]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.53333336, 0.53333336, 0.53333336, 1)
+theme_override_fonts/font = ExtResource("5_r840y")
 theme_override_font_sizes/font_size = 10
 text = "GDP"
 
 [node name="FactoriesLabel" type="Label" parent="Panel/StatsCardsRow/GDPCard/VBoxContainer" unique_id=2115104342]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("5_r840y")
 theme_override_font_sizes/font_size = 14
 text = "4.12 mlrd $"
 
@@ -402,12 +409,14 @@ texture = ExtResource("5_qw2xt")
 
 [node name="HappinessCaption" type="Label" parent="Panel/BarsContainer/HappinessRow/HappinessHeader" unique_id=1552409562]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("5_r840y")
 theme_override_font_sizes/font_size = 12
 text = "Stability"
 
 [node name="HappinessLabel" type="Label" parent="Panel/BarsContainer/HappinessRow/HappinessHeader" unique_id=66384363]
 layout_mode = 2
 size_flags_horizontal = 10
+theme_override_fonts/font = ExtResource("5_r840y")
 theme_override_font_sizes/font_size = 12
 text = "0%"
 
@@ -435,12 +444,14 @@ texture = ExtResource("6_l4hfs")
 
 [node name="WarExhaustionCaption" type="Label" parent="Panel/BarsContainer/WarExhaustionRow/WarExhaustionHeader" unique_id=1762915357]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("5_r840y")
 theme_override_font_sizes/font_size = 12
 text = "War exhaustion"
 
 [node name="WarExhaustionLabel" type="Label" parent="Panel/BarsContainer/WarExhaustionRow/WarExhaustionHeader" unique_id=900261955]
 layout_mode = 2
 size_flags_horizontal = 10
+theme_override_fonts/font = ExtResource("5_r840y")
 theme_override_font_sizes/font_size = 12
 text = "0%"
 
@@ -467,12 +478,14 @@ texture = ExtResource("7_w0v6l")
 
 [node name="SanctionsCaption" type="Label" parent="Panel/BarsContainer/SanctionsRow/SanctionsHeader" unique_id=2067944403]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("5_r840y")
 theme_override_font_sizes/font_size = 12
 text = "Sanctions"
 
 [node name="SanctionsLabel" type="Label" parent="Panel/BarsContainer/SanctionsRow/SanctionsHeader" unique_id=265242887]
 layout_mode = 2
 size_flags_horizontal = 10
+theme_override_fonts/font = ExtResource("5_r840y")
 theme_override_font_sizes/font_size = 12
 text = "0%"
 
@@ -495,12 +508,14 @@ layout_mode = 2
 
 [node name="RelationsCaption" type="Label" parent="Panel/RelationsRow/RelationsHeader" unique_id=1827550210]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("5_r840y")
 theme_override_font_sizes/font_size = 12
 text = "Relations"
 
 [node name="RelationsValueLabel" type="Label" parent="Panel/RelationsRow/RelationsHeader" unique_id=1178318114]
 layout_mode = 2
 size_flags_horizontal = 10
+theme_override_fonts/font = ExtResource("5_r840y")
 theme_override_font_sizes/font_size = 12
 text = "+28"
 
@@ -543,6 +558,7 @@ size_flags_vertical = 5
 tooltip_text = "Improve Relations
 -50.000"
 focus_mode = 0
+theme_override_fonts/font = ExtResource("5_r840y")
 theme_override_font_sizes/font_size = 11
 theme_override_styles/normal = SubResource("StyleBoxFlat_l4hfs")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_a3qja")
@@ -560,6 +576,7 @@ size_flags_horizontal = 4
 size_flags_vertical = 5
 tooltip_text = "Worsen Relations"
 focus_mode = 0
+theme_override_fonts/font = ExtResource("5_r840y")
 theme_override_font_sizes/font_size = 11
 theme_override_styles/normal = SubResource("StyleBoxFlat_dpeqq")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_7su7u")
@@ -607,6 +624,7 @@ offset_top = -65.0
 offset_right = 68.0
 grow_vertical = 0
 focus_mode = 0
+theme_override_fonts/font = ExtResource("5_r840y")
 theme_override_font_sizes/font_size = 11
 theme_override_styles/normal = SubResource("StyleBoxFlat_s1i0l")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_ru30x")
@@ -624,6 +642,7 @@ layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 5
 focus_mode = 0
+theme_override_fonts/font = ExtResource("5_r840y")
 theme_override_font_sizes/font_size = 11
 theme_override_styles/normal = SubResource("StyleBoxFlat_m4ayv")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_u2c8u")
@@ -691,6 +710,7 @@ offset_bottom = 295.0
 
 [node name="Label" type="Label" parent="Panel/IdeologySelectionPanel/VBoxContainer" unique_id=170327889]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("5_r840y")
 text = "Choose ideology"
 horizontal_alignment = 1
 
@@ -707,12 +727,14 @@ layout_mode = 2
 [node name="ChangeBtn" type="Button" parent="Panel/IdeologySelectionPanel/VBoxContainer/HBoxContainer" unique_id=916835276]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("5_r840y")
 theme_override_styles/normal = SubResource("StyleBoxFlat_vvsl0")
 text = "Change"
 
 [node name="CloseBtn" type="Button" parent="Panel/IdeologySelectionPanel/VBoxContainer/HBoxContainer" unique_id=561421025]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("5_r840y")
 theme_override_styles/normal = SubResource("StyleBoxFlat_vvsl0")
 text = "Close"
 

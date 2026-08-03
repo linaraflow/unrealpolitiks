@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://drqgjjt2yw2oq"]
 
 [ext_resource type="Script" uid="uid://bg8eolukieet4" path="res://notification_menu.gd" id="1_f0py6"]
+[ext_resource type="FontVariation" uid="uid://eqbeyus3g4j1" path="res://fonts/new_font_variation.tres" id="2_1sn77"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8n20h"]
 bg_color = Color(0.15294118, 0.15294118, 0.15294118, 0.6745098)
@@ -47,6 +48,7 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_4c1hm")
 layout_mode = 0
 offset_right = 325.0
 offset_bottom = 40.0
+theme_override_fonts/font = ExtResource("2_1sn77")
 text = "Notification Menu"
 horizontal_alignment = 1
 vertical_alignment = 1

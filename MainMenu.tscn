@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://7y676w0g8m3" path="res://scripts/GridLines.gd" id="1"]
 [ext_resource type="Script" uid="uid://c1t82bd2661gi" path="res://scripts/MainMenu.gd" id="1_h7a2f"]
 [ext_resource type="Script" uid="uid://bg5qocnt2fbc3" path="res://scripts/Globe.gd" id="2"]
+[ext_resource type="FontVariation" uid="uid://cuvy4x6nihfev" path="res://fonts/PrimaryFont.tres" id="4_qoqlk"]
 
 [sub_resource type="StyleBoxFlat" id="ButtonNormal"]
 bg_color = Color(0.09, 0.09, 0.09, 1)
@@ -149,6 +150,7 @@ theme_override_constants/separation = 10
 custom_minimum_size = Vector2(0, 46)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_fonts/font = ExtResource("4_qoqlk")
 theme_override_styles/normal = SubResource("ButtonNormal")
 theme_override_styles/pressed = SubResource("ButtonPressed")
 theme_override_styles/hover = SubResource("ButtonHover")
@@ -158,6 +160,7 @@ text = "New game"
 custom_minimum_size = Vector2(0, 46)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_fonts/font = ExtResource("4_qoqlk")
 theme_override_styles/normal = SubResource("ButtonNormal")
 theme_override_styles/pressed = SubResource("ButtonPressed")
 theme_override_styles/hover = SubResource("ButtonHover")
@@ -167,6 +170,7 @@ text = "Continue"
 custom_minimum_size = Vector2(0, 46)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_fonts/font = ExtResource("4_qoqlk")
 theme_override_styles/normal = SubResource("ButtonNormal")
 theme_override_styles/pressed = SubResource("ButtonPressed")
 theme_override_styles/hover = SubResource("ButtonHover")
@@ -176,6 +180,7 @@ text = "Load game"
 custom_minimum_size = Vector2(0, 46)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_fonts/font = ExtResource("4_qoqlk")
 theme_override_styles/normal = SubResource("ButtonNormal")
 theme_override_styles/pressed = SubResource("ButtonPressed")
 theme_override_styles/hover = SubResource("ButtonHover")
@@ -185,6 +190,7 @@ text = "Settings"
 custom_minimum_size = Vector2(0, 46)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_fonts/font = ExtResource("4_qoqlk")
 theme_override_styles/normal = SubResource("ButtonNormal")
 theme_override_styles/pressed = SubResource("ButtonPressed")
 theme_override_styles/hover = SubResource("ButtonHover")

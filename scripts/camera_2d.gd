@@ -52,6 +52,7 @@ func _set_zoom(value: float):
     var new_zoom = clamp(value, min_zoom, max_zoom)
     zoom = Vector2(new_zoom, new_zoom)
     zoom_changed.emit(zoom)
+    print("New zoom: " + str(zoom))
     _clamp_position()
 
 func _clamp_position():

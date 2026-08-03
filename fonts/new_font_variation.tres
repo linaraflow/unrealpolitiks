@@ -1,0 +1,7 @@
+[gd_resource type="FontVariation" format=3 uid="uid://eqbeyus3g4j1"]
+
+[ext_resource type="FontFile" uid="uid://idmsu0q8b57g" path="res://fonts/Inter-VariableFont_opsz,wght.ttf" id="1_xn5b0"]
+
+[resource]
+base_font = ExtResource("1_xn5b0")
+variation_embolden = 0.45

@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://byyy3krch8deb"]
 
 [ext_resource type="Script" uid="uid://838jasvewi4h" path="res://scripts/negotiation_menu.gd" id="1_fa6gv"]
+[ext_resource type="FontVariation" uid="uid://eqbeyus3g4j1" path="res://fonts/new_font_variation.tres" id="2_40vur"]
 [ext_resource type="Texture2D" uid="uid://cax3w4hq1ih2k" path="res://assets/flags/Germany.png" id="2_df4wd"]
 [ext_resource type="Texture2D" uid="uid://cl63kylm71fv2" path="res://assets/flags/Ukraine.png" id="3_v1y1u"]
 [ext_resource type="Texture2D" uid="uid://cq7sp04od60d4" path="res://assets/icons_negotiation_menu/map.svg" id="4_uul61"]
@@ -84,6 +85,7 @@ offset_left = 0.47999954
 offset_top = 0.11999893
 offset_right = 94.479996
 offset_bottom = 32.12
+theme_override_fonts/font = ExtResource("2_40vur")
 text = "Leave"
 
 [node name="SendDemands" type="Button" parent="." unique_id=1077653473]
@@ -97,6 +99,7 @@ offset_left = 0.519989
 offset_top = -0.47998047
 offset_right = 134.51999
 offset_bottom = 35.52002
+theme_override_fonts/font = ExtResource("2_40vur")
 text = "Send Demands"
 
 [node name="ReparationsSlider" type="HSlider" parent="." unique_id=561755127]
@@ -140,6 +143,7 @@ offset_left = 6.0
 offset_top = 5.0
 offset_right = 100.0
 offset_bottom = 22.0
+theme_override_fonts/font = ExtResource("2_40vur")
 theme_override_font_sizes/font_size = 12
 text = "Germany"
 
@@ -150,6 +154,7 @@ offset_top = 22.000002
 offset_right = 100.0
 offset_bottom = 45.000004
 theme_override_colors/font_color = Color(0.28436446, 0.7817348, 0.09893442, 1)
+theme_override_fonts/font = ExtResource("2_40vur")
 text = "23 Prov."
 
 [node name="separator" type="Control" parent="VBoxContainer" unique_id=824317125]
@@ -172,6 +177,7 @@ offset_left = 6.0
 offset_top = 5.0
 offset_right = 100.0
 offset_bottom = 22.0
+theme_override_fonts/font = ExtResource("2_40vur")
 theme_override_font_sizes/font_size = 12
 text = "Ukraine"
 
@@ -182,6 +188,7 @@ offset_top = 22.0
 offset_right = 100.0
 offset_bottom = 45.0
 theme_override_colors/font_color = Color(0.9450055, 0.023975058, 1.92523e-07, 1)
+theme_override_fonts/font = ExtResource("2_40vur")
 theme_override_font_sizes/font_size = 16
 text = "11 Prov."
 

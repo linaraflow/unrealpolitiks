@@ -12,6 +12,7 @@
 [ext_resource type="PackedScene" uid="uid://cbj0ixihecpff" path="res://ProvinceMenu.tscn" id="8_j5wjh"]
 [ext_resource type="PackedScene" uid="uid://d1sj147vs04l7" path="res://Exit_menu.tscn" id="8_mfdv2"]
 [ext_resource type="PackedScene" uid="uid://b14dkd4blc7n5" path="res://DevMenu.tscn" id="9_80cx4"]
+[ext_resource type="FontVariation" uid="uid://eqbeyus3g4j1" path="res://fonts/new_font_variation.tres" id="11_qhcbd"]
 [ext_resource type="Script" uid="uid://dx01a1dmagols" path="res://scripts/blue.gd" id="13_i2p71"]
 [ext_resource type="PackedScene" uid="uid://byyy3krch8deb" path="res://NegotiationMenu.tscn" id="14_e8heu"]
 [ext_resource type="PackedScene" uid="uid://drqgjjt2yw2oq" path="res://NotificationMenu.tscn" id="14_rvswv"]
@@ -53,7 +54,7 @@ shader_parameter/draw_coast_border = false
 shader_parameter/province_border_color = Color(0, 0, 0, 0.35)
 shader_parameter/province_border_width = 1.0
 shader_parameter/country_border_color = Color(0, 0, 0, 0.85)
-shader_parameter/country_border_width = 2.0
+shader_parameter/country_border_width = 2.00000007125
 shader_parameter/capital_border_width = 3.0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_e8heu"]
@@ -169,6 +170,7 @@ grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 4
 size_flags_vertical = 0
+theme_override_fonts/font = ExtResource("11_qhcbd")
 theme_override_styles/normal = SubResource("StyleBoxFlat_e8heu")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_rvswv")
 theme_override_styles/hover = SubResource("StyleBoxFlat_boyg6")
@@ -275,6 +277,7 @@ offset_top = -1.5000725
 offset_right = 135.0
 offset_bottom = 21.499928
 grow_vertical = 2
+theme_override_fonts/font = ExtResource("11_qhcbd")
 theme_override_font_sizes/font_size = 10
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -292,6 +295,7 @@ offset_right = 0.49993896
 offset_bottom = 21.499928
 grow_horizontal = 0
 grow_vertical = 2
+theme_override_fonts/font = ExtResource("11_qhcbd")
 theme_override_font_sizes/font_size = 10
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -306,6 +310,7 @@ offset_top = 34.13
 offset_right = 34.5
 offset_bottom = 50.130013
 grow_horizontal = 2
+theme_override_fonts/font = ExtResource("11_qhcbd")
 theme_override_font_sizes/font_size = 14
 text = "Declares war"
 
@@ -322,6 +327,7 @@ offset_right = 94.0
 offset_bottom = 49.209976
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_fonts/font = ExtResource("11_qhcbd")
 theme_override_font_sizes/font_size = 11
 text = "???"
 horizontal_alignment = 1

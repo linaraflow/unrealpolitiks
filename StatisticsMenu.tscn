@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://c2vqkpyf0trmm" path="res://scripts/statistics_menu.gd" id="1_u7b0n"]
 [ext_resource type="Texture2D" uid="uid://daa6x4wvp626o" path="res://assets/icons_statistics_menu/declare_war.svg" id="2_gysw0"]
+[ext_resource type="FontVariation" uid="uid://eqbeyus3g4j1" path="res://fonts/new_font_variation.tres" id="3_215hw"]
 [ext_resource type="Texture2D" uid="uid://dabrkndbh4sy4" path="res://assets/icons_statistics_menu/skull_enemy.svg" id="4_215hw"]
 [ext_resource type="Texture2D" uid="uid://cc82sfcq4meju" path="res://assets/icons_statistics_menu/skull_your.svg" id="4_u7b0n"]
 [ext_resource type="Texture2D" uid="uid://pnu5f4e7gx7l" path="res://assets/icons_statistics_menu/factory_built.svg" id="5_gysw0"]
@@ -148,6 +149,7 @@ expand_mode = 3
 
 [node name="Label" type="Label" parent="Panel/MarginContainer/VBoxContainer/HeadContainer" unique_id=350620061]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("3_215hw")
 text = "Active wars"
 
 [node name="NumberLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer/HeadContainer" unique_id=151833704]
@@ -178,6 +180,7 @@ layout_mode = 2
 
 [node name="AgainLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/WarContainer/VBoxContainer/HBoxContainer" unique_id=115651299]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("3_215hw")
 theme_override_font_sizes/font_size = 13
 text = "Again {{country}}"
 
@@ -230,6 +233,7 @@ layout_mode = 2
 
 [node name="WeekLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer" unique_id=228714217]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("3_215hw")
 text = "This week"
 
 [node name="FactoriesContainer" type="HBoxContainer" parent="Panel/MarginContainer/VBoxContainer" unique_id=1003886057]
@@ -264,6 +268,7 @@ text = "+7"
 [node name="Label" type="Label" parent="Panel/MarginContainer/VBoxContainer/FactoriesContainer/BuiltFactories/HBoxContainer/VBoxContainer" unique_id=706811470]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7856085, 0.9850294, 0.6406663, 1)
+theme_override_fonts/font = ExtResource("3_215hw")
 theme_override_font_sizes/font_size = 12
 text = "built"
 
@@ -295,6 +300,7 @@ text = "-3"
 [node name="Label" type="Label" parent="Panel/MarginContainer/VBoxContainer/FactoriesContainer/DestroyedFactories/HBoxContainer/VBoxContainer" unique_id=66106656]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.74014354, 0.70155406, 1)
+theme_override_fonts/font = ExtResource("3_215hw")
 theme_override_font_sizes/font_size = 12
 text = "destroyed"
 
@@ -330,6 +336,7 @@ text = "54"
 [node name="Label" type="Label" parent="Panel/MarginContainer/VBoxContainer/StrikesContainer/UAVPanel/HBoxContainer/VBoxContainer" unique_id=1931641061]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.5411765, 0.54509807, 0.5529412, 1)
+theme_override_fonts/font = ExtResource("3_215hw")
 theme_override_font_sizes/font_size = 12
 text = "UAV"
 
@@ -361,6 +368,7 @@ text = "11"
 [node name="Label" type="Label" parent="Panel/MarginContainer/VBoxContainer/StrikesContainer/RocketsPanel/HBoxContainer/VBoxContainer" unique_id=335572679]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.5411765, 0.54509807, 0.5529412, 1)
+theme_override_fonts/font = ExtResource("3_215hw")
 theme_override_font_sizes/font_size = 12
 text = "rockets"
 

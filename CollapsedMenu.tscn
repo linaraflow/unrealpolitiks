@@ -4,6 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://b407htj74gvax" path="res://assets/icons_collapsed_menu/restart.svg" id="2_ryx64"]
 [ext_resource type="Script" uid="uid://cn005e086lpv6" path="res://scripts/collapsed_menu.gd" id="3_6fdey"]
 [ext_resource type="Texture2D" uid="uid://cvbw2bu504x7h" path="res://assets/icons_collapsed_menu/load_save.svg" id="3_cch7b"]
+[ext_resource type="FontVariation" uid="uid://eqbeyus3g4j1" path="res://fonts/new_font_variation.tres" id="3_mxvw5"]
 [ext_resource type="Texture2D" uid="uid://d3t2yvbalggaw" path="res://assets/icons_collapsed_menu/main_menu.svg" id="4_6fdey"]
 [ext_resource type="Texture2D" uid="uid://bwo0s4vlhfg5o" path="res://assets/icons_collapsed_menu/cross.svg" id="5_mxvw5"]
 
@@ -177,6 +178,7 @@ stretch_mode = 5
 
 [node name="MainLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=1540526338]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("3_mxvw5")
 theme_override_font_sizes/font_size = 20
 text = "Regime collapsed"
 horizontal_alignment = 1
@@ -184,6 +186,7 @@ horizontal_alignment = 1
 [node name="MiniLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=26305460]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7204674, 0.7204675, 0.7204674, 1)
+theme_override_fonts/font = ExtResource("3_mxvw5")
 theme_override_font_sizes/font_size = 14
 text = "Your government has lost control of the country"
 horizontal_alignment = 1
@@ -197,6 +200,7 @@ layout_mode = 2
 [node name="Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer" unique_id=243015491]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.72156864, 0.72156864, 0.72156864, 1)
+theme_override_fonts/font = ExtResource("3_mxvw5")
 text = "Country"
 
 [node name="Spacer" type="Control" parent="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer" unique_id=97524816]
@@ -205,6 +209,7 @@ size_flags_horizontal = 3
 
 [node name="NameLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer" unique_id=663785521]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("3_mxvw5")
 text = "Russia"
 
 [node name="HBoxContainer2" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=1559975597]
@@ -213,6 +218,7 @@ layout_mode = 2
 [node name="Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer2" unique_id=1683711586]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.72156864, 0.72156864, 0.72156864, 1)
+theme_override_fonts/font = ExtResource("3_mxvw5")
 text = "Cause"
 
 [node name="Spacer" type="Control" parent="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer2" unique_id=180506980]
@@ -221,6 +227,7 @@ size_flags_horizontal = 3
 
 [node name="NameLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer2" unique_id=995593323]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("3_mxvw5")
 text = "Economic collapse"
 
 [node name="HBoxContainer3" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=659389336]
@@ -229,6 +236,7 @@ layout_mode = 2
 [node name="Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer3" unique_id=777926199]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.72156864, 0.72156864, 0.72156864, 1)
+theme_override_fonts/font = ExtResource("3_mxvw5")
 text = "Date"
 
 [node name="Spacer" type="Control" parent="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer3" unique_id=1121674918]
@@ -237,6 +245,7 @@ size_flags_horizontal = 3
 
 [node name="NameLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer3" unique_id=1614430667]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("3_mxvw5")
 text = "July 27, 2026"
 
 [node name="HBoxContainer4" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=1940389566]
@@ -245,6 +254,7 @@ layout_mode = 2
 [node name="Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer4" unique_id=696453127]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.72156864, 0.72156864, 0.72156864, 1)
+theme_override_fonts/font = ExtResource("3_mxvw5")
 text = "Days in power"
 
 [node name="Spacer" type="Control" parent="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer4" unique_id=1034251065]
@@ -253,6 +263,7 @@ size_flags_horizontal = 3
 
 [node name="NameLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer4" unique_id=1325938495]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("3_mxvw5")
 text = "8.244"
 
 [node name="HSeparator2" type="HSeparator" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=1541315853]
@@ -284,6 +295,7 @@ stretch_mode = 5
 
 [node name="Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/RestartButton/HBoxContainer" unique_id=2137130843]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("3_mxvw5")
 text = "Restart"
 
 [node name="SaveButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=1348635006]
@@ -312,6 +324,7 @@ stretch_mode = 5
 
 [node name="Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/SaveButton/HBoxContainer" unique_id=303651972]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("3_mxvw5")
 text = "Load save"
 
 [node name="MenuButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=1103130670]
@@ -340,6 +353,7 @@ stretch_mode = 5
 
 [node name="Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/MenuButton/HBoxContainer" unique_id=295620750]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("3_mxvw5")
 text = "Main menu"
 
 [node name="ExitButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=103494462]
@@ -369,6 +383,7 @@ stretch_mode = 5
 [node name="Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/ExitButton/HBoxContainer" unique_id=157452345]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.37413925, 0.37413928, 0.37413922, 1)
+theme_override_fonts/font = ExtResource("3_mxvw5")
 text = "Quit game"
 
 [connection signal="pressed" from="PanelContainer/MarginContainer/VBoxContainer/RestartButton" to="." method="_on_restart_button_pressed"]

@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://ba7dqitfld7vk" path="res://scripts/missile_menu.gd" id="1_p4le1"]
 [ext_resource type="Texture2D" uid="uid://kbbj0ffkex8y" path="res://assets/icons_uav_menu/rocket.svg" id="2_277yk"]
+[ext_resource type="FontVariation" uid="uid://eqbeyus3g4j1" path="res://fonts/new_font_variation.tres" id="2_526u6"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6vbwh"]
 bg_color = Color(0.12156863, 0.12156863, 0.11764706, 1)
@@ -74,6 +75,7 @@ anchor_right = 0.5
 offset_left = -960.0
 offset_right = 960.0
 offset_bottom = 50.0
+grow_horizontal = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_6vbwh")
 
 [node name="MainLabel" type="Label" parent="MainPanel" unique_id=426190872]
@@ -89,6 +91,7 @@ offset_right = 71.0
 offset_bottom = 11.5
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_fonts/font = ExtResource("2_526u6")
 text = "Missle Launch Menu"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -103,6 +106,7 @@ offset_top = -16.75
 offset_right = 154.75
 offset_bottom = 16.75
 grow_vertical = 2
+theme_override_fonts/font = ExtResource("2_526u6")
 theme_override_font_sizes/font_size = 12
 theme_override_styles/normal = SubResource("StyleBoxFlat_p4le1")
 text = "Leave"
@@ -136,4 +140,5 @@ stretch_mode = 3
 [node name="Label" type="Label" parent="LaunchButton/HBoxContainer" unique_id=1437525350]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.92941177, 0.6313726, 0, 1)
+theme_override_fonts/font = ExtResource("2_526u6")
 text = "Launch"

@@ -285,6 +285,7 @@ func _action_display_name(key: String) -> String:
         "summon_max_troops_province": "Summon max troops in province",
         "hide_ui": "Hide UI",
         "hide_all_divisions": "Hide all divisions",
+        "hide_country_labels": "Hide country labels",
     }
     return names.get(key, key)
 

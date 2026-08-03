@@ -12,6 +12,7 @@
 [ext_resource type="Texture2D" uid="uid://cl10535rof6ac" path="res://assets/icons_uav_menu/missile.png" id="10_0dvk7"]
 [ext_resource type="Texture2D" uid="uid://de4b57yabr7i7" path="res://assets/flags/Iran.png" id="10_j86uc"]
 [ext_resource type="Texture2D" uid="uid://c66dtruypl7r6" path="res://assets/icons_uav_menu/create_uav.svg" id="11_kc1aw"]
+[ext_resource type="FontVariation" uid="uid://eqbeyus3g4j1" path="res://fonts/new_font_variation.tres" id="12_111l2"]
 [ext_resource type="Texture2D" uid="uid://cui34p0yrac20" path="res://assets/icons_uav_menu/clock.svg" id="12_kc1aw"]
 [ext_resource type="Script" uid="uid://dkeuuydluccbn" path="res://scripts/choose_map_panel.gd" id="14_0x63p"]
 [ext_resource type="Texture2D" uid="uid://dfhhn7d4lgan8" path="res://assets/icons_top_menu/politics.svg" id="15_j05aq"]
@@ -560,12 +561,14 @@ layout_mode = 2
 
 [node name="UAVLabel" type="Label" parent="PanelUAVEmpty/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer" unique_id=1745490847]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("12_111l2")
 theme_override_font_sizes/font_size = 18
 text = "UAV programm of Iran"
 
 [node name="NoUAVLabel" type="Label" parent="PanelUAVEmpty/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer" unique_id=1590355300]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.5411765, 0.54509807, 0.5529412, 1)
+theme_override_fonts/font = ExtResource("12_111l2")
 theme_override_font_sizes/font_size = 14
 text = "Unmanned aircraft have not been developed"
 
@@ -580,6 +583,7 @@ expand_mode = 3
 
 [node name="DescriptionLabel" type="Label" parent="PanelUAVEmpty/MarginContainer/VBoxContainer" unique_id=522447074]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("12_111l2")
 theme_override_font_sizes/font_size = 14
 text = "The country doesn't yet have its own drone production lines. Create a UAV company
 to begin developing and manufacturing drones."
@@ -614,6 +618,7 @@ expand_mode = 3
 [node name="CreateLabel" type="Label" parent="PanelUAVEmpty/MarginContainer/VBoxContainer/CreateButton/MarginContainer/HBoxContainer" unique_id=1391498638]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.37254903, 0.8392157, 0.44313726, 1)
+theme_override_fonts/font = ExtResource("12_111l2")
 theme_override_font_sizes/font_size = 15
 text = "Create UAV-company"
 
@@ -663,18 +668,21 @@ layout_mode = 2
 
 [node name="UAVLabel" type="Label" parent="PanelUAVOrder/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer" unique_id=682942033]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("12_111l2")
 theme_override_font_sizes/font_size = 18
 text = "UAV of Iran"
 
 [node name="ProduceLabel" type="Label" parent="PanelUAVOrder/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer" unique_id=1754175702]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.5411765, 0.54509807, 0.5529412, 1)
+theme_override_fonts/font = ExtResource("12_111l2")
 theme_override_font_sizes/font_size = 14
 text = "Production line · level 1"
 
 [node name="LaunchButton" type="Button" parent="PanelUAVOrder/MarginContainer/VBoxContainer/HBoxContainer" unique_id=1604445816]
 layout_mode = 2
 size_flags_horizontal = 10
+theme_override_fonts/font = ExtResource("12_111l2")
 theme_override_styles/normal = SubResource("StyleBoxFlat_7ovbt")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_kc1aw")
 theme_override_styles/hover = SubResource("StyleBoxFlat_kdok2")
@@ -696,6 +704,7 @@ layout_mode = 2
 [node name="UAVCaption" type="Label" parent="PanelUAVOrder/MarginContainer/VBoxContainer/GridContainer/NumberUAVCard/VBoxContainer" unique_id=440101713]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.53333336, 0.53333336, 0.53333336, 1)
+theme_override_fonts/font = ExtResource("12_111l2")
 theme_override_font_sizes/font_size = 10
 text = "In service"
 
@@ -715,6 +724,7 @@ layout_mode = 2
 [node name="SpeedCaption" type="Label" parent="PanelUAVOrder/MarginContainer/VBoxContainer/GridContainer/SpeedCard/VBoxContainer" unique_id=535292170]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.53333336, 0.53333336, 0.53333336, 1)
+theme_override_fonts/font = ExtResource("12_111l2")
 theme_override_font_sizes/font_size = 10
 text = "Production speed"
 
@@ -725,6 +735,7 @@ text = "28 / day"
 
 [node name="OrderLabel" type="Label" parent="PanelUAVOrder/MarginContainer/VBoxContainer" unique_id=1773416020]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("12_111l2")
 theme_override_font_sizes/font_size = 14
 text = "Order drones"
 
@@ -735,6 +746,7 @@ theme_override_constants/separation = 12
 [node name="NumberLabel" type="Label" parent="PanelUAVOrder/MarginContainer/VBoxContainer/Slider" unique_id=1688946611]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.5411765, 0.54509807, 0.5529412, 1)
+theme_override_fonts/font = ExtResource("12_111l2")
 theme_override_font_sizes/font_size = 14
 text = "amo."
 
@@ -782,6 +794,7 @@ text = "📦10"
 
 [node name="OrderButton" type="Button" parent="PanelUAVOrder/MarginContainer/VBoxContainer" unique_id=1387859603]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("12_111l2")
 theme_override_font_sizes/font_size = 14
 theme_override_styles/normal = SubResource("StyleBoxFlat_owoy5")
 theme_override_styles/hover = SubResource("StyleBoxFlat_0x63p")
@@ -827,12 +840,14 @@ layout_mode = 2
 
 [node name="MissileLabel" type="Label" parent="PanelMissileEmpty/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer" unique_id=1248357000]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("12_111l2")
 theme_override_font_sizes/font_size = 18
 text = "Missile programm of Iran"
 
 [node name="NoMissileLabel" type="Label" parent="PanelMissileEmpty/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer" unique_id=1942025132]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.5411765, 0.54509807, 0.5529412, 1)
+theme_override_fonts/font = ExtResource("12_111l2")
 theme_override_font_sizes/font_size = 14
 text = "Ballistic missiles have not been developed"
 
@@ -847,6 +862,7 @@ expand_mode = 3
 
 [node name="DescriptionLabel" type="Label" parent="PanelMissileEmpty/MarginContainer/VBoxContainer" unique_id=1559432791]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("12_111l2")
 theme_override_font_sizes/font_size = 14
 text = "The country doesn't yet have its own missile production lines. 
 Create a missile company to begin developing and manufacturing missiles."
@@ -881,6 +897,7 @@ expand_mode = 3
 [node name="CreateLabel" type="Label" parent="PanelMissileEmpty/MarginContainer/VBoxContainer/CreateButton/MarginContainer/HBoxContainer" unique_id=1418021383]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.37254903, 0.8392157, 0.44313726, 1)
+theme_override_fonts/font = ExtResource("12_111l2")
 theme_override_font_sizes/font_size = 15
 text = "Create missile-company"
 
@@ -929,18 +946,21 @@ layout_mode = 2
 
 [node name="MissileLabel" type="Label" parent="PanelMissileOrder/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer" unique_id=460321133]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("12_111l2")
 theme_override_font_sizes/font_size = 18
 text = "Missile of Iran"
 
 [node name="ProduceLabel" type="Label" parent="PanelMissileOrder/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer" unique_id=1975641261]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.5411765, 0.54509807, 0.5529412, 1)
+theme_override_fonts/font = ExtResource("12_111l2")
 theme_override_font_sizes/font_size = 14
 text = "Production line · level 1"
 
 [node name="LaunchButton" type="Button" parent="PanelMissileOrder/MarginContainer/VBoxContainer/HBoxContainer" unique_id=1750283377]
 layout_mode = 2
 size_flags_horizontal = 10
+theme_override_fonts/font = ExtResource("12_111l2")
 theme_override_styles/normal = SubResource("StyleBoxFlat_7ovbt")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_kc1aw")
 theme_override_styles/hover = SubResource("StyleBoxFlat_kdok2")
@@ -962,6 +982,7 @@ layout_mode = 2
 [node name="MissileCaption" type="Label" parent="PanelMissileOrder/MarginContainer/VBoxContainer/GridContainer/NumberMissileCard/VBoxContainer" unique_id=1158647233]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.53333336, 0.53333336, 0.53333336, 1)
+theme_override_fonts/font = ExtResource("12_111l2")
 theme_override_font_sizes/font_size = 10
 text = "In service"
 
@@ -981,6 +1002,7 @@ layout_mode = 2
 [node name="SpeedCaption" type="Label" parent="PanelMissileOrder/MarginContainer/VBoxContainer/GridContainer/SpeedCard/VBoxContainer" unique_id=855825088]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.53333336, 0.53333336, 0.53333336, 1)
+theme_override_fonts/font = ExtResource("12_111l2")
 theme_override_font_sizes/font_size = 10
 text = "Production speed"
 
@@ -991,6 +1013,7 @@ text = "1.1 / month"
 
 [node name="OrderLabel" type="Label" parent="PanelMissileOrder/MarginContainer/VBoxContainer" unique_id=3189926]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("12_111l2")
 theme_override_font_sizes/font_size = 14
 text = "Order missiles"
 
@@ -1001,6 +1024,7 @@ theme_override_constants/separation = 12
 [node name="NumberLabel" type="Label" parent="PanelMissileOrder/MarginContainer/VBoxContainer/Slider" unique_id=599405725]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.5411765, 0.54509807, 0.5529412, 1)
+theme_override_fonts/font = ExtResource("12_111l2")
 theme_override_font_sizes/font_size = 14
 text = "amo."
 
@@ -1048,6 +1072,7 @@ text = "📦 10.000"
 
 [node name="OrderButton" type="Button" parent="PanelMissileOrder/MarginContainer/VBoxContainer" unique_id=1324691844]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("12_111l2")
 theme_override_font_sizes/font_size = 14
 theme_override_styles/normal = SubResource("StyleBoxFlat_owoy5")
 theme_override_styles/hover = SubResource("StyleBoxFlat_0x63p")
@@ -1118,6 +1143,7 @@ stretch_mode = 5
 
 [node name="Label" type="Label" parent="ChooseMapPanel/VBoxContainer/ListPanel/VBoxContainer/ItemPolitics/MarginContainer/HBoxContainer" unique_id=606104873]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("12_111l2")
 text = "Politics"
 
 [node name="Spacer" type="Control" parent="ChooseMapPanel/VBoxContainer/ListPanel/VBoxContainer/ItemPolitics/MarginContainer/HBoxContainer" unique_id=2080493389]
@@ -1167,6 +1193,7 @@ stretch_mode = 5
 
 [node name="Label" type="Label" parent="ChooseMapPanel/VBoxContainer/ListPanel/VBoxContainer/ItemEconomy/MarginContainer/HBoxContainer" unique_id=325251966]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("12_111l2")
 text = "Economy"
 
 [node name="Spacer" type="Control" parent="ChooseMapPanel/VBoxContainer/ListPanel/VBoxContainer/ItemEconomy/MarginContainer/HBoxContainer" unique_id=190252933]
@@ -1216,6 +1243,7 @@ stretch_mode = 5
 
 [node name="Label" type="Label" parent="ChooseMapPanel/VBoxContainer/ListPanel/VBoxContainer/ItemPopulation/MarginContainer/HBoxContainer" unique_id=1399067309]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("12_111l2")
 text = "Population"
 
 [node name="Spacer" type="Control" parent="ChooseMapPanel/VBoxContainer/ListPanel/VBoxContainer/ItemPopulation/MarginContainer/HBoxContainer" unique_id=2022822512]
@@ -1263,11 +1291,13 @@ stretch_mode = 5
 
 [node name="DropdownLabel" type="Label" parent="ChooseMapPanel/VBoxContainer/DropdownPanel/DropdownButton/MarginContainer/HBoxContainer" unique_id=264903307]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("12_111l2")
 text = "Politics"
 
 [node name="OnlyTick" type="CheckBox" parent="ChooseMapPanel/VBoxContainer/DropdownPanel/DropdownButton/MarginContainer/HBoxContainer" unique_id=193713521]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("12_111l2")
 theme_override_font_sizes/font_size = 8
 text = "only your country"
 
