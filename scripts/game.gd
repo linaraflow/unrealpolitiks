@@ -5,6 +5,8 @@ extends Node2D
 @onready var ProvinceMenu: Control = $CanvasLayer/VBoxContainer/ProvinceMenu
 @onready var DivisionMenu: Control = $CanvasLayer/VBoxContainer/DivisionMenu
 
+@onready var StatisticMenu: Control = $CanvasLayer/StatisticsMenu
+
 var _panel_visible: bool = true
 var _shown_x: float
 var _tween: Tween
@@ -34,15 +36,22 @@ func hide_panel() -> void:
     if _tween and _tween.is_running():
         _tween.kill()
 
+    var shift := hud_panel.size.x + 6
+    var stat_target_x := StatisticMenu.position.x - shift
+
     _tween = create_tween()
     _tween.set_trans(Tween.TRANS_CUBIC)
     _tween.set_ease(Tween.EASE_OUT)
+    _tween.set_parallel(true)
 
     var hide_x := -hud_panel.size.x
     _tween.tween_property(hud_panel, "position:x", hide_x, 0.35)
-    _tween.tween_callback(func(): hud_panel.visible = false)
+    _tween.tween_property(StatisticMenu, "position:x", stat_target_x, 0.35)
+    _tween.chain().tween_callback(func(): hud_panel.visible = false)
 
     _panel_visible = false
+    
+    
 
 ## Показывает hud_panel (выезжает обратно на место). Можно звать откуда
 ## угодно (например, при клике по суше на карте) — если панель уже
@@ -54,12 +63,17 @@ func show_panel() -> void:
     if _tween and _tween.is_running():
         _tween.kill()
 
+    var shift := hud_panel.size.x + 6
+    var stat_target_x := StatisticMenu.position.x + shift
+
     _tween = create_tween()
     _tween.set_trans(Tween.TRANS_CUBIC)
     _tween.set_ease(Tween.EASE_OUT)
+    _tween.set_parallel(true)
 
     hud_panel.visible = true
     hud_panel.position.x = -hud_panel.size.x
     _tween.tween_property(hud_panel, "position:x", _shown_x, 0.35)
+    _tween.tween_property(StatisticMenu, "position:x", stat_target_x, 0.35)
 
     _panel_visible = true

@@ -43,6 +43,7 @@ func _on_save_button_pressed() -> void:
 
 
 func _on_main_button_pressed() -> void:
+    Global._on_music_finished()
     hide()
     get_tree().paused = false
     get_node("/root/Game/Map").restart()

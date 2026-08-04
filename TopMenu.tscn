@@ -1297,6 +1297,7 @@ text = "Politics"
 [node name="OnlyTick" type="CheckBox" parent="ChooseMapPanel/VBoxContainer/DropdownPanel/DropdownButton/MarginContainer/HBoxContainer" unique_id=193713521]
 layout_mode = 2
 size_flags_horizontal = 3
+focus_mode = 0
 theme_override_fonts/font = ExtResource("12_111l2")
 theme_override_font_sizes/font_size = 8
 text = "only your country"

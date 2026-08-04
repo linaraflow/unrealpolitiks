@@ -10,6 +10,16 @@ var target_pos: Vector2
 var target_p_id: int
 var attacker_country: String = "" # Страна, запустившая ракету (для начисления продукта за уничтоженные фабрики)
 
+# Дивизия-цель (ArmyCircle), за которой наводится ракета. Пока она жива —
+# ракета каждый кадр довoрачивает на её текущую позицию/провинцию.
+# Если дивизия погибла до попадания — ракета долетает по последнему
+# известному курсу и бьёт по последней известной провинции цели.
+var target_division: Node = null
+
+# Порог смещения цели (px), ниже которого курс не пересчитывается —
+# защита от лишней работы при неподвижной/почти неподвижной цели.
+const _RETARGET_EPS: float = 0.5
+
 # Скорость полёта ракеты (px карты/сек). Переиспользуем скорость БПЛА как базу,
 # ракета летит немного быстрее.
 var base_speed: float = settings.UAV_SPEED * 1.5
@@ -103,6 +113,8 @@ func _process(delta: float) -> void:
     if GameClock.paused or GameClock.speed_index == 0:
         return
 
+    _update_homing()
+
     if _path_length <= 0.0:
         _arrive()
         return
@@ -116,6 +128,29 @@ func _process(delta: float) -> void:
         position = _point_on_curve(_t)
         _update_rotation(_t)
         _extend_trail(position)
+
+
+## Наведение по живой дивизии: если цель ещё существует, каждый кадр
+## перестраиваем дугу от ТЕКУЩЕЙ позиции ракеты к НОВОЙ позиции дивизии
+## (и обновляем target_p_id — провинцию, по которой ударит ракета при
+## попадании). Если дивизия сменила провинцию — ракета доворачивает
+## следом. Если дивизия уничтожена по пути — просто перестаём её
+## отслеживать и долетаем по последнему курсу.
+func _update_homing() -> void:
+    if not is_instance_valid(target_division):
+        return
+
+    target_p_id = target_division.province_id
+
+    var new_target: Vector2 = target_division.position
+    if new_target.distance_to(target_pos) < _RETARGET_EPS:
+        return
+
+    start_pos = position
+    target_pos = new_target
+    control_pos = MissileLinesLayer.compute_arc_control(start_pos, target_pos)
+    _t = 0.0
+    _path_length = _estimate_length()
 
 
 func _point_on_curve(t: float) -> Vector2:

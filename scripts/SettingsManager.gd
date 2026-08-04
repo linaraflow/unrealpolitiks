@@ -29,7 +29,8 @@ var autosave_interval_days: int = 30   # 0 = выключено
 # ---------- Звук ----------
 var volume_master: float = 1.0
 var volume_music: float = 0.8
-var volume_effects: float = 1.0
+var volume_sfx: float = 1.0
+var volume_ui: float = 1.0
 
 # ---------- Управление ----------
 var keybinds: Dictionary = {
@@ -171,7 +172,8 @@ func _center_window(size: Vector2i, screen_idx: int) -> void:
 func _apply_audio() -> void:
     _set_bus_volume("Master", volume_master)
     _set_bus_volume("Music", volume_music)
-    _set_bus_volume("Effects", volume_effects)
+    _set_bus_volume("SFX", volume_sfx)
+    _set_bus_volume("UI", volume_ui)
 
 func _set_bus_volume(bus_name: String, linear: float) -> void:
     var idx := AudioServer.get_bus_index(bus_name)
@@ -194,7 +196,8 @@ func save_settings() -> void:
 
     cfg.set_value("audio", "volume_master", volume_master)
     cfg.set_value("audio", "volume_music", volume_music)
-    cfg.set_value("audio", "volume_effects", volume_effects)
+    cfg.set_value("audio", "volume_sfx", volume_sfx)
+    cfg.set_value("audio", "volume_ui", volume_ui)
 
     cfg.set_value("controls", "keybinds", keybinds)
 
@@ -218,7 +221,8 @@ func load_settings() -> void:
 
     volume_master = cfg.get_value("audio", "volume_master", volume_master)
     volume_music = cfg.get_value("audio", "volume_music", volume_music)
-    volume_effects = cfg.get_value("audio", "volume_effects", volume_effects)
+    volume_sfx = cfg.get_value("audio", "volume_sfx", volume_sfx)
+    volume_ui = cfg.get_value("audio", "volume_ui", volume_ui)
 
     var loaded_keybinds: Dictionary = cfg.get_value("controls", "keybinds", keybinds)
     # Оставляем только те ключи, что реально существуют в дефолтном наборе —
@@ -243,7 +247,7 @@ func reset_to_defaults() -> void:
     for prop in ["resolution_index","window_mode","vsync_enabled","fps_limit",
         "ui_scale","language",
         "autopause_on_war","autosave_interval_days",
-        "volume_master","volume_music","volume_effects",
+        "volume_master","volume_music","volume_sfx","volume_ui",
         "keybinds"]:
         set(prop, fresh.get(prop))
     apply_all()

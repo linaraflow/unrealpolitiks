@@ -156,29 +156,6 @@ offset_bottom = 349.0
 grow_horizontal = 0
 grow_vertical = 1
 
-[node name="BLUE" type="Button" parent="CanvasLayer" unique_id=1940952531]
-custom_minimum_size = Vector2(200, 80)
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -100.0
-offset_top = -40.0
-offset_right = 100.0
-offset_bottom = 40.0
-grow_horizontal = 2
-grow_vertical = 2
-size_flags_horizontal = 4
-size_flags_vertical = 0
-theme_override_fonts/font = ExtResource("11_qhcbd")
-theme_override_styles/normal = SubResource("StyleBoxFlat_e8heu")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_rvswv")
-theme_override_styles/hover = SubResource("StyleBoxFlat_boyg6")
-text = "Choose Country"
-script = ExtResource("13_i2p71")
-settings = ExtResource("6_ryrav")
-
 [node name="NegotiationMenu" parent="CanvasLayer" unique_id=1683955890 instance=ExtResource("14_e8heu")]
 visible = false
 
@@ -217,13 +194,6 @@ offset_top = -0.15999985
 offset_right = 300.96
 offset_bottom = 399.84
 
-[node name="Exit_menu" parent="CanvasLayer" unique_id=1693922976 instance=ExtResource("8_mfdv2")]
-process_mode = 3
-visible = false
-
-[node name="SaveMenu" parent="CanvasLayer" unique_id=56621000 instance=ExtResource("21_f1jbl")]
-visible = false
-
 [node name="SelectionBox" type="Control" parent="CanvasLayer" unique_id=1158140647]
 layout_mode = 3
 anchors_preset = 15
@@ -233,6 +203,36 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("5_x5p1p")
+
+[node name="BLUE" type="Button" parent="CanvasLayer" unique_id=1940952531]
+custom_minimum_size = Vector2(200, 80)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -100.0
+offset_top = -40.0
+offset_right = 100.0
+offset_bottom = 40.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+theme_override_fonts/font = ExtResource("11_qhcbd")
+theme_override_styles/normal = SubResource("StyleBoxFlat_e8heu")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_rvswv")
+theme_override_styles/hover = SubResource("StyleBoxFlat_boyg6")
+text = "Choose Country"
+script = ExtResource("13_i2p71")
+settings = ExtResource("6_ryrav")
+
+[node name="Exit_menu" parent="CanvasLayer" unique_id=1693922976 instance=ExtResource("8_mfdv2")]
+process_mode = 3
+visible = false
+
+[node name="SaveMenu" parent="CanvasLayer" unique_id=56621000 instance=ExtResource("21_f1jbl")]
+visible = false
 
 [node name="WarBanner" type="CanvasLayer" parent="." unique_id=317580348]
 script = ExtResource("20_36jdj")

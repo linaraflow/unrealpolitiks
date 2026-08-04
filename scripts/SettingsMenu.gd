@@ -257,9 +257,14 @@ func _build_audio_tab() -> void:
         s._set_bus_volume("Music", v)
     , true)
 
-    _add_slider(tab_audio, "Sound effects", 0.0, 1.0, 0.01, s.volume_effects, func(v):
-        s.volume_effects = v
-        s._set_bus_volume("Effects", v)
+    _add_slider(tab_audio, "Sound effects", 0.0, 1.0, 0.01, s.volume_sfx, func(v):
+        s.volume_sfx = v
+        s._set_bus_volume("SFX", v)
+    , true)
+
+    _add_slider(tab_audio, "UI sounds", 0.0, 1.0, 0.01, s.volume_ui, func(v):
+        s.volume_ui = v
+        s._set_bus_volume("UI", v)
     , true)
 
 # ---------------------------------------------------------------

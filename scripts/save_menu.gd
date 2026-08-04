@@ -252,6 +252,9 @@ func _on_action_pressed() -> void:
 
 
 func _create_new_save() -> void:
+    if settings.can_draw == false:
+        return 
+        
     var slot := _generate_new_slot_name()
     SaveManager.save_game(slot)
     print("[SaveMenu] Игра сохранена в новый слот: ", slot)

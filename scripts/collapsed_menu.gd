@@ -65,5 +65,6 @@ func _on_exit_button_pressed() -> void:
 
 
 func _on_menu_button_pressed() -> void:
+    Global._on_music_finished()
     restart()
     get_tree().change_scene_to_packed(MAIN_SCENE)

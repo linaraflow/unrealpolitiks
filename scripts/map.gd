@@ -341,6 +341,9 @@ func _input(event: InputEvent):
             GameRoot.hide_panel()
         return
 
+    # ЗВУК КЛИКА ПО ПРОВИНЦИИ — играет при любом клике по реальной провинции
+    Global.play("res://audio/sfx/map_click.ogg", "SFX")
+
     var province_info = ProvinceRegistry.province_data.get(p_id, {})
     var current_owner = province_info.get("owner", "")
     
@@ -389,9 +392,10 @@ func _handle_left_click(p_id, px, province_info, current_owner):
         get_node("/root/Game/CanvasLayer/UAVMenu").on_province_clicked(p_id)
         return
 
-    # РЕЖИМ ЗАПУСКА РАКЕТЫ: передаём клик в MissileMenu и выходим
+    # РЕЖИМ ЗАПУСКА РАКЕТЫ: цель теперь выбирается кликом по самой дивизии
+    # (ArmyCircle._on_button_pressed -> MissileMenu.on_division_clicked),
+    # а не по провинции — клик по фону провинции в этом режиме ничего не делает.
     if missile_mode:
-        get_node("/root/Game/CanvasLayer/MissileMenu").on_province_clicked(p_id)
         return
     
     if distribute_mode:

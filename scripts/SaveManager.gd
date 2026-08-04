@@ -372,6 +372,8 @@ func load_game(slot: String) -> bool:
     var s = settings
     s.can_draw = true
     map_node.blue.hide()
+    
+    Global._on_music_finished()
 
     print("[SaveManager] Игра загружена из слота '%s'" % slot)
     load_completed.emit(slot)

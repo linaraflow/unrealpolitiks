@@ -21,12 +21,14 @@ func _on_settings_pressed() -> void:
     add_child(instance)
 
 func _on_new_game_pressed() -> void:
+    Global._on_music_finished()
     get_tree().change_scene_to_file("res://game.tscn")
 
 func _on_continue_pressed() -> void:
     var slot := _find_latest_save_slot()
     if slot != "":
         _load_slot(slot)
+        Global._on_music_finished()
     else:
         print("[MainMenu] Сохранения не найдены!")
 

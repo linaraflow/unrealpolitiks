@@ -9,6 +9,9 @@ const FLAG_HEIGHT = 14.0
 const COLOR_NORMAL   = Color(1.0,  1.0,  1.0,  1.0)
 const COLOR_SELECTED = Color(0.55, 1.0,  0.55, 1.0)   # зеленоватый оттенок — выделено
 const COLOR_HOVER    = Color(1.15, 1.15, 1.15, 1.0)   # чуть светлее — наведение
+const COLOR_MISSILE_TARGET = Color(0.5, 0.5, 0.5, 1.0) # серый — выбрана целью ракеты
+
+var is_missile_target: bool = false
 
 var province_id: int  = -1
 var is_selected: bool = false
@@ -163,7 +166,19 @@ func deselect() -> void:
     is_selected = false
     $Button.add_theme_color_override("icon_normal_color", COLOR_NORMAL)
 
+## Выделение дивизии серым как цели ракеты (режим MissileMenu).
+func select_missile_target() -> void:
+    is_missile_target = true
+    $Button.add_theme_color_override("icon_normal_color", COLOR_MISSILE_TARGET)
+
+func deselect_missile_target() -> void:
+    is_missile_target = false
+    $Button.add_theme_color_override("icon_normal_color", COLOR_NORMAL)
+
 func _on_button_pressed() -> void:
+    if map_node.missile_mode:
+        get_node("/root/Game/CanvasLayer/MissileMenu").on_division_clicked(self)
+        return
     SelectionManager.on_division_clicked(self)
 
 # ─── ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ДОСТУПА ──────────────────────────────────────────

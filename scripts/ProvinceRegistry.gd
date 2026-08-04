@@ -1019,6 +1019,9 @@ func missile_strike(province_id: int, attacker_country: String = "") -> void:
     var p = province_data[province_id]
     var owner = p.get("owner", "")
 
+    # ЗВУК ВЗРЫВА — играет при любом ракетном ударе, независимо от наличия заводов
+    Global.play("res://audio/sfx/explosion.ogg", "SFX")
+
     # ФАБРИКИ — снос ВСЕХ фабрик в провинции
     var current_factories = int(p.get("factories", 0))
     if current_factories > 0:
@@ -1026,6 +1029,7 @@ func missile_strike(province_id: int, attacker_country: String = "") -> void:
         if _is_real_country_owner(owner) and p.get("against_occupation", "") == "":
             if countries_data.has(owner):
                 countries_data[owner]["factories"] = max(0, countries_data[owner].get("factories", 0) - current_factories)
+                
         print("[Registry] Ракетный удар: уничтожено фабрик ", current_factories, " в провинции ", province_id)
         factory_destroyed.emit(province_id, owner, current_factories)
 

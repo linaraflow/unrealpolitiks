@@ -227,7 +227,7 @@ static func process_missile_strikes(country: String) -> void:
         return
 
     var max_targets = min(AIManager.MISSILE_MAX_TARGETS_PER_STRIKE, available)
-    var targets = get_richest_enemy_factory_provinces(enemies, max_targets)
+    var targets = get_richest_enemy_divisions(enemies, max_targets)
     if targets.is_empty():
         return
 
@@ -236,10 +236,10 @@ static func process_missile_strikes(country: String) -> void:
         return
 
     var total_used = 0
-    for target_id in targets:
-        if not AIManager.settings.province_centers.has(target_id):
+    for division in targets:
+        if not is_instance_valid(division):
             continue
-        launch_missile_wave(start_pos, target_id, country)
+        launch_missile_wave(start_pos, division.province_id, country, division)
         total_used += 1
 
     if total_used > 0:
@@ -247,11 +247,33 @@ static func process_missile_strikes(country: String) -> void:
         ProvinceRegistry.missile_order_changed.emit(country)
         AIManager.missile_launch_cooldowns[country] = AIManager.MISSILE_STRIKE_COOLDOWN_DAYS
 
-static func launch_missile_wave(start_pos: Vector2, target_id: int, attacker_country: String = "") -> void:
+## Вражеские дивизии (по всем врагам страны), отсортированные по убыванию
+## численности солдат — ракета теперь целится в самую "жирную" дивизию,
+## а не в провинцию с заводами. Ищем по ВСЕМ дивизиям на карте (а не только
+## по "своим" провинциям врага), чтобы учитывать и войска врага, стоящие
+## транзитом на чужой/нейтральной территории.
+static func get_richest_enemy_divisions(enemies: Array, max_count: int) -> Array:
+    var candidates: Array = []
+
+    for p_id in DivisionManager.armies.keys():
+        for division in DivisionManager.armies[p_id]:
+            if is_instance_valid(division) and division.division_owner in enemies and division.soldiers > 0:
+                candidates.append(division)
+
+    candidates.sort_custom(func(a, b): return a.soldiers > b.soldiers)
+
+    var result: Array = []
+    for division in candidates:
+        result.append(division)
+        if result.size() >= max_count:
+            break
+    return result
+
+static func launch_missile_wave(start_pos: Vector2, target_id: int, attacker_country: String = "", target_division = null) -> void:
     if not is_instance_valid(AIManager.Map):
         return
 
-    var target_pos: Vector2 = AIManager.settings.province_centers[target_id]
+    var target_pos: Vector2 = target_division.position if is_instance_valid(target_division) else AIManager.settings.province_centers[target_id]
 
     var missile = Sprite2D.new()
     missile.set_script(AIManager.MissileScript)
@@ -259,6 +281,7 @@ static func launch_missile_wave(start_pos: Vector2, target_id: int, attacker_cou
     missile.target_pos   = target_pos
     missile.control_pos  = MissileLinesLayer.compute_arc_control(start_pos, target_pos)
     missile.target_p_id  = target_id
+    missile.target_division = target_division
     missile.attacker_country = attacker_country
 
     AIManager.Map.add_child(missile)
