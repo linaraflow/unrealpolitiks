@@ -86,7 +86,6 @@ func _check_province_loss(country: String) -> void:
     _lost_provinces_notified[country] = true
     country_lost_all_provinces.emit(country)
 
-var _factories_dirty: bool = true
 var _production_by_country: Dictionary = {}
 var active_constructions: Dictionary = {}
 
@@ -184,7 +183,13 @@ func _recalculate_all_populations() -> void:
     for country in countries_data:
         countries_data[country]["population"] = totals.get(country, 0)
 
-## Пересчитывает фабрики каждой страны при старте игры (только неоккупированные)
+## Пересчитывает фабрики каждой страны с нуля, обходя ВСЕ провинции.
+## Фабрики провинции всегда засчитываются текущему владельцу поля "owner"
+## (оккупант провинции — это и есть её owner, см. occupy_province).
+## Это O(provinces) операция, нужна только на старте игры / reset() —
+## во всех остальных случаях factories страны обновляются напрямую
+## (country["factories"] += ...) в момент передачи провинции, стройки
+## завода или его уничтожения, кэш пересчитывать не нужно.
 func _recalculate_all_factories() -> void:
     for country in countries_data:
         countries_data[country]["factories"] = 0
@@ -192,8 +197,7 @@ func _recalculate_all_factories() -> void:
     for key in province_data:
         var p = province_data[key]
         var owner = p.get("owner", "")
-        # Считаем готовые заводы только в неоккупированных провинциях, как в экономике
-        if _is_real_country_owner(owner) and p.get("against_occupation", "") == "":
+        if _is_real_country_owner(owner):
             var f_count = int(p.get("factories", 0))
             if countries_data.has(owner):
                 countries_data[owner]["factories"] += f_count
@@ -356,6 +360,15 @@ func capture_province(province_id: int, new_owner: String) -> void:
     _set_owner(province_id, new_owner)
     province_data[province_id]["owner"] = new_owner
 
+    # Владелец провинции сменился (в т.ч. оккупация — оккупант становится owner'ом) —
+    # передаём фабрики провинции напрямую новому владельцу, никакого кэша/пересчёта.
+    var f_count = int(province_data[province_id].get("factories", 0))
+    if f_count > 0:
+        if _is_real_country_owner(old_owner) and countries_data.has(old_owner):
+            countries_data[old_owner]["factories"] = max(0, countries_data[old_owner].get("factories", 0) - f_count)
+        if _is_real_country_owner(new_owner) and countries_data.has(new_owner):
+            countries_data[new_owner]["factories"] = countries_data[new_owner].get("factories", 0) + f_count
+
     # ВАЖНО: вызывать после того, как все поля выше уже обновлены — эмит сигнала
     # ниже может синхронно вызвать код, который что-то стирает из countries_data
     # (например, элиминацию страны), и делать это нужно только когда capture_province
@@ -434,6 +447,9 @@ func liberate_province(province_id: int) -> void:
     province_occupants.erase(province_id)
     province_data[key]["against_occupation"] = ""
 
+    # owner провинции не меняется (это только снятие "полос") — на фабрики,
+    # которые уже считаются за текущим owner'ом, это никак не влияет.
+
     print("[Registry] Оккупация снята с провинции %d" % province_id)
     province_occupied.emit(province_id, "")
 
@@ -464,6 +480,10 @@ func annex_all_occupied_by(occupier: String) -> void:
         province_data[p_id]["core_owner"] = occupier   # аннексия узаконивает нового владельца
         province_occupants.erase(p_id)
         province_occupied.emit(p_id, "")
+
+    # Аннексия только узаконивает уже существующего owner'а (occupier) и убирает
+    # полосы — owner провинции при этом не меняется, значит и фабрики уже
+    # засчитаны occupier'у (см. capture_province), пересчитывать нечего.
 
     print("[Registry] Полосы убраны с %d провинций %s" % [to_annex.size(), occupier])
 
@@ -767,7 +787,7 @@ func _process_economy() -> void:
 
                 # Инкрементируем фабрику напрямую, не трогая остальные 9999 провинций
                 var owner = p.get("owner", "")
-                if owner != "" and p.get("against_occupation", "") == "" and countries_data.has(owner):
+                if owner != "" and countries_data.has(owner):
                     countries_data[owner]["factories"] = countries_data[owner].get("factories", 0) + 1
 
                 # Сигналим карте, что в этой провинции достроился завод
@@ -967,7 +987,6 @@ func start_factory_construction(p_id: int, country: String) -> bool:
     p["factory_queue"].append(0)
     
     active_constructions[p_id] = true # <-- ДОБАВЛЕНО: запоминаем, где идет стройка
-    _factories_dirty = true
     return true
     
     
@@ -989,7 +1008,7 @@ func destroy_factory(p_id: int, amount: int = 1, attacker_country: String = "") 
         var destroyed = min(current_factories, amount)
         p["factories"] -= destroyed
         
-        if _is_real_country_owner(owner) and p.get("against_occupation", "") == "":
+        if _is_real_country_owner(owner):
             if countries_data.has(owner):
                 countries_data[owner]["factories"] = max(0, countries_data[owner].get("factories", 0) - destroyed)
                 
@@ -1026,7 +1045,7 @@ func missile_strike(province_id: int, attacker_country: String = "") -> void:
     var current_factories = int(p.get("factories", 0))
     if current_factories > 0:
         p["factories"] = 0
-        if _is_real_country_owner(owner) and p.get("against_occupation", "") == "":
+        if _is_real_country_owner(owner):
             if countries_data.has(owner):
                 countries_data[owner]["factories"] = max(0, countries_data[owner].get("factories", 0) - current_factories)
                 

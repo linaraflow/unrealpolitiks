@@ -25,6 +25,7 @@ const SAVE_VERSION := 1
 signal save_completed(slot: String)
 signal load_completed(slot: String)
 signal load_failed(slot: String, reason: String)
+signal autosave_completed(slot: String)
 
 var TopMenu: Control
 var balance_label: Label
@@ -32,8 +33,71 @@ var SelectionBox: Control
 
 var settings = preload("res://new_resource.tres")
 
+## Слот, в который игра сохранялась/из которого загружалась последний раз
+## в текущей сессии. "" значит, что за эту сессию игра ещё никуда не
+## сохранялась и не загружалась — тогда автосейв ищет свободный слот сам.
+var current_slot: String = ""
+
+## Счётчик дней с последнего автосохранения (сбрасывается при срабатывании).
+var _autosave_days_accum: int = 0
+
 func _ready() -> void:
     DirAccess.make_dir_recursive_absolute(SAVE_DIR)
+    GameClock.on_day_passed.connect(_on_autosave_day_passed)
+
+## Дёргается каждый раз, когда в игре проходит очередной день.
+func _on_autosave_day_passed(_date = null) -> void:
+    var interval: int = SettingsManager.autosave_interval_days
+    if interval <= 0:
+        _autosave_days_accum = 0
+        return
+
+    _autosave_days_accum += 1
+    if _autosave_days_accum < interval:
+        return
+
+    _autosave_days_accum = 0
+    autosave()
+
+## Автосохранение:
+## — если игра уже сохранялась/загружалась в этой сессии (current_slot не пуст) —
+##   пишем в тот же слот;
+## — если нет — "пустого слота" как такового не существует (см. save_menu.gd:
+##   там это просто карточка с ключом "", а реальное имя генерируется в момент
+##   сохранения) — генерируем новое имя по той же схеме, что и SaveMenu.
+func autosave() -> void:
+    var slot: String = current_slot
+    if slot == "":
+        slot = _generate_new_slot_name()
+
+    if save_game(slot):
+        autosave_completed.emit(slot)
+        print("[SaveManager] Автосохранение выполнено в слот '%s'" % slot)
+
+## "<active_country>_<чч>_<мм>_<сс>" — та же схема, что в save_menu.gd
+## (_generate_new_slot_name), продублирована здесь, т.к. SaveMenu создаётся
+## только по требованию и на момент автосейва её может не быть в дереве.
+## На случай коллизии (сохранение в ту же секунду) добавляем суффикс.
+func _generate_new_slot_name() -> String:
+    var country: String = settings.active_country
+    if country == "":
+        country = "Unknown"
+    var t := Time.get_time_dict_from_system()
+    var base_name := "%s_%02d_%02d_%02d" % [country, t["hour"], t["minute"], t["second"]]
+
+    var slot := base_name
+    var suffix := 2
+    while has_save(slot):
+        slot = "%s_%d" % [base_name, suffix]
+        suffix += 1
+    return slot
+
+## Вызывай при старте НОВОЙ игры (не загрузки), чтобы автосейв не продолжил
+## писать в слот, из которого/в который был последний save/load предыдущей
+## партии — иначе после "Новая игра" автосохранение молча перезапишет чужой слот.
+func reset_session() -> void:
+    current_slot = ""
+    _autosave_days_accum = 0
 
 func _slot_path(slot: String) -> String:
     return SAVE_DIR + slot + ".json"
@@ -132,6 +196,7 @@ func save_game(slot: String) -> bool:
     file.store_string(json_string)
     file.close()
 
+    current_slot = slot
     print("[SaveManager] Игра сохранена в слот '%s'" % slot)
     save_completed.emit(slot)
     return true
@@ -374,6 +439,9 @@ func load_game(slot: String) -> bool:
     map_node.blue.hide()
     
     Global._on_music_finished()
+
+    current_slot = slot
+    _autosave_days_accum = 0  # отсчёт до автосейва начинаем заново от момента загрузки
 
     print("[SaveManager] Игра загружена из слота '%s'" % slot)
     load_completed.emit(slot)

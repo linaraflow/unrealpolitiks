@@ -20,6 +20,8 @@ func load_flag(texture_rect: TextureRect, country_name: String) -> void:
         texture_rect.texture = load("res://assets/flags/unknown.png")
 
 func show_declaration(attacker: String, defender: String) -> void:
+    Global.play("res://audio/sfx/declare_war.ogg", "SFX")
+    
     aggressor_name.text = attacker
     defender_name.text = defender
     casus_label.text = GameClock.get_date_string()

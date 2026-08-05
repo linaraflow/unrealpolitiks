@@ -14,13 +14,8 @@ func _ready() -> void:
 func _process(_delta: float) -> void:
     var c_data = ProvinceRegistry.countries_data.get(settings.active_country, {})
     var products = c_data.get("products", 0.0)
+    var monthly_prod = c_data.get("factories", 0)
     
-    var monthly_prod = 0
-    for key in ProvinceRegistry.province_data:
-        var p = ProvinceRegistry.province_data[key]
-        if p.get("owner", "") == settings.active_country and p.get("against_occupation", "") == "":
-            monthly_prod += p.get("factories", 0)
-            
     # Большой текст продукта и серый мелкий текст производства
     text = "📦 %d [color=#888888][font_size=12]+%d/m[/font_size][/color]" % [int(products), monthly_prod]
 

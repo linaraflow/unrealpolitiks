@@ -22,6 +22,7 @@ func _on_settings_pressed() -> void:
 
 func _on_new_game_pressed() -> void:
     Global._on_music_finished()
+    SaveManager.reset_session()  # новая партия — автосейв не должен писать в слот предыдущей
     get_tree().change_scene_to_file("res://game.tscn")
 
 func _on_continue_pressed() -> void:

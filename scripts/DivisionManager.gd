@@ -240,6 +240,11 @@ func kill_percent_in_province(province_id: int, kill_ratio: float) -> void:
             if sides.has(owner_id):
                 _refresh_combat_hp_manually(province_id, owner_id)
 
+    # Зачисляем потери от ракетного удара в общую статистику войны
+    # (тот же сигнал, что и обычные боевые потери из CombatManager).
+    for owner_id in owners_lost:
+        CombatManager.casualties_inflicted.emit(owner_id, owners_lost[owner_id])
+
     ProvinceRegistry.province_army_changed.emit(province_id)
     reposition_armies_in_province(province_id)
     print("[DivisionManager] Ракетный удар: потери личного состава в провинции ", province_id, " -> ", owners_lost)

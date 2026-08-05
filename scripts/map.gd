@@ -455,6 +455,11 @@ func _handle_right_click(p_id, px, province_info, current_owner):
     
     if distribute_mode:
         return
+        
+    # РЕЖИМ ПЕРЕГОВОРОВ: передаём клик в меню и выходим
+    if settings.negotiation_mode:
+        get_node("/root/Game/CanvasLayer/NegotiationMenu").on_province_clicked(p_id)
+        return
 
     if SelectionManager.has_selection():
         var target_pos = province_centers.get(p_id, to_local(get_global_mouse_position()))
@@ -1261,3 +1266,7 @@ func restart() -> void:
     settings.active_country = ""
     settings.can_draw = false
     blue.show()
+
+    # Сбрасываем "слот текущей сессии" — иначе автосейв после начала новой
+    # партии продолжил бы молча писать в слот от предыдущей.
+    SaveManager.reset_session()

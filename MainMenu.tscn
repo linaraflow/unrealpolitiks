@@ -135,7 +135,7 @@ text = "UNREALPOLITIKS"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.5, 0.5, 0.5, 1)
 theme_override_font_sizes/font_size = 14
-text = "G R A N D   S T R A T E G Y"
+text = "GRAND_STRATEGY"
 
 [node name="Spacer" type="Control" parent="ContentMargin/ContentBox" unique_id=1733849679]
 custom_minimum_size = Vector2(0, 40)
@@ -154,7 +154,7 @@ theme_override_fonts/font = ExtResource("4_qoqlk")
 theme_override_styles/normal = SubResource("ButtonNormal")
 theme_override_styles/pressed = SubResource("ButtonPressed")
 theme_override_styles/hover = SubResource("ButtonHover")
-text = "New game"
+text = "NEW_GAME"
 
 [node name="Continue" type="Button" parent="ContentMargin/ContentBox/MenuList" unique_id=76352830]
 custom_minimum_size = Vector2(0, 46)
