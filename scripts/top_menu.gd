@@ -181,7 +181,7 @@ func _on_uav_label_pressed() -> void:
 
 
 func _update_panel_uav_empty(country_data: Dictionary) -> void:
-    empty_uav_label.text = "UAV programm of " + str(settings.active_country).capitalize()
+    empty_uav_label.text = tr("UAV_PROGRAM_OF_FMT") % tr(str(settings.active_country).to_upper())
     empty_flag_icon.texture = load("res://assets/flags/" + str(settings.active_country) + ".png")
 
 
@@ -246,12 +246,12 @@ func _refresh_order_panel() -> void:
     # Счётчик БПЛА страны всегда выводится в TopPanel/UAVLabel
     uav_label.text = str(int(country_data.get("uav", 0)))
 
-    order_uav_label.text = "UAV of " + country
-    order_produce_label.text = "UAV Production"
+    order_uav_label.text = tr("UAV_OF_FMT") % tr(country.to_upper())
+    order_produce_label.text = tr("UAV_PRODUCTION")
 
-    order_uav_caption.text = "Amount"
-    order_speed_caption.text = "Speed"
-    order_speed_label.text = "%.1f/day" % _order_uav_speed
+    order_uav_caption.text = tr("AMOUNT")
+    order_speed_caption.text = tr("SPEED")
+    order_speed_label.text = tr("PER_DAY_FMT") % _order_uav_speed
 
     if ProvinceRegistry.has_active_uav_order(country):
         _show_active_order(country)
@@ -261,7 +261,7 @@ func _refresh_order_panel() -> void:
 
 ## Состояние "заказа ещё нет" — слайдер активен, можно выбрать количество и оформить заказ
 func _show_new_order_form(country_data: Dictionary) -> void:
-    order_status_label.text = "New Order"
+    order_status_label.text = tr("NEW_ORDER")
 
     order_h_slider.editable = true
     order_button.disabled = false
@@ -276,7 +276,7 @@ func _show_new_order_form(country_data: Dictionary) -> void:
     order_h_slider.step = 1
     order_h_slider.value = 0
 
-    order_real_number_label.text = "of %s" % ProvinceRegistry._format_number(max_uav)
+    order_real_number_label.text = tr("OF_FMT") % ProvinceRegistry._format_number(max_uav)
 
     _update_order_preview(0)
 
@@ -296,7 +296,7 @@ func _show_active_order(country: String) -> void:
     var per_day: float = info["per_day"]
     var produced: int = total - int(ceil(remaining))
 
-    order_status_label.text = "Order In Production"
+    order_status_label.text = tr("ORDER_IN_PRODUCTION")
     order_slider_number_label.text = str(total)
     order_h_slider.max_value = max(total, 1)
     order_h_slider.value = total - remaining
@@ -309,7 +309,7 @@ func _show_active_order(country: String) -> void:
     var days_left: float = 0.0
     if per_day > 0.0:
         days_left = remaining / per_day
-    order_time_label.text = "%.0f days" % ceil(days_left)
+    order_time_label.text = tr("DAYS_FMT") % ceil(days_left)
 
     order_real_number_label.text = ""
     order_price_label.text = ""
@@ -329,10 +329,10 @@ func _update_order_preview(value: float) -> void:
     var days: float = 0.0
     if _order_uav_speed > 0.0:
         days = amount / _order_uav_speed
-    order_time_label.text = "%.0f days" % ceil(days)
+    order_time_label.text = tr("DAYS_FMT") % ceil(days)
 
     var price: float = amount * _order_uav_cost
-    order_price_label.text = "📦 " + ProvinceRegistry._format_number(price) + " products"
+    order_price_label.text = tr("PRICE_PRODUCTS_FMT") % ProvinceRegistry._format_number(price)
 
 
 func _on_order_button_pressed() -> void:
@@ -379,7 +379,7 @@ func _on_missile_label_pressed() -> void:
 
 
 func _update_panel_missile_empty(country_data: Dictionary) -> void:
-    empty_missile_label.text = "Missile programm of " + str(settings.active_country).capitalize()
+    empty_missile_label.text = tr("MISSILE_PROGRAM_OF_FMT") % tr(str(settings.active_country).to_upper())
     empty_missile_flag_icon.texture = load("res://assets/flags/" + str(settings.active_country) + ".png")
 
 
@@ -412,12 +412,12 @@ func _refresh_missile_order_panel() -> void:
     # Счётчик ракет страны всегда выводится в TopPanel/MissileLabel
     missile_label.text = str(int(country_data.get("missile", 0.0)))
 
-    order_missile_label.text = "Missile of " + country
-    order_missile_produce_label.text = "Missile Production"
+    order_missile_label.text = tr("MISSILE_OF_FMT") % tr(country.to_upper())
+    order_missile_produce_label.text = tr("MISSILE_PRODUCTION")
 
-    order_missile_caption.text = "Amount"
-    order_missile_speed_caption.text = "Speed"
-    order_missile_speed_label.text = "%.2f/month" % _order_missile_speed
+    order_missile_caption.text = tr("AMOUNT")
+    order_missile_speed_caption.text = tr("SPEED")
+    order_missile_speed_label.text = tr("PER_MONTH_FMT") % _order_missile_speed
 
     if ProvinceRegistry.has_active_missile_order(country):
         _show_active_missile_order(country)
@@ -427,7 +427,7 @@ func _refresh_missile_order_panel() -> void:
 
 ## Состояние "заказа ещё нет" — слайдер активен, можно выбрать количество и оформить заказ
 func _show_new_missile_order_form(country_data: Dictionary) -> void:
-    order_missile_status_label.text = "New Order"
+    order_missile_status_label.text = tr("NEW_ORDER")
 
     order_missile_h_slider.editable = true
     order_missile_button.disabled = false
@@ -442,7 +442,7 @@ func _show_new_missile_order_form(country_data: Dictionary) -> void:
     order_missile_h_slider.step = 1
     order_missile_h_slider.value = 0
 
-    order_missile_real_number_label.text = "of %s" % ProvinceRegistry._format_number(max_missile)
+    order_missile_real_number_label.text = tr("OF_FMT") % ProvinceRegistry._format_number(max_missile)
 
     _update_missile_order_preview(0)
 
@@ -464,7 +464,7 @@ func _show_active_missile_order(country: String) -> void:
     var per_month: float = info["per_month"]
     var produced: int = total - int(ceil(remaining))
 
-    order_missile_status_label.text = "Order In Production"
+    order_missile_status_label.text = tr("ORDER_IN_PRODUCTION")
     order_missile_slider_number_label.text = str(total)
     order_missile_h_slider.max_value = max(total, 1)
     order_missile_h_slider.value = total - remaining
@@ -477,7 +477,7 @@ func _show_active_missile_order(country: String) -> void:
     var months_left: float = 0.0
     if per_month > 0.0:
         months_left = remaining / per_month
-    order_missile_time_label.text = "%.1f months" % months_left
+    order_missile_time_label.text = tr("MONTHS_FMT") % months_left
 
     order_missile_real_number_label.text = ""
     order_missile_price_label.text = ""
@@ -497,10 +497,10 @@ func _update_missile_order_preview(value: float) -> void:
     var months: float = 0.0
     if _order_missile_speed > 0.0:
         months = amount / _order_missile_speed
-    order_missile_time_label.text = "%.1f months" % months
+    order_missile_time_label.text = tr("MONTHS_FMT") % months
 
     var price: float = amount * _order_missile_cost
-    order_missile_price_label.text = "📦 " + ProvinceRegistry._format_number(price) + " products"
+    order_missile_price_label.text = tr("PRICE_PRODUCTS_FMT") % ProvinceRegistry._format_number(price)
 
 
 func _on_order_missile_button_pressed() -> void:

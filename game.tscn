@@ -24,6 +24,7 @@
 [ext_resource type="Script" uid="uid://vkd6brrqe1wh" path="res://scripts/war_banner.gd" id="20_36jdj"]
 [ext_resource type="PackedScene" uid="uid://bwgu781m4abj7" path="res://SaveMenu.tscn" id="21_f1jbl"]
 [ext_resource type="Script" uid="uid://4krs8r4ah56r" path="res://scripts/camera_2d.gd" id="21_xfvwf"]
+[ext_resource type="Texture2D" uid="uid://dcmrxdui3oogp" path="res://heavy_metal2.png" id="23_vaj68"]
 
 [sub_resource type="CompressedTexture2D" id="CompressedTexture2D_iotsf"]
 
@@ -130,6 +131,7 @@ offset_left = 0.23999977
 offset_top = -0.15999985
 offset_right = 300.24
 offset_bottom = 878.84
+mouse_filter = 2
 theme_override_constants/separation = 6
 
 [node name="CountryMenu" parent="CanvasLayer/VBoxContainer" unique_id=1494951920 instance=ExtResource("6_mfdv2")]
@@ -223,7 +225,7 @@ theme_override_fonts/font = ExtResource("11_qhcbd")
 theme_override_styles/normal = SubResource("StyleBoxFlat_e8heu")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_rvswv")
 theme_override_styles/hover = SubResource("StyleBoxFlat_boyg6")
-text = "Choose Country"
+text = "CHOOSE_COUNTRY"
 script = ExtResource("13_i2p71")
 settings = ExtResource("6_ryrav")
 
@@ -233,6 +235,11 @@ visible = false
 
 [node name="SaveMenu" parent="CanvasLayer" unique_id=56621000 instance=ExtResource("21_f1jbl")]
 visible = false
+
+[node name="HeavyMetal2" type="Sprite2D" parent="CanvasLayer" unique_id=1250706083]
+position = Vector2(49.749992, 1030.25)
+scale = Vector2(0.09949998, 0.099499896)
+texture = ExtResource("23_vaj68")
 
 [node name="WarBanner" type="CanvasLayer" parent="." unique_id=317580348]
 script = ExtResource("20_36jdj")

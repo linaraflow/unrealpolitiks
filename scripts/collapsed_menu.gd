@@ -26,11 +26,11 @@ func _on_country_lost_all_provinces(country: String) -> void:
         return
     if visible:
         return
-    _show_menu(country, "", "", "Territorial collapse")
+    _show_menu(country, "", "", tr("CAUSE_TERRITORIAL_COLLAPSE"))
 
 
 func update(cause):
-    country_name_label.text = settings.active_country
+    country_name_label.text = tr(str(settings.active_country).to_upper())
     cause_label.text = cause
     date_label.text = get_date_new(GameClock.get_date())
     days_in_power_label.text = ProvinceRegistry.get_days_in_power()
@@ -46,7 +46,7 @@ func get_date_new(date_old):
     var month: String
     var month_num: int = date_old["month"]
     if month_num >= 1 and month_num <= 12:
-        month = GameClock.MONTH_NAMES[month_num - 1]
+        month = tr(GameClock.MONTH_KEYS[month_num - 1])
     
     return month + " " + str(date_old["day"]) + ", " + str(date_old["year"])
     

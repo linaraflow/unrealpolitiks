@@ -2,11 +2,13 @@ extends Control
 
 @export var settings: GameSettings
 
+@onready var caption = $Panel/DivisionsLabel
 @onready var armies_list = $Panel/LandDivisionsPanel/ScrollContainer/ArmiesList
 @onready var recruit_btn = get_node("/root/Game/CanvasLayer/ProvinceMenu/Panel/RecruitButton")
 
 func _ready() -> void:
     SelectionManager.DivisionMenu = self
+    caption.text = "🪖 " + tr("DIVISIONS")
     hide()
     
 func update_info(data: Dictionary) -> void:
@@ -35,7 +37,7 @@ func update_info(data: Dictionary) -> void:
 
     if country_soldiers.is_empty():
         var no_divisions_label = Label.new()
-        no_divisions_label.text = "No divisions"
+        no_divisions_label.text = tr("NO_DIVISIONS")
         no_divisions_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
         armies_list.add_child(no_divisions_label)
         return

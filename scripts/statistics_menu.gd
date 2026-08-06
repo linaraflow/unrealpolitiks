@@ -253,6 +253,12 @@ func _refresh_wars() -> void:
         _fill_war_entry(entry, wars[i])
 
 
+## Приводит имя страны (owner_id) к виду ключа локализации CTRY_<...>,
+## как в DivisionManager.gd, — чтобы переиспользовать один и тот же CSV.
+func _ctry_key(owner_id: String) -> String:
+    return owner_id.replace(" ", "_").replace("'", "").replace("-", "_")
+
+
 func _fill_war_entry(entry: Control, war: Dictionary) -> void:
     var again_label = entry.find_child("AgainLabel", true, false)
     var day_label = entry.find_child("DayLabel", true, false)
@@ -261,9 +267,9 @@ func _fill_war_entry(entry: Control, war: Dictionary) -> void:
     var negotiation_btn = entry.find_child("Negotiation", true, false)
 
     if again_label:
-        again_label.text = "Against %s" % war["enemy"]
+        again_label.text = tr("WAR_AGAINST_FMT") % tr("CTRY_" + _ctry_key(war["enemy"]))
     if day_label:
-        day_label.text = "%d days" % war["days"]
+        day_label.text = tr("WAR_DAYS_FMT") % war["days"]
     if your_label:
         your_label.text = _format_number(war["my_losses"])
     if enemy_label:

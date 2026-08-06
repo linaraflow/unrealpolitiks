@@ -92,7 +92,7 @@ offset_bottom = 11.5
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_fonts/font = ExtResource("2_526u6")
-text = "Missle Launch Menu"
+text = "MISSILE_LAUNCH_MENU"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -109,7 +109,7 @@ grow_vertical = 2
 theme_override_fonts/font = ExtResource("2_526u6")
 theme_override_font_sizes/font_size = 12
 theme_override_styles/normal = SubResource("StyleBoxFlat_p4le1")
-text = "Leave"
+text = "LEAVE"
 
 [node name="LaunchButton" type="Button" parent="." unique_id=1552816266]
 custom_minimum_size = Vector2(0, 46)
@@ -141,4 +141,4 @@ stretch_mode = 3
 layout_mode = 2
 theme_override_colors/font_color = Color(0.92941177, 0.6313726, 0, 1)
 theme_override_fonts/font = ExtResource("2_526u6")
-text = "Launch"
+text = "LAUNCH"

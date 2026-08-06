@@ -1,7 +1,574 @@
-key,en,ru
-GRAND_STRATEGY,G R A N D   S T R A T E G Y,Г Л О Б А Л Ь Н А Я   С Т Р А Т Е Г И Я
-NEW_GAME,New game,Новая игра
-CONTINUE,Continue,Продолжить
-LOAD_GAME,Load game,Загрузить игру
-SETTINGS,Settings,Настройки
-EXIT,Exit,Выход
+key,en,ru,de
+GRAND_STRATEGY,G R A N D   S T R A T E G Y,Г Л О Б А Л Ь Н А Я   С Т Р А Т Е Г И Я,G R A N D   S T R A T E G I E
+NEW_GAME,New game,Новая игра,Neues Spiel
+CONTINUE,Continue,Продолжить,Fortsetzen
+LOAD_GAME,Load game,Загрузить игру,Spiel laden
+SETTINGS,Settings,Настройки,Einstellungen
+EXIT,Exit,Выход,Beenden
+SETTINGS_TITLE,Settings,Настройки,Einstellungen
+TAB_GRAPHICS,Graphics,Графика,Grafik
+TAB_INTERFACE,Interface,Интерфейс,Benutzeroberfläche
+TAB_GAMEPLAY,Gameplay,Игровой процесс,Spielmechanik
+TAB_SOUND,Sound,Звук,Ton
+TAB_CONTROLS,Controls,Управление,Steuerung
+BTN_RESET,Reset,Сбросить,Zurücksetzen
+BTN_SAVE,Save,Сохранить,Speichern
+BTN_BACK,Back,Назад,Zurück
+GRAPHICS_SCREEN_RES,Screen resolution,Разрешение экрана,Bildschirmauflösung
+GRAPHICS_WINDOW_MODE,Window mode,Оконный режим,Fenstermodus
+GRAPHICS_WINDOW_FULLSCREEN,Fullscreen,Полноэкранный,Vollbild
+GRAPHICS_VSYNC,Vertical sync (VSync),Вертикальная синхронизация,Vertikale Synchronisation (VSync)
+GRAPHICS_FPS_LIMIT,FPS limit,Ограничение FPS,FPS-Begrenzung
+GRAPHICS_UNLIMITED,Unlimited,Без ограничений,Unbegrenzt
+INTERFACE_UI_SCALE,UI scale,Масштаб интерфейса,UI-Skalierung
+INTERFACE_LANGUAGE,Interface language,Язык интерфейса,Sprache der Benutzeroberfläche
+GAMEPLAY_AUTOPAUSE_WAR,Auto-pause on declaration of war,Автопауза при объявлении войны,Automatische Pause bei Kriegserklärung
+GAMEPLAY_AUTOSAVE,Autosave (days\ 0 = off),Автосохранение (дни\ 0 = выкл),Automatisches Speichern (Tage\ 0 = aus)
+SOUND_MASTER,Master volume,Общая громкость,Gesamtlautstärke
+SOUND_MUSIC,Music,Музыка,Musik
+SOUND_EFFECTS,Sound effects,Звуковые эффекты,Soundeffekte
+SOUND_UI,UI sounds,Звуки интерфейса,UI-Sounds
+KEYBIND_HEADER,Key bindings,Назначение клавиш,Tastenbelegung
+KEYBIND_ZOOM_IN,Zoom in,Приблизить,Vergrößern
+KEYBIND_ZOOM_OUT,Zoom out,Отдалить,Verkleinern
+KEYBIND_PAUSE,Pause,Пауза,Pause
+KEYBIND_BUILD_FACTORY,Build factory,Построить фабрику,Fabrik bauen
+KEYBIND_SUMMON_TROOPS,Summon troops,Призвать войска,Truppen ausheben
+KEYBIND_SUMMON_MAX_TROOPS,Summon max troops in province,Призвать макс. войск в провинции,Max. Truppen in Provinz ausheben
+KEYBIND_HIDE_UI,Hide UI,Скрыть интерфейс,UI ausblenden
+KEYBIND_HIDE_DIVISIONS,Hide all divisions,Скрыть все дивизии,Alle Divisionen ausblenden
+KEYBIND_HIDE_COUNTRY_LABELS,Hide country labels,Скрыть названия стран,Länderbezeichnungen ausblenden
+INPUT_WHEEL_UP,Wheel Up,Колёсико вверх,Rad nach oben
+INPUT_WHEEL_DOWN,Wheel Down,Колёсико вниз,Rad nach unten
+INPUT_SPACE,Space,Пробел,Leertaste
+INPUT_TAB,Tab,Tab,Tab
+PRESS_KEY, Press a key..., Нажмите кнопку..., Taste drücken...
+WINDOW_MODE, Window mode, Режим окна, Fenstermodus
+WINDOWED, Windowed, Оконный, Fenster
+FULLSCREEN, Fullscreen, Полноэкранный, Vollbild
+BORDERLESS_WINDOW, Borderless window, Окно без рамки, Randloses Fenster
+RESET_SETTINGS_BUTTON, Reset, Сбросить, Zurücksetzen
+SAVE_SETTINGS_BUTTON, Save, Сохранить, Speichern
+BACK_SETTINGS_BUTTON, Back, Назад, Zurück
+AFGHANISTAN,Afghanistan,Афганистан,Afghanistan
+ALBANIA,Albania,Албания,Albanien
+ALGERIA,Algeria,Алжир,Algerien
+AMERICAN VIRGIN ISLANDS,American Virgin Islands,Американские Виргинские Острова,Amerikanische Jungferninseln
+ANGOLA,Angola,Ангола,Angola
+ANGUILLA,Anguilla,Ангилья,Anguilla
+ANTIGUA AND BARBUDA,Antigua and Barbuda,Антигуа и Барбуда,Antigua und Barbuda
+ARGENTINA,Argentina,Аргентина,Argentinien
+ARMENIA,Armenia,Армения,Armenien
+ARUBA,Aruba,Аруба,Aruba
+AUSTRALIA,Australia,Австралия,Australien
+AUSTRIA,Austria,Австрия,Österreich
+AZERBAIJAN,Azerbaijan,Азербайджан,Aserbaidschan
+BAHAMAS,Bahamas,Багамы,Bahamas
+BANGLADESH,Bangladesh,Бангладеш,Bangladesch
+BARBADOS,Barbados,Барбадос,Barbados
+BELARUS,Belarus,Беларусь,Belarus
+BELGIUM,Belgium,Бельгия,Belgien
+BELICE,Belice,Белиз,Belize
+BENIN,Benin,Бенин,Benin
+BHUTAN,Bhutan,Бутан,Bhutan
+BOLIVIA,Bolivia,Боливия,Bolivien
+BONAIRE,Bonaire,Бонайре,Bonaire
+BOSNIA,Bosnia,Босния,Bosnien
+BOTSWANA,Botswana,Ботсвана,Botsuana
+BRAZIL,Brazil,Бразилия,Brasilien
+BRITISH VIRGIN ISLANDS,British Virgin Islands,Британские Виргинские Острова,Britische Jungferninseln
+BRUNEI,Brunei,Бруней,Brunei
+BULGARIA,Bulgaria,Болгария,Bulgarien
+BURKINA FASO,Burkina Faso,Буркина-Фасо,Burkina Faso
+BURUNDI,Burundi,Бурунди,Burundi
+CAMBODIA,Cambodia,Камбоджа,Kambodscha
+CAMEROON,Cameroon,Камерун,Kamerun
+CANADA,Canada,Канада,Kanada
+CENTRAL AFRICAN REPUBLIC,Central African Republic,Центральноафриканская Республика,Zentralafrikanische Republik
+CHAD,Chad,Чад,Tschad
+CHILE,Chile,Чили,Chile
+CHINA,China,Китай,China
+COLUMBIA,Columbia,Колумбия,Kolumbien
+COMOROS,Comoros,Коморы,Komoren
+COSTA RICA,Costa Rica,Коста-Рика,Costa Rica
+COTE D'IVOIRE,Cote d'Ivoire,Кот-д’Ивуар,Elfenbeinküste
+CROATIA,Croatia,Хорватия,Kroatien
+CUBA,Cuba,Куба,Kuba
+CURACAO,Curacao,Кюрасао,Curaçao
+CYPRUS,Cyprus,Кипр,Zypern
+CZECH REPUBLIC,Czech Republic,Чехия,Tschechien
+DR CONGO,DR Congo,ДР Конго,DR Kongo
+DENMARK,Denmark,Дания,Dänemark
+DJIBOUTI,Djibouti,Джибути,Dschibuti
+DOMINICA,Dominica,Доминика,Dominica
+DOMINICAN REPUBLIC,Dominican Republic,Доминиканская Республика,Dominikanische Republik
+EAST TIMOR,East Timor,Восточный Тимор,Osttimor
+ECUADOR,Ecuador,Эквадор,Ecuador
+EGYPT,Egypt,Египет,Ägypten
+EQUATORIAL GUINEA,Equatorial Guinea,Экваториальная Гвинея,Äquatorialguinea
+ERITREA,Eritrea,Эритрея,Eritrea
+ESTONIA,Estonia,Эстония,Estland
+ETHIOPIA,Ethiopia,Эфиопия,Äthiopien
+FAROE ISLANDS,Faroe Islands,Фарерские острова,Färöer-Inseln
+FIJI,Fiji,Фиджи,Fidschi
+FINLAND,Finland,Финляндия,Finnland
+FRANCE,France,Франция,Frankreich
+FRENCH GUIANA,French Guiana,Французская Гвиана,Französisch-Guayana
+GABON,Gabon,Габон,Gabun
+GAMBIA,Gambia,Гамбия,Gambia
+GEORGIA,Georgia,Грузия,Georgien
+GERMANY,Germany,Германия,Deutschland
+GHANA,Ghana,Гана,Ghana
+GREECE,Greece,Греция,Griechenland
+GREENLAND,Greenland,Гренландия,Grönland
+GRENADA,Grenada,Гренада,Grenada
+GUADELOUPE,Guadeloupe,Гваделупа,Guadeloupe
+GUATEMALA,Guatemala,Гватемала,Guatemala
+GUINEA,Guinea,Гвинея,Guinea
+GUINEA-BISSAU,Guinea-Bissau,Гвинея-Бисау,Guinea-Bissau
+GUYANA,Guyana,Гайана,Guyana
+HAITI,Haiti,Гаити,Haiti
+HONDURAS,Honduras,Гондурас,Honduras
+HUNGARY,Hungary,Венгрия,Ungarn
+ICELAND,Iceland,Исландия,Island
+INDIA,India,Индия,Indien
+INDONESIA,Indonesia,Индонезия,Indonesien
+IRAN,Iran,Иран,Iran
+IRAQ,Iraq,Ирак,Irak
+IRELAND,Ireland,Ирландия,Irland
+ISRAEL,Israel,Израиль,Israel
+ITALY,Italy,Италия,Italien
+JAMAICA,Jamaica,Ямайка,Jamaika
+JAPAN,Japan,Япония,Japan
+JORDAN,Jordan,Иордания,Jordanien
+KAZAKHSTAN,Kazakhstan,Казахстан,Kasachstan
+KENYA,Kenya,Кения,Kenia
+KIRGIZISTAN,Kirgizistan,Киргизия,Kirgistan
+KONGO,Kongo,Конго,Kongo
+KOSOVO,Kosovo,Косово,Kosovo
+KUWAIT,Kuwait,Кувейт,Kuwait
+LAOS,Laos,Лаос,Laos
+LATVIA,Latvia,Латвия,Lettland
+LESOTHO,Lesotho,Лесото,Lesotho
+LIBAN,Liban,Ливан,Libanon
+LIBERIA,Liberia,Либерия,Liberia
+LIBYA,Libya,Ливия,Libyen
+LITHUANIA,Lithuania,Литва,Litauen
+LUXEMBOURG,Luxembourg,Люксембург,Luxemburg
+MADAGASCAR,Madagascar,Мадагаскар,Madagaskar
+MALAWI,Malawi,Малави,Malawi
+MALAYSIA,Malaysia,Малайзия,Malaysia
+MALDIVES,Maldives,Мальдивы,Malediven
+MALI,Mali,Мали,Mali
+MALTA,Malta,Мальта,Malta
+MAROKASH,Marokash,Марокко,Marokko
+MARTINIQUE,Martinique,Мартиника,Martinique
+MAURITANIA,Mauritania,Мавритания,Mauretanien
+MEXICO,Mexico,Мексика,Mexiko
+MICRONESIA,Micronesia,Микронезия,Mikronesien
+MOLDOVA,Moldova,Молдавия,Moldau
+MONGOLIA,Mongolia,Монголия,Mongolei
+MONTENEGRO,Montenegro,Черногория,Montenegro
+MOZAMBIQUE,Mozambique,Мозамбик,Mosambik
+MYANMAR,Myanmar,Мьянма,Myanmar
+NAMIBIA,Namibia,Намибия,Namibia
+NEPAL,Nepal,Непал,Nepal
+NETHERLANDS,Netherlands,Нидерланды,Niederlande
+NEW ZEALAND,New Zealand,Новая Зеландия,Neuseeland
+NICARAGUA,Nicaragua,Никарагуа,Nicaragua
+NIGER,Niger,Нигер,Niger
+NIGERIA,Nigeria,Нигерия,Nigeria
+NORTH KOREA,North Korea,Северная Корея,Nordkorea
+NORTH MACEDONIA,North Macedonia,Северная Македония,Nordmazedonien
+NORWAY,Norway,Норвегия,Norwegen
+OMAN,Oman,Оман,Oman
+PAKISTAN,Pakistan,Пакистан,Pakistan
+PALESTINE,Palestine,Палестина,Palästina
+PANAMA,Panama,Панама,Panama
+PAPUA NEW GUINEA,Papua New Guinea,Папуа — Новая Гвинея,Papua-Neuguinea
+PARAGUAY,Paraguay,Парагвай,Paraguay
+PERU,Peru,Перу,Peru
+PHILIPPINES,Philippines,Филиппины,Philippinen
+POLAND,Poland,Польша,Polen
+PORTUGAL,Portugal,Португалия,Portugal
+PUERTO RICO,Puerto Rico,Пуэрто-Рико,Puerto Rico
+QATAR,Qatar,Катар,Katar
+REUNION,Reunion,Реюньон,Réunion
+ROMANIA,Romania,Румыния,Rumänien
+RUSSIA,Russia,Россия,Russland
+RWANDA,Rwanda,Руанда,Ruanda
+SAINT KITTS AND NEVIS,Saint Kitts and Nevis,Сент-Китс и Невис,St. Kitts und Nevis
+SAINT LUCIA,Saint Lucia,Сент-Люсия,St. Lucia
+SAINT VINCENT AND THE GRENADINES,Saint Vincent and the Grenadines,Сент-Винсент и Гренадины,St. Vincent und die Grenadinen
+SALVADOR,Salvador,Сальвадор,El Salvador
+SAUDI ARABIA,Saudi Arabia,Саудовская Аравия,Saudi-Arabien
+SENEGAL,Senegal,Сенегал,Senegal
+SERBIA,Serbia,Сербия,Serbien
+SEYCHELLES,Seychelles,Сейшельские Острова,Seychellen
+SIERRA LEONE,Sierra Leone,Сьерра-Леоне,Sierra Leone
+SLOVAKIA,Slovakia,Словакия,Slowakei
+SLOVENIA,Slovenia,Словения,Slowenien
+SOLOMON ISLANDS,Solomon Islands,Соломоновы Острова,Salomonen
+SOMALIA,Somalia,Сомали,Somalia
+SOUTH AFRICA,South Africa,ЮАР,Südafrika
+SOUTH KOREA,South Korea,Южная Корея,Südkorea
+SOUTH SUDAN,South Sudan,Южный Судан,Südsudan
+SPAIN,Spain,Испания,Spanien
+SRI LANKA,Sri Lanka,Шри-Ланка,Sri Lanka
+SUDAN,Sudan,Судан,Sudan
+SURINAME,Suriname,Суринам,Suriname
+SWAZILAND,Swaziland,Свазиленд,Swasiland
+SWEDEN,Sweden,Швеция,Schweden
+SWITZERLAND,Switzerland,Швейцария,Schweiz
+SYRIA,Syria,Сирия,Syrien
+TAIWAN,Taiwan,Тайвань,Taiwan
+TAJIKISTAN,Tajikistan,Таджикистан,Tadschikistan
+TANZANIA,Tanzania,Танзания,Tansania
+THAILAND,Thailand,Таиланд,Thailand
+TOGO,Togo,Того,Togo
+TRINIDAD AND TOBAGO,Trinidad and Tobago,Тринидад и Тобаго,Trinidad und Tobago
+TUNIS,Tunis,Тунис,Tunesien
+TURKEY,Turkey,Турция,Türkei
+TURKMENISTAN,Turkmenistan,Туркменистан,Turkmenistan
+UAE,UAE,ОАЭ,VAE
+UGANDA,Uganda,Уганда,Uganda
+UKRAINE,Ukraine,Украина,Ukraine
+UNITED KINGDOM,United Kingdom,Великобритания,Vereinigtes Königreich
+UNITED STATES,United States,Соединённые Штаты,Vereinigte Staaten
+URUGUAY,Uruguay,Уругвай,Uruguay
+UZBEKISTAN,Uzbekistan,Узбекистан,Usbekistan
+VENEZUELA,Venezuela,Венесуэла,Venezuela
+VIETNAM,Vietnam,Вьетнам,Vietnam
+YEMEN,Yemen,Йемен,Jemen
+ZAMBIA,Zambia,Замбия,Sambia
+ZIMBABWE,Zimbabwe,Зимбабве,Simbabwe
+CHOOSE_COUNTRY,Choose Country,Выберите страну,Land auswählen
+M,m,м,m
+PROVINCES,Provinces,Провинций,Provinzen
+POPULATION,Population,Население,Bevölkerung
+GDP,GDP,ВВП,BIP
+STABILITY,Stability,Стабильность,Stabilität
+WAR_EXHAUSTION,War exhaustion, Военная усталось,Kriegsmüdigkeit
+SANCTIONS,Sanctions,Санкции,Sanktionen
+RELATIONS,Relations,Отношения,Beziehungen
+IMPOSE,Impose,Улучшить,Verbessern
+WORSEN,Worsen,Ухудшить,Verschlechtern
+MAKE_PEACE,Make peace,Заключить мир,Frieden schließen
+DO_SANCTIONS,Sanctions,Наложить санкции,Sanktionen verhängen
+DECLARE_WAR,Declare war,Объявить войну,Krieg erklären
+CHOOSE_IDEOLOGY,Choose ideology,Выберите идеалогию,Ideologie wählen
+CHANGE,Change,Сменить,Ändern
+CLOSE,Close,Закрыть,Schließen
+IDEOLOGY,Ideology,Идеалогия,Ideologie
+LIBERALISM,liberalism,либерализм,Liberalismus
+PARLIAMENTARY_REPUBLIC,parliamentary_republic,парламентская республика,parlamentarische Republik
+MONARCHY,monarchy,монархия,Monarchie
+NEO_NAZISM,neo_nazism,неонацизм,Neonazismus
+FASCISM,fascism,фашизм,Faschismus
+SOCIALISM,socialism,социализм,Sozialismus
+COMMUNISM,communism,коммунизм,Kommunismus
+DICTATORSHIP,dictatorship,диктатура,Diktatur
+ISLAMIC_REPUBLIC,islamic_republic,исламская республика,islamische Republik
+MILITARY_JUNTA,military_junta,военная хунта,Militärjunta
+OLIGARCHY,oligarchy,олигархия,Oligarchie
+CHANGE_IDEOLOGY,Change ideology,Сменить идеалогию,Ideologie ändern
+FACTORIES,factoris,фабрик,Fabriken
+FACTORY_1,factory,фабрика,Fabrik
+FACTORY_2,factories,фабрики,Fabriken
+FACTORY_5,factories,фабрик,Fabriken
+RECRUIT_TROOPS,Recruit troops,Призвать войска,Truppen rekrutieren
+BUILD_FACOTRY,Build a factory,Построить фабрику,Eine Fabrik bauen
+TROOPS,Troops,Войска,Truppen
+COST,Cost,Цена,Kosten
+CONFIRM,Confirm,Подтвердить,Bestätigen
+AI_ARMY,AI Army,ИИ Армия,KI-Armee
+SELL,sell,продать,verkaufen
+SELL_ALL,sell all,продать всё,alles verkaufen
+key,en,ru,de
+ARMY_NAME_FMT,%d Army of %s,%d-ая армия %s,%d. Armee von %s
+CTRY_Afghanistan,Afghanistan,Афганистана,Afghanistan
+CTRY_Albania,Albania,Албании,Albanien
+CTRY_Algeria,Algeria,Алжира,Algerien
+CTRY_American_Virgin_Islands,American Virgin Islands,Американских Виргинских островов,Amerikanische Jungferninseln
+CTRY_Angola,Angola,Анголы,Angola
+CTRY_Anguilla,Anguilla,Ангильи,Anguilla
+CTRY_Antigua_and_Barbuda,Antigua and Barbuda,Антигуа и Барбуды,Antigua und Barbuda
+CTRY_Argentina,Argentina,Аргентины,Argentinien
+CTRY_Armenia,Armenia,Армении,Armenien
+CTRY_Aruba,Aruba,Арубы,Aruba
+CTRY_Australia,Australia,Австралии,Australien
+CTRY_Austria,Austria,Австрии,Österreich
+CTRY_Azerbaijan,Azerbaijan,Азербайджана,Aserbaidschan
+CTRY_Bahamas,Bahamas,Багамских Островов,Bahamas
+CTRY_Bangladesh,Bangladesh,Бангладеш,Bangladesch
+CTRY_Barbados,Barbados,Барбадоса,Barbados
+CTRY_Belarus,Belarus,Беларуси,Belarus
+CTRY_Belgium,Belgium,Бельгии,Belgien
+CTRY_Belice,Belice,Белиза,Belize
+CTRY_Benin,Benin,Бенина,Benin
+CTRY_Bhutan,Bhutan,Бутана,Bhutan
+CTRY_Bolivia,Bolivia,Боливии,Bolivien
+CTRY_Bonaire,Bonaire,Бонэйра,Bonaire
+CTRY_Bosnia,Bosnia,Боснии,Bosnien
+CTRY_Botswana,Botswana,Ботсваны,Botsuana
+CTRY_Brazil,Brazil,Бразилии,Brasilien
+CTRY_British_Virgin_Islands,British Virgin Islands,Британских Виргинских островов,Britische Jungferninseln
+CTRY_Brunei,Brunei,Брунея,Brunei
+CTRY_Bulgaria,Bulgaria,Болгарии,Bulgarien
+CTRY_Burkina_Faso,Burkina Faso,Буркина-Фасо,Burkina Faso
+CTRY_Burundi,Burundi,Бурунди,Burundi
+CTRY_Cambodia,Cambodia,Камбоджи,Kambodscha
+CTRY_Cameroon,Cameroon,Камеруна,Kamerun
+CTRY_Canada,Canada,Канады,Kanada
+CTRY_Central_African_Republic,Central African Republic,Центральноафриканской Республики,Zentralafrikanische Republik
+CTRY_Chad,Chad,Чада,Tschad
+CTRY_Chile,Chile,Чили,Chile
+CTRY_China,China,Китая,China
+CTRY_Columbia,Columbia,Колумбии,Kolumbien
+CTRY_Comoros,Comoros,Коморских Островов,Komoren
+CTRY_Costa_Rica,Costa Rica,Коста-Рики,Costa Rica
+CTRY_Cote_dIvoire,Cote d'Ivoire,Кот-д’Ивуара,Elfenbeinküste
+CTRY_Croatia,Croatia,Хорватии,Kroatien
+CTRY_Cuba,Cuba,Кубы,Kuba
+CTRY_Curacao,Curacao,Кюрасао,Curaçao
+CTRY_Cyprus,Cyprus,Кипра,Zypern
+CTRY_Czech_Republic,Czech Republic,Чехии,Tschechien
+CTRY_DR_Congo,DR Congo,ДР Конго,DR Kongo
+CTRY_Denmark,Denmark,Дании,Dänemark
+CTRY_Djibouti,Djibouti,Джибути,Dschibuti
+CTRY_Dominica,Dominica,Доминики,Dominica
+CTRY_Dominican_Republic,Dominican Republic,Доминиканской Республики,Dominikanische Republik
+CTRY_East_Timor,East Timor,Восточного Тимора,Osttimor
+CTRY_Ecuador,Ecuador,Эквадора,Ecuador
+CTRY_Egypt,Egypt,Египта,Ägypten
+CTRY_Equatorial_Guinea,Equatorial Guinea,Экваториальной Гвинеи,Äquatorialguinea
+CTRY_Eritrea,Eritrea,Эритреи,Eritrea
+CTRY_Estonia,Estonia,Эстонии,Estland
+CTRY_Ethiopia,Ethiopia,Эфиопии,Äthiopien
+CTRY_Faroe_Islands,Faroe Islands,Фарерских Островов,Färöer-Inseln
+CTRY_Fiji,Fiji,Фиджи,Fidschi
+CTRY_Finland,Finland,Финляндии,Finnland
+CTRY_France,France,Франции,Frankreich
+CTRY_French_Guiana,French Guiana,Французской Гвианы,Französisch-Guayana
+CTRY_Gabon,Gabon,Габона,Gabun
+CTRY_Gambia,Gambia,Гамбии,Gambia
+CTRY_Georgia,Georgia,Грузии,Georgien
+CTRY_Germany,Germany,Германии,Deutschland
+CTRY_Ghana,Ghana,Ганы,Ghana
+CTRY_Greece,Greece,Греции,Griechenland
+CTRY_Greenland,Greenland,Гренландии,Grönland
+CTRY_Grenada,Grenada,Гренады,Grenada
+CTRY_Guadeloupe,Guadeloupe,Гваделупы,Guadeloupe
+CTRY_Guatemala,Guatemala,Гватемалы,Guatemala
+CTRY_Guinea,Guinea,Гвинеи,Guinea
+CTRY_Guinea_Bissau,Guinea-Bissau,Гвинеи-Бисау,Guinea-Bissau
+CTRY_Guyana,Guyana,Гайаны,Guyana
+CTRY_Haiti,Haiti,Гаити,Haiti
+CTRY_Honduras,Honduras,Гондураса,Honduras
+CTRY_Hungary,Hungary,Венгрии,Ungarn
+CTRY_Iceland,Iceland,Исландии,Island
+CTRY_India,India,Индии,Indien
+CTRY_Indonesia,Indonesia,Индонезии,Indonesien
+CTRY_Iran,Iran,Ирана,Iran
+CTRY_Iraq,Iraq,Ирака,Irak
+CTRY_Ireland,Ireland,Ирландии,Irland
+CTRY_Israel,Israel,Израиля,Israel
+CTRY_Italy,Italy,Италии,Italien
+CTRY_Jamaica,Jamaica,Ямайки,Jamaika
+CTRY_Japan,Japan,Японии,Japan
+CTRY_Jordan,Jordan,Иордании,Jordanien
+CTRY_Kazakhstan,Kazakhstan,Казахстана,Kasachstan
+CTRY_Kenya,Kenya,Кении,Kenia
+CTRY_Kirgizistan,Kirgizistan,Киргизии,Kirgistan
+CTRY_Kongo,Kongo,Конго,Kongo
+CTRY_Kosovo,Kosovo,Косово,Kosovo
+CTRY_Kuwait,Kuwait,Кувейта,Kuwait
+CTRY_Laos,Laos,Лаоса,Laos
+CTRY_Latvia,Latvia,Латвии,Lettland
+CTRY_Lesotho,Lesotho,Лесото,Lesotho
+CTRY_Liban,Liban,Ливана,Libanon
+CTRY_Liberia,Liberia,Либерии,Liberia
+CTRY_Libya,Libya,Ливии,Libyen
+CTRY_Lithuania,Lithuania,Литвы,Litauen
+CTRY_Luxembourg,Luxembourg,Люксембурга,Luxemburg
+CTRY_Madagascar,Madagascar,Мадагаскара,Madagaskar
+CTRY_Malawi,Malawi,Малави,Malawi
+CTRY_Malaysia,Malaysia,Малайзии,Malaysia
+CTRY_Maldives,Maldives,Мальдив,Malediven
+CTRY_Mali,Mali,Мали,Mali
+CTRY_Malta,Malta,Мальты,Malta
+CTRY_Marokash,Marokash,Марокко,Marokko
+CTRY_Martinique,Martinique,Мартиники,Martinique
+CTRY_Mauritania,Mauritania,Мавритании,Mauretanien
+CTRY_Mexico,Mexico,Мексики,Mexiko
+CTRY_Micronesia,Micronesia,Микронезии,Mikronesien
+CTRY_Moldova,Moldova,Молдовы,Moldau
+CTRY_Mongolia,Mongolia,Монголии,Mongolei
+CTRY_Montenegro,Montenegro,Черногории,Montenegro
+CTRY_Mozambique,Mozambique,Мозамбика,Mosambik
+CTRY_Myanmar,Myanmar,Мьянмы,Myanmar
+CTRY_Namibia,Namibia,Намибии,Namibia
+CTRY_Nepal,Nepal,Непала,Nepal
+CTRY_Netherlands,Netherlands,Нидерландов,Niederlande
+CTRY_New_Zealand,New Zealand,Новой Зеландии,Neuseeland
+CTRY_Nicaragua,Nicaragua,Никарагуа,Nicaragua
+CTRY_Niger,Niger,Нигера,Niger
+CTRY_Nigeria,Nigeria,Нигерии,Nigeria
+CTRY_North_Korea,North Korea,Северной Кореи,Nordkorea
+CTRY_North_Macedonia,North Macedonia,Северной Македонии,Nordmazedonien
+CTRY_Norway,Norway,Норвегии,Norwegen
+CTRY_Oman,Oman,Омана,Oman
+CTRY_Pakistan,Pakistan,Пакистана,Pakistan
+CTRY_Palestine,Palestine,Палестины,Palästina
+CTRY_Panama,Panama,Панамы,Panama
+CTRY_Papua_New_Guinea,Papua New Guinea,Папуа — Новой Гвинеи,Papua-Neuguinea
+CTRY_Paraguay,Paraguay,Парагвая,Paraguay
+CTRY_Peru,Peru,Перу,Peru
+CTRY_Philippines,Philippines,Филиппин,Philippinen
+CTRY_Poland,Poland,Польши,Polen
+CTRY_Portugal,Portugal,Португалии,Portugal
+CTRY_Puerto_Rico,Puerto Rico,Пуэрто-Рико,Puerto Rico
+CTRY_Qatar,Qatar,Катара,Katar
+CTRY_Reunion,Reunion,Реюньона,Réunion
+CTRY_Romania,Romania,Румынии,Rumänien
+CTRY_Russia,Russia,России,Russland
+CTRY_Rwanda,Rwanda,Руанды,Ruanda
+CTRY_Saint_Kitts_and_Nevis,Saint Kitts and Nevis,Сент-Китса и Невиса,St. Kitts und Nevis
+CTRY_Saint_Lucia,Saint Lucia,Сент-Люсии,St. Lucia
+CTRY_Saint_Vincent_and_the_Grenadines,Saint Vincent and the Grenadines,Сент-Винсента и Гренадин,St. Vincent und die Grenadinen
+CTRY_Salvador,Salvador,Сальвадора,El Salvador
+CTRY_Saudi_Arabia,Saudi Arabia,Саудовской Аравии,Saudi-Arabien
+CTRY_Senegal,Senegal,Сенегала,Senegal
+CTRY_Serbia,Serbia,Сербии,Serbien
+CTRY_Seychelles,Seychelles,Сейшельских Островов,Seychellen
+CTRY_Sierra_Leone,Sierra Leone,Сьерра-Леоне,Sierra Leone
+CTRY_Slovakia,Slovakia,Словакии,Slowakei
+CTRY_Slovenia,Slovenia,Словении,Slowenien
+CTRY_Solomon_Islands,Solomon Islands,Соломоновых Островов,Salomonen
+CTRY_Somalia,Somalia,Сомали,Somalia
+CTRY_South_Africa,South Africa,ЮАР,Südafrika
+CTRY_South_Korea,South Korea,Южной Кореи,Südkorea
+CTRY_South_Sudan,South Sudan,Южного Судана,Südsudan
+CTRY_Spain,Spain,Испании,Spanien
+CTRY_Sri_Lanka,Sri Lanka,Шри-Ланки,Sri Lanka
+CTRY_Sudan,Sudan,Судана,Sudan
+CTRY_Suriname,Suriname,Суринама,Suriname
+CTRY_Swaziland,Swaziland,Свазиленда,Swasiland
+CTRY_Sweden,Sweden,Швеции,Schweden
+CTRY_Switzerland,Switzerland,Швейцарии,Schweiz
+CTRY_Syria,Syria,Сирии,Syrien
+CTRY_Taiwan,Taiwan,Тайваня,Taiwan
+CTRY_Tajikistan,Tajikistan,Таджикистана,Tadschikistan
+CTRY_Tanzania,Tanzania,Танзании,Tansania
+CTRY_Thailand,Thailand,Таиланда,Thailand
+CTRY_Togo,Togo,Того,Togo
+CTRY_Trinidad_and_Tobago,Trinidad and Tobago,Тринидада и Тобаго,Trinidad und Tobago
+CTRY_Tunis,Tunis,Туниса,Tunesien
+CTRY_Turkey,Turkey,Турции,Türkei
+CTRY_Turkmenistan,Turkmenistan,Туркменистана,Turkmenistan
+CTRY_UAE,UAE,ОАЭ,VAE
+CTRY_Uganda,Uganda,Уганды,Uganda
+CTRY_Ukraine,Ukraine,Украины,Ukraine
+CTRY_United_Kingdom,United Kingdom,Соединённого Королевства,Vereinigtes Königreich
+CTRY_United_States,United States,Соединённых Штатов,Vereinigte Staaten
+CTRY_Uruguay,Uruguay,Уругвая,Uruguay
+CTRY_Uzbekistan,Uzbekistan,Узбекистана,Usbekistan
+CTRY_Venezuela,Venezuela,Венесуэлы,Venezuela
+CTRY_Vietnam,Vietnam,Вьетнама,Vietnam
+CTRY_Yemen,Yemen,Йемена,Jemen
+CTRY_Zambia,Zambia,Замбии,Sambia
+CTRY_Zimbabwe,Zimbabwe,Зимбабве,Simbabwe
+DIVISIONS,Divisions,Дивизии,Divisionen
+ACTIVE_WARS,Active wars,Текущие войны,Aktive Kriege
+THIS_WEEK,This week,За эту неделю,Diese Woche
+BUILT,built,построено,gebaut
+DESTROYED,destroyed,уничтожено,zerstört
+UAV,UAV,БПЛА,UAV
+ROCKETS,rockets,ракет,Raketen
+WAR_AGAINST_FMT,Against %s,Против %s,Gegen %s
+WAR_DAYS_FMT,%d days,%d дн.,%d Tage
+NO_DIVISIONS,No divisions,Нет дивизий,Keine Divisionen
+PROV,Prov.,Пров.,Prov.
+key,en,ru,de
+UAV_PROGRAM_OF_FMT,UAV program of %s,Программа БПЛА: %s,UAV-Programm von %s
+UAV_OF_FMT,UAV of %s,БПЛА: %s,UAV von %s
+UAV_PRODUCTION,UAV Production,Производство БПЛА,UAV-Produktion
+MISSILE_PROGRAM_OF_FMT,Missile program of %s,Программа ракет: %s,Raketenprogramm von %s
+MISSILE_OF_FMT,Missile of %s,Ракеты: %s,Rakete von %s
+MISSILE_PRODUCTION,Missile Production,Производство ракет,Raketenproduktion
+AMOUNT,Amount,Количество,Menge
+SPEED,Speed,Скорость,Geschwindigkeit
+PER_DAY_FMT,%.1f/day,%.1f/день,%.1f/Tag
+PER_MONTH_FMT,%.2f/month,%.2f/месяц,%.2f/Monat
+NEW_ORDER,New Order,Новый заказ,Neue Bestellung
+ORDER_IN_PRODUCTION,Order In Production,Заказ в производстве,Bestellung in Produktion
+OF_FMT,of %s,из %s,von %s
+DAYS_FMT,%.0f days,%.0f дн.,%.0f Tage
+MONTHS_FMT,%.1f months,%.1f мес.,%.1f Monate
+PRICE_PRODUCTS_FMT,📦 %s products,📦 %s продукции,📦 %s Produkte
+MISSILE_NOT_DEVELOPED,Ballistic missiles have not been developed,Баллистические ракеты ещё не разработаны,Ballistische Raketen wurden noch nicht entwickelt
+UAV_NOT_DEVELOPED,Unmanned aircraft have not been developed,Беспилотники ещё не разработаны,Unbemannte Luftfahrzeuge wurden noch nicht entwickelt
+MISSILE_EMPTY_DESC,The country doesn't yet have its own missile production lines. Create a missile company to begin developing and manufacturing missiles.,У страны пока нет собственных ракетных производственных линий. Создайте ракетную компанию,"Das Land verfügt noch über keine eigenen Raketenproduktionslinien. Gründen Sie eine Raketenfirma, um mit der Entwicklung und Produktion von Raketen zu beginnen."
+UAV_EMPTY_DESC,The country doesn't yet have its own drone production lines. Create a UAV company to begin developing and manufacturing drones.,У страны пока нет собственных производственных линий БПЛА. Создайте компанию БПЛА,"Das Land verfügt noch über keine eigenen Drohnenproduktionslinien. Gründen Sie eine UAV-Firma, um mit der Entwicklung und Produktion von Drohnen zu beginnen."
+CREATE_MISSILE_COMPANY,Create missile-company,Создать ракетную компанию,Raketenfirma gründen
+CREATE_UAV_COMPANY,Create UAV-company,Создать компанию БПЛА,UAV-Firma gründen
+LAUNCH,Launch,Запустить,Starten
+ORDER,Order,Заказать,Bestellen
+REGIME_COLLAPSED_TITLE,Regime collapsed,Режим пал,Regime zusammengebrochen
+REGIME_COLLAPSED_SUBTITLE,Your government has lost control of the country,Ваше правительство утратило контроль над страной,Ihre Regierung hat die Kontrolle über das Land verloren
+LABEL_COUNTRY,Country,Страна,Land
+LABEL_CAUSE,Cause,Причина,Ursache
+LABEL_DATE,Date,Дата,Datum
+LABEL_DAYS_IN_POWER,Days in power,Дней у власти,Tage an der Macht
+BTN_RESTART,Restart,Перезапустить,Neu starten
+BTN_LOAD_SAVE,Load save,Загрузить сохранение,Spielstand laden
+BTN_MAIN_MENU,Main menu,Главное меню,Hauptmenü
+BTN_QUIT_GAME,Quit game,Выйти из игры,Spiel beenden
+CAUSE_ECONOMIC_COLLAPSE,Economic collapse,Экономический коллапс,Wirtschaftlicher Zusammenbruch
+CAUSE_MILITARY_COLLAPSE,Military collapse,Военный коллапс,Militärischer Zusammenbruch
+CAUSE_SOCIAL_COLLAPSE,Social collapse,Социальный коллапс,Sozialer Zusammenbruch
+CAUSE_TERRITORIAL_COLLAPSE,Territorial collapse,Территориальный коллапс,Territorialer Zusammenbruch
+MONTH_JAN,January,Января,Januar
+MONTH_FEB,February,Февраля,Februar
+MONTH_MAR,March,Марта,März
+MONTH_APR,April,Апреля,April
+MONTH_MAY,May,Мая,Mai
+MONTH_JUN,June,Июня,Juni
+MONTH_JUL,July,Июля,Juli
+MONTH_AUG,August,Августа,August
+MONTH_SEP,September,Сентября,September
+MONTH_OCT,October,Октября,Oktober
+MONTH_NOV,November,Ноября,November
+MONTH_DEC,December,Декабря,Dezember
+EMPTY_SAVE_SLOT,Empty save slot,Пустой слот сохранения,Leerer Speicherplatz
+SELECT_SAVE_TITLE,Select save,Выбор сохранения,Spielstand auswählen
+LOAD_SAVE_BTN,Load Save,Загрузить,Laden
+SAVE_GAME_TITLE,Save game,Сохранить игру,Spiel speichern
+SAVE_BTN,Save,Сохранить,Speichern
+UNKNOWN_COUNTRY,Unknown,Неизвестно,Unbekannt
+DAYS_INT_FMT,%d days,%d дн.,%d Tage
+TIME_JUST_NOW,just now,только что,gerade eben
+TIME_MIN_AGO_FMT,%d min ago,%d мин. назад,vor %d Min.
+TIME_HOURS_AGO_FMT,%d hours ago,%d ч. назад,vor %d Std.
+TIME_DAYS_AGO_FMT,%d days ago,%d дн. назад,vor %d Tagen
+CONTINUE,Continue,Продолжить,Fortsetzen
+SAVE,Save,Сохранить,Speichern
+MAIN_MENU,Main Menu,Главное меню,Hauptmenü
+EXIT,Exit,Выйти,Beenden
+LEAVE,Leave,Выйти,Verlassen
+MISSILE_LAUNCH_MENU,Missle Launch Menu,Меню запуска ракет,Raketenstart-Menü
+UAV_LAUNCH_MENU,UAV Launch Menu,Меню запуска БПЛА,UAV-Start-Menü
+UAV_LAUNCH,UAV Launch,Запуск БПЛА,UAV-Start
+AVAILABLE,available,доступно,verfügbar
+PER_PROVINCE,Per province,На провинцию,Pro Provinz
+NOTIFICATION_MENU,Notification menu,Меню уведомлений,Benachrichtigungsmenü
+NOTIF_WAR_DECLARED_FMT,%s declared war on %s,%s объявили войну против %s,%s hat %s den Krieg erklärt
+NOTIF_PEACE_MADE_FMT,%s made peace with %s,%s и %s заключили мир,%s und %s haben Frieden geschlossen
+NOTIF_SANCTIONS_IMPOSED_FMT,%s imposed sanctions on %s,%s ввели санкции против %s,%s hat Sanktionen gegen %s verhängt
+NOTIF_SANCTIONS_REMOVED_FMT,%s lifted sanctions on %s,%s сняли санкции с %s,%s hat die Sanktionen gegen %s aufgehoben
+NOTIF_REGIME_COLLAPSED_FMT,%s: regime collapsed (%s -> %s),%s: смена режима (%s → %s),%s: Regimewechsel (%s → %s)
+TOAST_QUEUE_FULL,The construction queue is full,Очередь строительства заполнена,Die Bauwarteschlange ist voll
+TOAST_FACTORY_PROGRESS_FMT,Factory construction %d/%d,Строительство фабрики %d/%d,Fabrikbau %d/%d
+TOAST_NOT_ENOUGH_MONEY_FMT,Not enough money (%s required),Недостаточно денег (нужно %s),Nicht genug Geld (%s benötigt)
+TOAST_NOT_ENOUGH_RECRUIT,Not enough money or population to recruit (min. 100),Недостаточно денег или населения для призыва (мин. 100),Nicht genug Geld oder Bevölkerung zum Ausheben (min. 100)
+TOAST_RECRUITED_FMT,Recruited %d troops,Призвано войск: %d,%d Truppen ausgehoben

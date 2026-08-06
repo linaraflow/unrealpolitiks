@@ -149,6 +149,7 @@ text = "1"
 [node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=1487347230]
 layout_mode = 2
 size_flags_vertical = 3
+horizontal_scroll_mode = 0
 
 [node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer/ScrollContainer" unique_id=1919990686]
 layout_mode = 2
@@ -268,7 +269,7 @@ stretch_mode = 5
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_fonts/font = ExtResource("2_cejxe")
-text = "Back"
+text = "BTN_BACK"
 
 [node name="LoadButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer" unique_id=84602277]
 custom_minimum_size = Vector2(0, 54)

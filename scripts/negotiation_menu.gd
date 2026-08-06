@@ -250,12 +250,12 @@ func _update_country_info() -> void:
     var my_count = ProvinceRegistry.owner_province_count.get(my_country, 0) - unreturned_count
     var enemy_count = ProvinceRegistry.owner_province_count.get(_enemy, 0) + unreturned_count
     
-    player_title_label.text = "Prov."
-    enemy_title_label.text = "Prov."
-    
+    player_title_label.text = tr(my_country.to_upper())
+    enemy_title_label.text = tr(_enemy.to_upper())
+
     # Просто передаем числа. Цвета и размеры уже настроены в самом Godot!
-    player_count_label.text = str(my_count)
-    enemy_count_label.text = str(enemy_count)
+    player_count_label.text = str(my_count) + " " + tr("PROV")
+    enemy_count_label.text = str(enemy_count) + " " + tr("PROV")
 
 
 func _on_press(button: Button):

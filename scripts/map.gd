@@ -407,6 +407,10 @@ func _handle_left_click(p_id, px, province_info, current_owner):
         get_node("/root/Game/CanvasLayer/NegotiationMenu").on_province_clicked(p_id)
         return
     
+    if settings.last_clicked_province_id == 0:
+        GameRoot.show_panel()
+        
+    
     var local_mouse = province_centers.get(p_id, to_local(get_global_mouse_position()))
     settings.local_mouse = local_mouse
     settings.last_clicked_province_id = p_id
@@ -415,7 +419,12 @@ func _handle_left_click(p_id, px, province_info, current_owner):
     # До выбора страны (can_draw == false) — показываем ТОЛЬКО CountryMenu,
     # ProvinceMenu и DivisionMenu должны быть скрыты.
     if not settings.can_draw:
-        get_node("../CanvasLayer/BLUE").text = current_owner if current_owner != "sea" else "Choose Country"
+        get_node("../CanvasLayer/BLUE").set_country(current_owner if current_owner != "sea" else "")
+        if current_owner == "sea":
+            GameRoot.hide_panel()
+            return
+        if GameRoot._panel_visible == false:
+            GameRoot.show_panel()
         CountryPanel.show()
         CountryPanel.update_info()
         FlagRect.update()
@@ -471,6 +480,9 @@ func _handle_right_click(p_id, px, province_info, current_owner):
         return
     if current_owner == "":
         return
+        
+    if settings.last_clicked_province_id == 0:
+        GameRoot.show_panel()
 
     settings.last_clicked_province_id = p_id
     _select_province(px)
@@ -479,6 +491,8 @@ func _handle_right_click(p_id, px, province_info, current_owner):
     if current_owner == "sea":
         if settings.negotiation_mode == false:
             DivisionMenu.update_info(province_info)
+        if settings.last_clicked_province_id == 0:
+            GameRoot.hide_panel()
         CountryMenu.hide()
         ProvinceMenu.hide()
         DivisionMenu.show()

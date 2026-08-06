@@ -52,7 +52,7 @@ timers/tooltip_delay_sec=0.2
 
 [internationalization]
 
-locale/translations=PackedStringArray("res://localization.en.translation")
+locale/translations=PackedStringArray("res://localization.en.translation", "res://localization.ru.translation", "res://localization.de.translation")
 
 [physics]
 

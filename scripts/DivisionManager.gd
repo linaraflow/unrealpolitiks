@@ -11,6 +11,30 @@ var army_counters: Dictionary = {}
 
 var _cached_cam_factor: float = 1.0
 
+func _ready() -> void:
+    # Когда страна теряет последнюю провинцию, ProvinceRegistry стирает её из
+    # countries_data (_eliminate_country) — но её "осиротевшие" армии на карте
+    # без этого остаются жить и падают при попытке найти путь (Pathfinder.gd
+    # обращается к ProvinceRegistry.countries_data[country], которого уже нет).
+    ProvinceRegistry.country_eliminated.connect(_on_country_eliminated)
+
+## Удаляет с карты все дивизии уничтоженной страны (в т.ч. те, что в движении).
+func _on_country_eliminated(country: String) -> void:
+    for p_id in armies.keys():
+        var province_armies = armies[p_id]
+        for circle in province_armies.duplicate():
+            if not is_instance_valid(circle):
+                continue
+            if circle.division_owner != country:
+                continue
+            if is_instance_valid(circle.current_path_node):
+                circle._stop_current_movement()
+            province_armies.erase(circle)
+            circle.queue_free()
+        if province_armies.is_empty():
+            reposition_armies_in_province(p_id)
+
+
 # ФИКС БАГА 2: Автоматически подписываемся на камеру при инициализации карты
 var map_node: Node2D = null:
     set(value):
@@ -74,7 +98,8 @@ func recruit(province_id: int, local_pos: Vector2, recruit_amount: int):
                 _refresh_combat_hp_manually(province_id, owner_id)
     else:
         army_counters[owner_id] = army_counters.get(owner_id, 0) + 1
-        var army_name = str(army_counters[owner_id]) + " " + str(owner_id) + " army"
+        var country_display = tr("CTRY_" + owner_id.replace(" ", "_").replace("'", "").replace("-", "_"))
+        var army_name = tr("ARMY_NAME_FMT") % [army_counters[owner_id], country_display]
         
         var army = ArmyScene.instantiate()
         map_node.add_child(army)

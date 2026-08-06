@@ -125,7 +125,7 @@ func _check_regime_collapses() -> void:
             continue
 
         if ProvinceRegistry.get_factory_destruction_ratio(country) >= REGIME_COLLAPSE_FACTORY_DESTRUCTION_RATIO:
-            trigger_regime_collapse(country, "Economic collapse")
+            trigger_regime_collapse(country, tr("CAUSE_ECONOMIC_COLLAPSE"))
             continue
 
         var stability = get_regime_stability(country)
@@ -152,7 +152,7 @@ func _check_regime_collapses() -> void:
         var chance = lerp(REGIME_COLLAPSE_BASE_CHANCE, REGIME_COLLAPSE_MAX_CHANCE, t)
 
         if randf() < chance:
-            var cause: String = "Military collapse" if t_exhaustion >= t_happiness else "Social collapse"
+            var cause: String = tr("CAUSE_MILITARY_COLLAPSE") if t_exhaustion >= t_happiness else tr("CAUSE_SOCIAL_COLLAPSE")
             trigger_regime_collapse(country, cause)
 
 ## Определяет, является ли страна игроком.

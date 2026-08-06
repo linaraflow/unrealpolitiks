@@ -487,42 +487,44 @@ focus_mode = 0
 
 [node name="Label" type="Label" parent="TopPanel/AIArmyContainer" unique_id=585053120]
 layout_mode = 2
-text = "AI Army"
+text = "AI_ARMY"
 
-[node name="SellMenu" type="Panel" parent="." unique_id=1518076992]
+[node name="SellMenu" type="PanelContainer" parent="." unique_id=347066308]
 unique_name_in_owner = true
-visible = false
 layout_mode = 0
 offset_left = 312.0
 offset_top = 56.0
 offset_right = 493.5
 offset_bottom = 133.0
 
-[node name="SellInput" type="SpinBox" parent="SellMenu" unique_id=1477380691]
-layout_mode = 0
-offset_left = 5.0
-offset_top = 5.0
-offset_right = 91.5
-offset_bottom = 36.0
+[node name="MarginContainer" type="MarginContainer" parent="SellMenu" unique_id=1913009982]
+layout_mode = 2
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 5
 
-[node name="SellButton" type="Button" parent="SellMenu" unique_id=1103670734]
-layout_mode = 0
-offset_left = 96.5
-offset_top = 5.0
-offset_right = 176.5
-offset_bottom = 36.0
-text = "sell"
+[node name="HBoxContainer" type="HBoxContainer" parent="SellMenu/MarginContainer" unique_id=412687708]
+layout_mode = 2
+alignment = 1
 
-[node name="SellAllButton" type="Button" parent="SellMenu" unique_id=114786105]
-layout_mode = 0
-offset_left = 96.5
-offset_top = 41.0
-offset_right = 176.5
-offset_bottom = 72.0
-text = "sell all"
+[node name="SellInput" type="SpinBox" parent="SellMenu/MarginContainer/HBoxContainer" unique_id=1477380691]
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="VBoxContainer" type="VBoxContainer" parent="SellMenu/MarginContainer/HBoxContainer" unique_id=1309285069]
+layout_mode = 2
+alignment = 1
+
+[node name="SellButton" type="Button" parent="SellMenu/MarginContainer/HBoxContainer/VBoxContainer" unique_id=1103670734]
+layout_mode = 2
+text = "SELL"
+
+[node name="SellAllButton" type="Button" parent="SellMenu/MarginContainer/HBoxContainer/VBoxContainer" unique_id=114786105]
+layout_mode = 2
+text = "SELL_ALL"
 
 [node name="PanelUAVEmpty" type="PanelContainer" parent="." unique_id=858265719]
-visible = false
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.26000002
@@ -570,7 +572,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.5411765, 0.54509807, 0.5529412, 1)
 theme_override_fonts/font = ExtResource("12_111l2")
 theme_override_font_sizes/font_size = 14
-text = "Unmanned aircraft have not been developed"
+text = "UAV_NOT_DEVELOPED"
 
 [node name="CenterContainer" type="CenterContainer" parent="PanelUAVEmpty/MarginContainer/VBoxContainer" unique_id=445881636]
 layout_mode = 2
@@ -582,11 +584,12 @@ texture = ExtResource("9_p7twc")
 expand_mode = 3
 
 [node name="DescriptionLabel" type="Label" parent="PanelUAVEmpty/MarginContainer/VBoxContainer" unique_id=522447074]
+custom_maximum_size = Vector2(-1, 567)
 layout_mode = 2
 theme_override_fonts/font = ExtResource("12_111l2")
 theme_override_font_sizes/font_size = 14
-text = "The country doesn't yet have its own drone production lines. Create a UAV company
-to begin developing and manufacturing drones."
+text = "UAV_EMPTY_DESC"
+autowrap_mode = 3
 
 [node name="CreateButton" type="Button" parent="PanelUAVEmpty/MarginContainer/VBoxContainer" unique_id=1932543786]
 custom_minimum_size = Vector2(0, 40)
@@ -620,7 +623,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.37254903, 0.8392157, 0.44313726, 1)
 theme_override_fonts/font = ExtResource("12_111l2")
 theme_override_font_sizes/font_size = 15
-text = "Create UAV-company"
+text = "CREATE_UAV_COMPANY"
 
 [node name="PriceLabel" type="Label" parent="PanelUAVEmpty/MarginContainer/VBoxContainer/CreateButton/MarginContainer/HBoxContainer" unique_id=645313920]
 layout_mode = 2
@@ -686,7 +689,7 @@ theme_override_fonts/font = ExtResource("12_111l2")
 theme_override_styles/normal = SubResource("StyleBoxFlat_7ovbt")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_kc1aw")
 theme_override_styles/hover = SubResource("StyleBoxFlat_kdok2")
-text = "Launch"
+text = "LAUNCH"
 
 [node name="GridContainer" type="GridContainer" parent="PanelUAVOrder/MarginContainer/VBoxContainer" unique_id=1442642716]
 layout_mode = 2
@@ -798,7 +801,7 @@ theme_override_fonts/font = ExtResource("12_111l2")
 theme_override_font_sizes/font_size = 14
 theme_override_styles/normal = SubResource("StyleBoxFlat_owoy5")
 theme_override_styles/hover = SubResource("StyleBoxFlat_0x63p")
-text = "Order"
+text = "ORDER"
 
 [node name="PanelMissileEmpty" type="PanelContainer" parent="." unique_id=1721080826]
 visible = false
@@ -849,7 +852,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.5411765, 0.54509807, 0.5529412, 1)
 theme_override_fonts/font = ExtResource("12_111l2")
 theme_override_font_sizes/font_size = 14
-text = "Ballistic missiles have not been developed"
+text = "MISSILE_NOT_DEVELOPED"
 
 [node name="CenterContainer" type="CenterContainer" parent="PanelMissileEmpty/MarginContainer/VBoxContainer" unique_id=1159925753]
 layout_mode = 2
@@ -861,11 +864,12 @@ texture = ExtResource("10_0dvk7")
 expand_mode = 3
 
 [node name="DescriptionLabel" type="Label" parent="PanelMissileEmpty/MarginContainer/VBoxContainer" unique_id=1559432791]
+custom_maximum_size = Vector2(567, -1)
 layout_mode = 2
 theme_override_fonts/font = ExtResource("12_111l2")
 theme_override_font_sizes/font_size = 14
-text = "The country doesn't yet have its own missile production lines. 
-Create a missile company to begin developing and manufacturing missiles."
+text = "MISSILE_EMPTY_DESC"
+autowrap_mode = 3
 
 [node name="CreateButton" type="Button" parent="PanelMissileEmpty/MarginContainer/VBoxContainer" unique_id=957686036]
 custom_minimum_size = Vector2(0, 40)
@@ -899,7 +903,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.37254903, 0.8392157, 0.44313726, 1)
 theme_override_fonts/font = ExtResource("12_111l2")
 theme_override_font_sizes/font_size = 15
-text = "Create missile-company"
+text = "CREATE_MISSILE_COMPANY"
 
 [node name="PriceLabel" type="Label" parent="PanelMissileEmpty/MarginContainer/VBoxContainer/CreateButton/MarginContainer/HBoxContainer" unique_id=318813068]
 layout_mode = 2
@@ -948,7 +952,7 @@ layout_mode = 2
 layout_mode = 2
 theme_override_fonts/font = ExtResource("12_111l2")
 theme_override_font_sizes/font_size = 18
-text = "Missile of Iran"
+text = "Missiles of Iran"
 
 [node name="ProduceLabel" type="Label" parent="PanelMissileOrder/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer" unique_id=1975641261]
 layout_mode = 2
@@ -964,7 +968,7 @@ theme_override_fonts/font = ExtResource("12_111l2")
 theme_override_styles/normal = SubResource("StyleBoxFlat_7ovbt")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_kc1aw")
 theme_override_styles/hover = SubResource("StyleBoxFlat_kdok2")
-text = "Launch"
+text = "LAUNCH"
 
 [node name="GridContainer" type="GridContainer" parent="PanelMissileOrder/MarginContainer/VBoxContainer" unique_id=1132475241]
 layout_mode = 2
@@ -1076,7 +1080,7 @@ theme_override_fonts/font = ExtResource("12_111l2")
 theme_override_font_sizes/font_size = 14
 theme_override_styles/normal = SubResource("StyleBoxFlat_owoy5")
 theme_override_styles/hover = SubResource("StyleBoxFlat_0x63p")
-text = "Order"
+text = "ORDER"
 
 [node name="ChooseMapPanel" type="PanelContainer" parent="." unique_id=1830935298]
 layout_mode = 1
@@ -1312,5 +1316,5 @@ stretch_mode = 5
 [connection signal="pressed" from="TopPanel/DatePanel/HBoxContainer/MinusSpeedButton" to="TopPanel/DatePanel" method="_on_minus_speed_button_pressed"]
 [connection signal="pressed" from="TopPanel/DatePanel/HBoxContainer/PlusSpeedButton" to="TopPanel/DatePanel" method="_on_plus_speed_button_pressed"]
 [connection signal="pressed" from="TopPanel/DatePanel/HBoxContainer/PauseButton" to="TopPanel/DatePanel" method="_on_pause_button_pressed"]
-[connection signal="pressed" from="SellMenu/SellButton" to="TopPanel/ProductsLabel" method="_on_sell_button_pressed"]
-[connection signal="pressed" from="SellMenu/SellAllButton" to="TopPanel/ProductsLabel" method="_on_sell_all_button_pressed"]
+[connection signal="pressed" from="SellMenu/MarginContainer/HBoxContainer/VBoxContainer/SellButton" to="TopPanel/ProductsLabel" method="_on_sell_button_pressed"]
+[connection signal="pressed" from="SellMenu/MarginContainer/HBoxContainer/VBoxContainer/SellAllButton" to="TopPanel/ProductsLabel" method="_on_sell_all_button_pressed"]

@@ -133,7 +133,7 @@ offset_right = 71.0
 offset_bottom = 11.5
 grow_horizontal = 2
 grow_vertical = 2
-text = "UAV Launch Menu"
+text = "UAV_LAUNCH_MENU"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -149,7 +149,7 @@ offset_bottom = 16.75
 grow_vertical = 2
 theme_override_font_sizes/font_size = 12
 theme_override_styles/normal = SubResource("StyleBoxFlat_hc05d")
-text = "Leave"
+text = "LEAVE"
 
 [node name="PanelContainer" type="PanelContainer" parent="." unique_id=440090076]
 layout_mode = 0
@@ -190,7 +190,7 @@ theme_override_constants/separation = 0
 [node name="UAVLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/UAVHeader/VBoxContainer" unique_id=636510664]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
-text = "UAV launch"
+text = "UAV_LAUNCH"
 
 [node name="TotalLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/UAVHeader/VBoxContainer" unique_id=1692513165]
 layout_mode = 2
@@ -214,7 +214,7 @@ layout_mode = 2
 layout_mode = 2
 theme_override_colors/font_color = Color(0.5411765, 0.54509807, 0.5529412, 1)
 theme_override_font_sizes/font_size = 12
-text = "Per province"
+text = "PER_PROVINCE"
 
 [node name="NumLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/MainCard/VBoxContainer/HBoxContainer" unique_id=1799465787]
 layout_mode = 2
@@ -269,4 +269,4 @@ stretch_mode = 3
 [node name="Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/LaunchButton/HBoxContainer" unique_id=625222145]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.92941177, 0.6313726, 0, 1)
-text = "Launch"
+text = "LAUNCH"

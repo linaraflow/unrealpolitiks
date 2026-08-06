@@ -80,7 +80,7 @@ theme_override_fonts/font = ExtResource("3_d3tli")
 theme_override_styles/normal = SubResource("StyleBoxFlat_p64cw")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_d3tli")
 theme_override_styles/hover = SubResource("StyleBoxFlat_xw7um")
-text = "Continue"
+text = "CONTINUE"
 
 [node name="Save_button" type="Button" parent="VBoxContainer" unique_id=401994286]
 layout_mode = 2
@@ -89,7 +89,7 @@ theme_override_fonts/font = ExtResource("3_d3tli")
 theme_override_styles/normal = SubResource("StyleBoxFlat_p64cw")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_d3tli")
 theme_override_styles/hover = SubResource("StyleBoxFlat_xw7um")
-text = "Save"
+text = "SAVE"
 
 [node name="Main_button" type="Button" parent="VBoxContainer" unique_id=669967659]
 layout_mode = 2
@@ -98,7 +98,7 @@ theme_override_fonts/font = ExtResource("3_d3tli")
 theme_override_styles/normal = SubResource("StyleBoxFlat_p64cw")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_d3tli")
 theme_override_styles/hover = SubResource("StyleBoxFlat_xw7um")
-text = "Main Menu"
+text = "MAIN_MENU"
 
 [node name="Exit_button" type="Button" parent="VBoxContainer" unique_id=926170686]
 layout_mode = 2
@@ -107,7 +107,7 @@ theme_override_fonts/font = ExtResource("3_d3tli")
 theme_override_styles/normal = SubResource("StyleBoxFlat_p64cw")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_d3tli")
 theme_override_styles/hover = SubResource("StyleBoxFlat_xw7um")
-text = "Exit"
+text = "EXIT"
 
 [connection signal="pressed" from="VBoxContainer/Continue_button" to="." method="_on_continue_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/Save_button" to="." method="_on_save_button_pressed"]

@@ -11,6 +11,8 @@ signal on_pause_changed(paused)
 const SPEEDS = [0, 1, 3, 5, 7, 9]  # x0 (пауза), x1, x3, x5, x10
 const SECONDS_PER_DAY = 2.0       # сколько реальных секунд = 1 игровой день на x1
 const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+# Ключи локализации для MONTH_NAMES (тот же порядок, тот же индекс month-1).
+const MONTH_KEYS = ["MONTH_JAN", "MONTH_FEB", "MONTH_MAR", "MONTH_APR", "MONTH_MAY", "MONTH_JUN", "MONTH_JUL", "MONTH_AUG", "MONTH_SEP", "MONTH_OCT", "MONTH_NOV", "MONTH_DEC"]
 
 var day: int = 1
 var month: int = 1

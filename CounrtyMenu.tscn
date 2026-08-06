@@ -356,7 +356,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.53333336, 0.53333336, 0.53333336, 1)
 theme_override_fonts/font = ExtResource("5_r840y")
 theme_override_font_sizes/font_size = 10
-text = "Population"
+text = "POPULATION"
 
 [node name="PopulationLabel" type="Label" parent="Panel/StatsCardsRow/PopulationCard/VBoxContainer" unique_id=987333652]
 layout_mode = 2
@@ -411,7 +411,7 @@ texture = ExtResource("5_qw2xt")
 layout_mode = 2
 theme_override_fonts/font = ExtResource("5_r840y")
 theme_override_font_sizes/font_size = 12
-text = "Stability"
+text = "STABILITY"
 
 [node name="HappinessLabel" type="Label" parent="Panel/BarsContainer/HappinessRow/HappinessHeader" unique_id=66384363]
 layout_mode = 2
@@ -446,7 +446,7 @@ texture = ExtResource("6_l4hfs")
 layout_mode = 2
 theme_override_fonts/font = ExtResource("5_r840y")
 theme_override_font_sizes/font_size = 12
-text = "War exhaustion"
+text = "WAR_EXHAUSTION"
 
 [node name="WarExhaustionLabel" type="Label" parent="Panel/BarsContainer/WarExhaustionRow/WarExhaustionHeader" unique_id=900261955]
 layout_mode = 2
@@ -480,7 +480,7 @@ texture = ExtResource("7_w0v6l")
 layout_mode = 2
 theme_override_fonts/font = ExtResource("5_r840y")
 theme_override_font_sizes/font_size = 12
-text = "Sanctions"
+text = "SANCTIONS"
 
 [node name="SanctionsLabel" type="Label" parent="Panel/BarsContainer/SanctionsRow/SanctionsHeader" unique_id=265242887]
 layout_mode = 2
@@ -510,7 +510,7 @@ layout_mode = 2
 layout_mode = 2
 theme_override_fonts/font = ExtResource("5_r840y")
 theme_override_font_sizes/font_size = 12
-text = "Relations"
+text = "RELATIONS"
 
 [node name="RelationsValueLabel" type="Label" parent="Panel/RelationsRow/RelationsHeader" unique_id=1178318114]
 layout_mode = 2
@@ -563,7 +563,7 @@ theme_override_font_sizes/font_size = 11
 theme_override_styles/normal = SubResource("StyleBoxFlat_l4hfs")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_a3qja")
 theme_override_styles/hover = SubResource("StyleBoxFlat_r840y")
-text = "Impose"
+text = "IMPOSE"
 icon = ExtResource("8_p7bm5")
 icon_alignment = 1
 vertical_icon_alignment = 0
@@ -581,7 +581,7 @@ theme_override_font_sizes/font_size = 11
 theme_override_styles/normal = SubResource("StyleBoxFlat_dpeqq")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_7su7u")
 theme_override_styles/hover = SubResource("StyleBoxFlat_r840y")
-text = "Worsen"
+text = "WORSEN"
 icon = ExtResource("9_r840y")
 icon_alignment = 1
 vertical_icon_alignment = 0
@@ -607,7 +607,7 @@ focus_mode = 0
 theme_override_font_sizes/font_size = 11
 theme_override_styles/normal = SubResource("StyleBoxFlat_l4hfs")
 theme_override_styles/hover = SubResource("StyleBoxFlat_r840y")
-text = "Declare war"
+text = "DECLARE_WAR"
 icon = ExtResource("10_a3qja")
 icon_alignment = 1
 vertical_icon_alignment = 0
@@ -629,7 +629,7 @@ theme_override_font_sizes/font_size = 11
 theme_override_styles/normal = SubResource("StyleBoxFlat_s1i0l")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_ru30x")
 theme_override_styles/hover = SubResource("StyleBoxFlat_r840y")
-text = "Make peace"
+text = "MAKE_PEACE"
 icon = ExtResource("11_7su7u")
 icon_alignment = 1
 vertical_icon_alignment = 0
@@ -647,7 +647,7 @@ theme_override_font_sizes/font_size = 11
 theme_override_styles/normal = SubResource("StyleBoxFlat_m4ayv")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_u2c8u")
 theme_override_styles/hover = SubResource("StyleBoxFlat_r840y")
-text = "Sanctions"
+text = "DO_SANCTIONS"
 icon = ExtResource("7_w0v6l")
 icon_alignment = 1
 vertical_icon_alignment = 0
@@ -673,7 +673,7 @@ alignment = 1
 layout_mode = 2
 theme_override_colors/font_color = Color(0.53333336, 0.53333336, 0.53333336, 1)
 theme_override_font_sizes/font_size = 10
-text = "Ideology"
+text = "IDEOLOGY"
 
 [node name="IdeologyLabel" type="Label" parent="Panel/IdeologyCard/HBoxContainer/IdeologyInfo" unique_id=967754002]
 layout_mode = 2
@@ -685,11 +685,11 @@ layout_mode = 2
 size_flags_horizontal = 10
 size_flags_vertical = 4
 offset_transform_enabled = true
-tooltip_text = "Change ideology"
+tooltip_text = "CHANGE_IDEOLOGY"
 focus_mode = 0
 theme_override_font_sizes/font_size = 12
 theme_override_styles/normal = SubResource("StyleBoxFlat_p7bm5")
-text = "change"
+text = "CHANGE"
 icon = ExtResource("12_p7bm5")
 
 [node name="IdeologySelectionPanel" type="Panel" parent="Panel" unique_id=1096770221]
@@ -711,7 +711,7 @@ offset_bottom = 295.0
 [node name="Label" type="Label" parent="Panel/IdeologySelectionPanel/VBoxContainer" unique_id=170327889]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("5_r840y")
-text = "Choose ideology"
+text = "CHOOSE_IDEOLOGY"
 horizontal_alignment = 1
 
 [node name="ScrollContainer" type="ScrollContainer" parent="Panel/IdeologySelectionPanel/VBoxContainer" unique_id=1174452239]
@@ -729,14 +729,14 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_fonts/font = ExtResource("5_r840y")
 theme_override_styles/normal = SubResource("StyleBoxFlat_vvsl0")
-text = "Change"
+text = "CHANGE"
 
 [node name="CloseBtn" type="Button" parent="Panel/IdeologySelectionPanel/VBoxContainer/HBoxContainer" unique_id=561421025]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_fonts/font = ExtResource("5_r840y")
 theme_override_styles/normal = SubResource("StyleBoxFlat_vvsl0")
-text = "Close"
+text = "CLOSE"
 
 [connection signal="mouse_entered" from="Panel/HeaderRow/FlagRect" to="Panel/HeaderRow/FlagRect" method="_on_mouse_entered"]
 [connection signal="mouse_exited" from="Panel/HeaderRow/FlagRect" to="Panel/HeaderRow/FlagRect" method="_on_mouse_exited"]

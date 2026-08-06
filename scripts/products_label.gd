@@ -2,7 +2,7 @@ extends RichTextLabel
 
 @export var settings: Resource
 @onready var sell_menu = $%SellMenu
-@onready var sell_input = $%SellMenu/SellInput
+@onready var sell_input = $%SellMenu/MarginContainer/HBoxContainer/SellInput
 @onready var balance_label = get_node_or_null("/root/Game/CanvasLayer/TopMenu/TopPanel/BalanceLabel")
 
 @onready var statistics_menu = get_node_or_null("/root/Game/CanvasLayer/StatisticsMenu")

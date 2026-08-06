@@ -74,7 +74,13 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 14
 text = "Rocket: "
 
+[node name="BuildFactoryButton" type="Button" parent="Panel/VBoxContainer" unique_id=1452754841]
+layout_mode = 2
+theme_override_font_sizes/font_size = 9
+text = "Build factory"
+
 [connection signal="pressed" from="Panel/VBoxContainer/DevRecruitButton" to="." method="_on_dev_recruit_button_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/HBoxContainer/WarButton" to="." method="_on_war_button_pressed"]
 [connection signal="pressed" from="Panel/VBoxContainer/IncreaseMoney" to="." method="_on_increase_money_pressed"]
 [connection signal="toggled" from="Panel/VBoxContainer/AllDivSelectable" to="." method="_on_all_div_selectable_toggled"]
+[connection signal="pressed" from="Panel/VBoxContainer/BuildFactoryButton" to="." method="_on_build_factory_button_pressed"]

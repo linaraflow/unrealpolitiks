@@ -17,17 +17,33 @@ var s: Node # ссылка на SettingsManager autoload
 
 func _ready() -> void:
     s = get_node("/root/SettingsManager")
+    _rebuild_all_tabs()
+    s.settings_applied.connect(_rebuild_all_tabs)
+
+# Полностью пересобирает содержимое всех вкладок. Нужно вызывать не только
+# при первом открытии окна, но и каждый раз при смене языка — все Label,
+# OptionButton и т.д. создаются с уже "запечённым" переведённым текстом
+# (результат tr() в момент создания), и Godot не может ретранслировать их
+# на лету, в отличие от текста, заданного через сцену/редактор.
+func _rebuild_all_tabs() -> void:
+    for tab in [tab_graphics, tab_interface, tab_gameplay, tab_audio, tab_controls]:
+        for child in tab.get_children():
+            child.queue_free()
+
     _build_graphics_tab()
     _build_interface_tab()
     _build_gameplay_tab()
     _build_audio_tab()
     _build_controls_tab()
 
-    tabs.set_tab_title(0, "Graphics")
-    tabs.set_tab_title(1, "Interface")
-    tabs.set_tab_title(2, "Gameplay")
-    tabs.set_tab_title(3, "Sound")
-    tabs.set_tab_title(4, "Controls")
+    _update_tab_titles()
+
+func _update_tab_titles() -> void:
+    tabs.set_tab_title(0, tr("TAB_GRAPHICS"))
+    tabs.set_tab_title(1, tr("TAB_INTERFACE"))
+    tabs.set_tab_title(2, tr("TAB_GAMEPLAY"))
+    tabs.set_tab_title(3, tr("TAB_SOUND"))
+    tabs.set_tab_title(4, tr("TAB_CONTROLS"))
 
 # ---------------------------------------------------------------
 # Row-building helpers
@@ -113,7 +129,7 @@ var _rebind_btn: Button = null
 var _rebind_action_key: String = ""
 
 func _start_rebind(btn: Button, action_key: String) -> void:
-    btn.text = "Press a key..."
+    btn.text = tr("PRESS_KEY")
     _rebind_btn = btn
     _rebind_action_key = action_key
 
@@ -132,9 +148,9 @@ func _input(event: InputEvent) -> void:
         # просто игнорировал. Обрабатываем основные кнопки мыши и скролл здесь.
         match event.button_index:
             MOUSE_BUTTON_WHEEL_UP:
-                bound_name = "Wheel Up"
+                bound_name = tr("INPUT_WHEEL_UP")
             MOUSE_BUTTON_WHEEL_DOWN:
-                bound_name = "Wheel Down"
+                bound_name = tr("INPUT_WHEEL_DOWN")
             MOUSE_BUTTON_LEFT:
                 bound_name = "Mouse Left"
             MOUSE_BUTTON_RIGHT:
@@ -162,22 +178,22 @@ func _build_graphics_tab() -> void:
     var res_labels := []
     for r in s.RESOLUTIONS:
         res_labels.append("%dx%d" % [r.x, r.y])
-    _add_dropdown(tab_graphics, "Screen resolution", res_labels, s.resolution_index, func(idx):
+    _add_dropdown(tab_graphics, tr("GRAPHICS_SCREEN_RES"), res_labels, s.resolution_index, func(idx):
         s.resolution_index = idx
         s._apply_display()
     )
 
-    _add_dropdown(tab_graphics, "Window mode", ["Windowed", "Fullscreen", "Borderless window"], s.window_mode, func(idx):
+    _add_dropdown(tab_graphics, tr("WINDOW_MODE"), [tr("WINDOWED"), tr("FULLSCREEN"), tr("BORDERLESS_WINDOW")], s.window_mode, func(idx):
         s.window_mode = idx
         s._apply_display()
     )
 
-    _add_toggle(tab_graphics, "Vertical sync (VSync)", s.vsync_enabled, func(v):
+    _add_toggle(tab_graphics, tr("GRAPHICS_VSYNC"), s.vsync_enabled, func(v):
         s.vsync_enabled = v
         s._apply_display()
     )
 
-    _add_dropdown(tab_graphics, "FPS limit", ["30", "60", "120", "144", "Unlimited"], _fps_to_index(s.fps_limit), func(idx):
+    _add_dropdown(tab_graphics, tr("GRAPHICS_FPS_LIMIT"), ["30", "60", "120", "144", tr("GRAPHICS_UNLIMITED")], _fps_to_index(s.fps_limit), func(idx):
         s.fps_limit = _index_to_fps(idx)
         s._apply_display()
     )
@@ -203,14 +219,15 @@ func _index_to_fps(idx: int) -> int:
 # ---------------------------------------------------------------
 
 func _build_interface_tab() -> void:
-    _add_slider(tab_interface, "UI scale", 0.8, 1.5, 0.05, s.ui_scale, func(v):
+    _add_slider(tab_interface, tr("INTERFACE_UI_SCALE"), 0.8, 1.5, 0.05, s.ui_scale, func(v):
         s.ui_scale = v
         get_tree().root.content_scale_factor = v
     , true)
 
-    _add_dropdown(tab_interface, "Interface language", ["Русский", "English", "Deutsch", "Français"], _lang_to_index(s.language), func(idx):
+    _add_dropdown(tab_interface, tr("INTERFACE_LANGUAGE"), ["Русский", "English", "Deutsch", "Français"], _lang_to_index(s.language), func(idx):
         s.language = _index_to_lang(idx)
-        # hook up your Localization/TranslationServer reload here
+        s.apply_language()
+        _rebuild_all_tabs()
     )
 
 func _lang_to_index(lang: String) -> int:
@@ -234,11 +251,11 @@ func _index_to_lang(idx: int) -> String:
 # ---------------------------------------------------------------
 
 func _build_gameplay_tab() -> void:
-    _add_toggle(tab_gameplay, "Auto-pause on declaration of war", s.autopause_on_war, func(v):
+    _add_toggle(tab_gameplay, tr("GAMEPLAY_AUTOPAUSE_WAR"), s.autopause_on_war, func(v):
         s.autopause_on_war = v
     )
 
-    _add_spinbox(tab_gameplay, "Autosave (days, 0 = off)", 0, 365, 1, s.autosave_interval_days, " d", func(v):
+    _add_spinbox(tab_gameplay, tr("GAMEPLAY_AUTOSAVE"), 0, 365, 1, s.autosave_interval_days, " d", func(v):
         s.autosave_interval_days = int(v)
     )
 
@@ -247,22 +264,22 @@ func _build_gameplay_tab() -> void:
 # ---------------------------------------------------------------
 
 func _build_audio_tab() -> void:
-    _add_slider(tab_audio, "Master volume", 0.0, 1.0, 0.01, s.volume_master, func(v):
+    _add_slider(tab_audio, tr("SOUND_MASTER"), 0.0, 1.0, 0.01, s.volume_master, func(v):
         s.volume_master = v
         s._set_bus_volume("Master", v)
     , true)
 
-    _add_slider(tab_audio, "Music", 0.0, 1.0, 0.01, s.volume_music, func(v):
+    _add_slider(tab_audio, tr("SOUND_MUSIC"), 0.0, 1.0, 0.01, s.volume_music, func(v):
         s.volume_music = v
         s._set_bus_volume("Music", v)
     , true)
 
-    _add_slider(tab_audio, "Sound effects", 0.0, 1.0, 0.01, s.volume_sfx, func(v):
+    _add_slider(tab_audio, tr("SOUND_EFFECTS"), 0.0, 1.0, 0.01, s.volume_sfx, func(v):
         s.volume_sfx = v
         s._set_bus_volume("SFX", v)
     , true)
 
-    _add_slider(tab_audio, "UI sounds", 0.0, 1.0, 0.01, s.volume_ui, func(v):
+    _add_slider(tab_audio, tr("SOUND_UI"), 0.0, 1.0, 0.01, s.volume_ui, func(v):
         s.volume_ui = v
         s._set_bus_volume("UI", v)
     , true)
@@ -273,7 +290,7 @@ func _build_audio_tab() -> void:
 
 func _build_controls_tab() -> void:
     var keybind_title := Label.new()
-    keybind_title.text = "Key bindings"
+    keybind_title.text = tr("KEYBIND_HEADER")
     keybind_title.add_theme_font_size_override("font_size", 16)
     tab_controls.add_child(keybind_title)
 
@@ -282,15 +299,15 @@ func _build_controls_tab() -> void:
 
 func _action_display_name(key: String) -> String:
     var names := {
-        "zoom_in": "Zoom in",
-        "zoom_out": "Zoom out",
-        "pause": "Pause",
-        "build_factory": "Build factory",
-        "summon_troops": "Summon troops",
-        "summon_max_troops_province": "Summon max troops in province",
-        "hide_ui": "Hide UI",
-        "hide_all_divisions": "Hide all divisions",
-        "hide_country_labels": "Hide country labels",
+        "zoom_in": tr("KEYBIND_ZOOM_IN"),
+        "zoom_out": tr("KEYBIND_ZOOM_OUT"),
+        "pause": tr("KEYBIND_PAUSE"),
+        "build_factory": tr("KEYBIND_BUILD_FACTORY"),
+        "summon_troops": tr("KEYBIND_SUMMON_TROOPS"),
+        "summon_max_troops_province": tr("KEYBIND_SUMMON_MAX_TROOPS"),
+        "hide_ui": tr("KEYBIND_HIDE_UI"),
+        "hide_all_divisions": tr("KEYBIND_HIDE_DIVISIONS"),
+        "hide_country_labels": tr("KEYBIND_HIDE_COUNTRY_LABELS"),
     }
     return names.get(key, key)
 

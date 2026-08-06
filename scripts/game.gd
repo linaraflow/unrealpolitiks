@@ -12,6 +12,7 @@ var _shown_x: float
 var _tween: Tween
 
 func _ready() -> void:
+    hide_panel()
     hud_panel.hide()
     _shown_x = hud_panel.position.x
 

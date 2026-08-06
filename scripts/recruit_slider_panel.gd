@@ -45,8 +45,8 @@ func _on_slider_value_changed(value: float):
 
 func _update_info(amount: int):
     cost = int(amount * settings.COST_PER_SOLDIER)
-    troops_label.text = "🪖 Troops: " + str(amount)
-    cost_label.text = "💵 Cost: " + ProvinceRegistry._format_number(cost, ".")
+    troops_label.text = "🪖 " + tr("TROOPS") + ": " + str(amount)
+    cost_label.text = "💵 " + tr("COST") + ": " + ProvinceRegistry._format_number(cost, ".")
     # Минимальный порог призыва - 100 человек
     confirm_btn.disabled = amount < 100
 

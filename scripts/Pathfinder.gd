@@ -43,6 +43,8 @@ func find_path(start_id: int, goal_id: int, country: String) -> Array:
                 if owner != "" and owner != ProvinceRegistry.SEA_OWNER:
                     if not ProvinceRegistry.countries_data.has(owner):
                         continue  # неизвестный/битый owner — не пускаем, но и не падаем
+                    if not ProvinceRegistry.countries_data.has(country):
+                        continue  # страна, которой принадлежит армия, уже уничтожена (_eliminate_country) — не пускаем, но и не падаем
 
                     var owner_data = ProvinceRegistry.countries_data[owner]
                     var province_owner_data = ProvinceRegistry.countries_data[country]

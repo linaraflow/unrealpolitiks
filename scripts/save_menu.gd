@@ -3,7 +3,7 @@ extends Control
 ## Цвет рамки выбранного слота сохранения.
 const SELECTED_BORDER_COLOR := Color("c9a24a")
 const DESELECTED_BORDER_COLOR := Color(0.35156286, 0.35156295, 0.35156265, 1)
-const EMPTY_SLOT_TEXT := "Empty save slot"
+const EMPTY_SLOT_TEXT := "EMPTY_SAVE_SLOT"
 
 enum Mode { LOAD, SAVE }
 
@@ -52,8 +52,8 @@ func _ready() -> void:
 ## клик по сохранению выбирает его, кнопка снизу — "Load Save".
 func open_for_load() -> void:
     _mode = Mode.LOAD
-    _title_label.text = "Select save"
-    _action_button_label.text = "Load Save"
+    _title_label.text = tr("SELECT_SAVE_TITLE")
+    _action_button_label.text = tr("LOAD_SAVE_BTN")
     show()
     _populate_saves()
 
@@ -63,8 +63,8 @@ func open_for_load() -> void:
 ## сохранение. Клик по существующему сохранению выбирает его для перезаписи.
 func open_for_save() -> void:
     _mode = Mode.SAVE
-    _title_label.text = "Save game"
-    _action_button_label.text = "Save"
+    _title_label.text = tr("SAVE_GAME_TITLE")
+    _action_button_label.text = tr("SAVE_BTN")
     show()
     _populate_saves()
 
@@ -135,9 +135,9 @@ func _add_save_entry(info: Dictionary) -> void:
     var tick_rect: TextureRect = hbox.get_node("TickRect")
 
     var country: String = info.get("country", "")
-    country_name_label.text = country if country != "" else "Unknown"
+    country_name_label.text = tr(country.to_upper()) if country != "" else tr("UNKNOWN_COUNTRY")
     flag_rect.texture = _load_flag(country)
-    days_label.text = "%d days" % int(info.get("days_in_power", 0))
+    days_label.text = tr("DAYS_INT_FMT") % int(info.get("days_in_power", 0))
     gdp_label.text = _format_money(float(info.get("gdp", 0.0)))
     time_label.text = _format_time_ago(int(info.get("saved_at_unix", 0)))
     tick_rect.visible = false
@@ -174,7 +174,7 @@ func _add_empty_slot_entry() -> void:
             child.hide()
 
     var label := Label.new()
-    label.text = EMPTY_SLOT_TEXT
+    label.text = tr(EMPTY_SLOT_TEXT)
     label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
     label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
     label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -301,10 +301,10 @@ func _format_time_ago(saved_at_unix: int) -> String:
         return ""
     var diff: int = int(Time.get_unix_time_from_system()) - saved_at_unix
     if diff < 60:
-        return "just now"
+        return tr("TIME_JUST_NOW")
     elif diff < 3600:
-        return "%d min ago" % int(diff / 60.0)
+        return tr("TIME_MIN_AGO_FMT") % int(diff / 60.0)
     elif diff < 86400:
-        return "%d hours ago" % int(diff / 3600.0)
+        return tr("TIME_HOURS_AGO_FMT") % int(diff / 3600.0)
     else:
-        return "%d days ago" % int(diff / 86400.0)
+        return tr("TIME_DAYS_AGO_FMT") % int(diff / 86400.0)

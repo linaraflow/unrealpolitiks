@@ -29,6 +29,83 @@ corner_radius_top_right = 8
 corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8iasn"]
+content_margin_left = 5.0
+content_margin_top = 3.0
+content_margin_right = 5.0
+content_margin_bottom = 3.0
+bg_color = Color(0.11858138, 0.11858139, 0.11858132, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_flgte"]
+content_margin_left = 5.0
+content_margin_top = 3.0
+content_margin_right = 5.0
+content_margin_bottom = 3.0
+bg_color = Color(0.080783375, 0.08078333, 0.080783345, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_im545"]
+content_margin_left = 5.0
+content_margin_top = 3.0
+content_margin_right = 5.0
+content_margin_bottom = 3.0
+bg_color = Color(0.103743605, 0.103743516, 0.103743516, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_oyw31"]
+content_margin_left = 5.0
+content_margin_top = 3.0
+content_margin_right = 5.0
+content_margin_bottom = 3.0
+bg_color = Color(0.080783375, 0.08078333, 0.080783345, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_oibr1"]
+content_margin_left = 5.0
+content_margin_top = 3.0
+content_margin_right = 5.0
+content_margin_bottom = 3.0
+bg_color = Color(0.103743605, 0.103743516, 0.103743516, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7fud2"]
+content_margin_left = 5.0
+content_margin_top = 3.0
+content_margin_right = 5.0
+content_margin_bottom = 3.0
+bg_color = Color(0.080783375, 0.08078333, 0.080783345, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_40bx1"]
+content_margin_left = 5.0
+content_margin_top = 3.0
+content_margin_right = 5.0
+content_margin_bottom = 3.0
+bg_color = Color(0.103743605, 0.103743516, 0.103743516, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
 [node name="SettingsMenu" type="Control" unique_id=821874824]
 layout_mode = 3
 anchors_preset = 15
@@ -71,7 +148,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.92, 0.92, 0.9, 1)
 theme_override_fonts/font = ExtResource("2_im545")
 theme_override_font_sizes/font_size = 22
-text = "Settings"
+text = "SETTINGS_TITLE"
 
 [node name="Tabs" type="TabContainer" parent="Panel/Root" unique_id=593124774]
 custom_minimum_size = Vector2(0, 380)
@@ -80,35 +157,45 @@ size_flags_vertical = 3
 theme_override_fonts/font = ExtResource("2_jttlj")
 theme_override_styles/panel = SubResource("StyleBoxFlat_svoao")
 current_tab = 4
+tab_0/title = "TAB_GRAPHICS"
+tab_1/title = "TAB_INTERFACE"
+tab_2/title = "TAB_GAMEPLAY"
+tab_3/title = "TAB_SOUND"
+tab_4/title = "TAB_CONTROLS"
 
 [node name="Graphics" type="VBoxContainer" parent="Panel/Root/Tabs" unique_id=1496483292]
 visible = false
 layout_mode = 2
 theme_override_constants/separation = 6
 metadata/_tab_index = 0
+metadata/_tab_name = "TAB_GRAPHICS"
 
 [node name="Interface" type="VBoxContainer" parent="Panel/Root/Tabs" unique_id=1324321702]
 visible = false
 layout_mode = 2
 theme_override_constants/separation = 6
 metadata/_tab_index = 1
+metadata/_tab_name = "TAB_INTERFACE"
 
 [node name="Gameplay" type="VBoxContainer" parent="Panel/Root/Tabs" unique_id=1981160919]
 visible = false
 layout_mode = 2
 theme_override_constants/separation = 6
 metadata/_tab_index = 2
+metadata/_tab_name = "TAB_GAMEPLAY"
 
 [node name="Sound" type="VBoxContainer" parent="Panel/Root/Tabs" unique_id=509312588]
 visible = false
 layout_mode = 2
 theme_override_constants/separation = 6
 metadata/_tab_index = 3
+metadata/_tab_name = "TAB_SOUND"
 
 [node name="Controls" type="VBoxContainer" parent="Panel/Root/Tabs" unique_id=1231663013]
 layout_mode = 2
 theme_override_constants/separation = 6
 metadata/_tab_index = 4
+metadata/_tab_name = "TAB_CONTROLS"
 
 [node name="ButtonsRow" type="HBoxContainer" parent="Panel/Root" unique_id=1066019358]
 layout_mode = 2
@@ -118,17 +205,26 @@ alignment = 2
 [node name="ResetButton" type="Button" parent="Panel/Root/ButtonsRow" unique_id=1385896466]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("2_im545")
-text = "Reset"
+theme_override_styles/normal = SubResource("StyleBoxFlat_8iasn")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_flgte")
+theme_override_styles/hover = SubResource("StyleBoxFlat_im545")
+text = "RESET_SETTINGS_BUTTON"
 
 [node name="SaveButton" type="Button" parent="Panel/Root/ButtonsRow" unique_id=839138443]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("2_im545")
-text = "Save"
+theme_override_styles/normal = SubResource("StyleBoxFlat_8iasn")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_oyw31")
+theme_override_styles/hover = SubResource("StyleBoxFlat_oibr1")
+text = "SAVE_SETTINGS_BUTTON"
 
 [node name="BackButton" type="Button" parent="Panel/Root/ButtonsRow" unique_id=126872098]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("2_im545")
-text = "Back"
+theme_override_styles/normal = SubResource("StyleBoxFlat_8iasn")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_7fud2")
+theme_override_styles/hover = SubResource("StyleBoxFlat_40bx1")
+text = "BACK_SETTINGS_BUTTON"
 
 [connection signal="pressed" from="Panel/Root/ButtonsRow/ResetButton" to="." method="_on_reset_pressed"]
 [connection signal="pressed" from="Panel/Root/ButtonsRow/SaveButton" to="." method="_on_save_pressed"]

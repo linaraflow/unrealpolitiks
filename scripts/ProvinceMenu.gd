@@ -163,10 +163,13 @@ func update_info(data: Dictionary):
     if data.has("id"):
         current_province_id = int(data["id"])
     var owner_name = data.get("owner", "unknown")
-    owner_label.text = owner_name
+    owner_label.text = tr(owner_name.to_upper())
     name_label.text  = data.get("name", "unknown")
     population_label.text = _format_population(int(data.get("population", 0)))
-    factories_label.text = str(int(data.get("factories", 0))) + " factories"
+    
+    var count = int(data.get("factories", 0))
+    var translation_key = Global.get_factory_translation_key(count)
+    factories_label.text = str(count) + " " + tr(translation_key)
 
     var happiness = round(data.get("happiness", 0))
     happiness_label.text = get_happiness(happiness)
@@ -218,17 +221,17 @@ func _on_build_factory_button_pressed() -> void:
 
     var queue: Array = p_data.get("factory_queue", [])
     if queue.size() >= MAX_QUEUE_SIZE:
-        show_queue_toast("The construction queue is full", COLOR_BAD)
+        show_queue_toast(tr("TOAST_QUEUE_FULL"), COLOR_BAD)
         return
 
     var success = ProvinceRegistry.start_factory_construction(p_id, settings.active_country)
     if success:
         balance_label.balance_update()
         var updated_queue: Array = ProvinceRegistry.province_data.get(p_id, {}).get("factory_queue", [])
-        show_queue_toast("Factory construction %d/%d" % [updated_queue.size(), MAX_QUEUE_SIZE], COLOR_GOOD)
+        show_queue_toast(tr("TOAST_FACTORY_PROGRESS_FMT") % [updated_queue.size(), MAX_QUEUE_SIZE], COLOR_GOOD)
     else:
         var factory_cost: String = ProvinceRegistry._format_number(settings.factory_cost, ".")
-        show_queue_toast("Not enough money (%s required)" % factory_cost, COLOR_BAD)
+        show_queue_toast(tr("TOAST_NOT_ENOUGH_MONEY_FMT") % factory_cost, COLOR_BAD)
 
 # --- recruit (перенесено из recruite_button.gd) -----------------------------
 
@@ -270,7 +273,7 @@ func _on_instant_max_recruit() -> void:
     var amount = min(pop_limit, money_limit)
 
     if amount < 100:
-        show_queue_toast("Not enough money or population to recruit (min. 100)", COLOR_BAD)
+        show_queue_toast(tr("TOAST_NOT_ENOUGH_RECRUIT"), COLOR_BAD)
         return
 
     var cost = int(amount * settings.COST_PER_SOLDIER)
@@ -284,7 +287,7 @@ func _on_instant_max_recruit() -> void:
 
     balance_label.balance_update()
     update_army_info()
-    show_queue_toast("Recruited %d troops" % amount, COLOR_GOOD)
+    show_queue_toast(tr("TOAST_RECRUITED_FMT") % amount, COLOR_GOOD)
 
 func update_army_info():
     var p_data = ProvinceRegistry.province_data.get(settings.last_clicked_province_id, {})

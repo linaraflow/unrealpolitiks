@@ -110,3 +110,7 @@ func _on_all_div_selectable_toggled(toggled_on: bool) -> void:
         settings.can_select = true
     else:
         settings.can_select = false
+
+
+func _on_build_factory_button_pressed() -> void:
+    pass

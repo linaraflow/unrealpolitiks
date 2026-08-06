@@ -52,6 +52,7 @@ func _ready() -> void:
 func apply_all() -> void:
     _apply_display()
     _apply_audio()
+    apply_language()
     sync_input_map()
     settings_applied.emit()
 
@@ -232,6 +233,11 @@ func load_settings() -> void:
     keybinds = {}
     for key in default_keys:
         keybinds[key] = loaded_keybinds.get(key, _default_keybind(key))
+
+func apply_language() -> void:
+    TranslationServer.set_locale(language)
+    print(tr("TAB_GRAPHICS"))
+    print("Locale: ", TranslationServer.get_locale())
 
 func _default_keybind(action_key: String) -> String:
     var defaults := {

@@ -31,22 +31,31 @@ func _on_close_pressed() -> void:
     var tween := create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
     tween.tween_property(panel, "position:x", target_x, 0.35)
 
+## Приводит owner_id к виду ключа локализации CTRY_<...> (родительный падеж),
+## как в DivisionManager.gd / statistics_menu.gd — переиспользуем тот же CSV.
+func _ctry_key(owner_id: String) -> String:
+    return owner_id.replace(" ", "_").replace("'", "").replace("-", "_")
+
 func _on_war_declared(attacker: String, defender: String) -> void:
-    _add_notification(attacker, defender, "declared war on", Color(0.85, 0.2, 0.2))
+    var title_text := tr("NOTIF_WAR_DECLARED_FMT") % [tr(attacker.to_upper()), tr("CTRY_" + _ctry_key(defender))]
+    _add_notification(attacker, defender, title_text, Color(0.85, 0.2, 0.2))
 
 func _on_war_ended(country_a: String, country_b: String) -> void:
-    _add_notification(country_a, country_b, "made peace", Color(0.3, 0.75, 0.3))
+    var title_text := tr("NOTIF_PEACE_MADE_FMT") % [tr(country_a.to_upper()), tr(country_b.to_upper())]
+    _add_notification(country_a, country_b, title_text, Color(0.3, 0.75, 0.3))
 
 func _on_sanctions_imposed(attacker: String, target: String) -> void:
-    _add_notification(attacker, target, "imposed sanctions on", Color(0.85, 0.65, 0.15))
+    var title_text := tr("NOTIF_SANCTIONS_IMPOSED_FMT") % [tr(attacker.to_upper()), tr("CTRY_" + _ctry_key(target))]
+    _add_notification(attacker, target, title_text, Color(0.85, 0.65, 0.15))
 
 func _on_sanctions_removed(attacker: String, target: String) -> void:
-    _add_notification(attacker, target, "lifted sanctions on", Color(0.55, 0.55, 0.55))
+    var title_text := tr("NOTIF_SANCTIONS_REMOVED_FMT") % [tr(attacker.to_upper()), tr("CTRY_" + _ctry_key(target))]
+    _add_notification(attacker, target, title_text, Color(0.55, 0.55, 0.55))
 
 func _on_regime_collapsed(country: String, old_ideology: String, new_ideology: String) -> void:
     _add_single_notification(
         country,
-        "regime collapsed (%s -> %s)" % [old_ideology.capitalize(), new_ideology.capitalize()],
+        tr("NOTIF_REGIME_COLLAPSED_FMT") % [tr(country.to_upper()), tr(old_ideology.to_upper()), tr(new_ideology.to_upper())],
         Color(0.6, 0.15, 0.75)
     )
 
@@ -110,7 +119,7 @@ func _build_item(country_a: String, country_b: String, text: String, accent: Col
     hbox.add_child(vbox)
 
     var title := Label.new()
-    title.text = "%s %s %s" % [country_a, text, country_b]
+    title.text = text
     title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
     vbox.add_child(title)
 
@@ -154,7 +163,7 @@ func _build_single_item(country: String, text: String, accent: Color) -> Control
     hbox.add_child(vbox)
 
     var title := Label.new()
-    title.text = "%s: %s" % [country, text]
+    title.text = text
     title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
     vbox.add_child(title)
 

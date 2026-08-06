@@ -163,7 +163,7 @@ func _update_labels() -> void:
     var per_province = _get_drones_per_province()
     var total_needed = per_province * selected_targets.size()
 
-    total_label.text = str(available) + " available"
+    total_label.text = str(available) + " " + tr("AVAILABLE")
     num_label.text = str(per_province) + " / " + str(total_needed)
 
 

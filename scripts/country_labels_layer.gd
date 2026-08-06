@@ -415,7 +415,7 @@ func _compute_cluster_geometry(cluster: Array, province_centers: Dictionary) -> 
 
 func _get_display_name(country: String) -> String:
     var data: Dictionary = ProvinceRegistry.countries_data.get(country, {})
-    return str(data.get("name", country))
+    return tr(country.to_upper())
 
 
 func _current_zoom() -> float:

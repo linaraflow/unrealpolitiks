@@ -63,3 +63,25 @@ func play(path: String, bus: String = "SFX") -> void:
     sfx_player.stream = load(path)
     sfx_player.play()
     sfx_player.finished.connect(sfx_player.queue_free)
+    
+    
+    
+func get_factory_translation_key(count: int) -> String:
+    # Если текущий язык русский
+    if TranslationServer.get_locale().begins_with("ru"):
+        var mod10 = count % 10
+        var mod100 = count % 100
+        
+        if mod10 == 1 and mod100 != 11:
+            return "FACTORY_1" # 1, 21, 101 фабрика
+        elif mod10 in [2, 3, 4] and not mod100 in [12, 13, 14]:
+            return "FACTORY_2" # 2, 3, 4, 22 фабрики
+        else:
+            return "FACTORY_5" # 0, 5, 11, 20 фабрик
+            
+    # Для английского и большинства других языков (просто ед. / мн. число)
+    else:
+        if count == 1:
+            return "FACTORY_1" # 1 factory
+        else:
+            return "FACTORY_5" # 0, 2, 5 factories

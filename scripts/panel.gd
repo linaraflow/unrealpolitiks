@@ -178,8 +178,8 @@ func update_info():
 
     var data = ProvinceRegistry.countries_data[owner_name]
 
-    CountryLabel.text = owner_name
-    ProvincesLabel.text = "Provinces: " + str(ProvinceRegistry.owner_province_count[owner_name]) + "   " + str(data.get("ideology", "liberalism")).capitalize()
+    CountryLabel.text = tr(owner_name.to_upper())
+    ProvincesLabel.text = tr("PROVINCES") + ": " + str(ProvinceRegistry.owner_province_count[owner_name]) + "   " + tr(data.get("ideology", "liberalism").to_upper()).capitalize()
     PopulationLabel.text = ProvinceRegistry._format_number(ProvinceRegistry.get_country_population(owner_name), " ")
 
     var GDP = (ProvinceRegistry.countries_data[owner_name].get("factories", 0) * settings.product_cost + data.get("monthly_income", 0)) * 12
@@ -192,7 +192,7 @@ func update_info():
     _set_stat_bar(WarExhaustionBar, WarExhaustionValueLabel, data.get("war_exhaustion", 0.0), true)
     _set_stat_bar(SanctionsBar, SanctionsValueLabel, data.get("sanctions", 0.0), true)
 
-    IdeologyLabel.text = str(data.get("ideology", "liberalism")).capitalize()
+    IdeologyLabel.text = tr(str(data.get("ideology", "liberalism")).to_upper()).capitalize()
 
     var is_myself = (owner_name == settings.active_country)
     var at_war = ProvinceRegistry.is_at_war(settings.active_country, owner_name)
@@ -278,11 +278,11 @@ func _populate_ideology_list() -> void:
         child.queue_free()
 
     var ideologies = DiplomacyManager.IDEOLOGIES.keys()
-    var current_ideology = ProvinceRegistry.countries_data[settings.active_country].get("ideology", "liberalism")
+    var current_ideology = tr(ProvinceRegistry.countries_data[settings.active_country].get("ideology", "liberalism").to_upper())
 
     for ideo in ideologies:
         var btn = Button.new()
-        btn.text = ideo.capitalize()
+        btn.text = tr(ideo.to_upper()).capitalize()
         btn.mouse_entered.connect(_on_ideology_selection_panel_mouse_entered)
         btn.mouse_exited.connect(_on_ideology_selection_panel_mouse_exited)
         btn.pressed.connect(_on_ideology_button_pressed.bind(btn, ideo))

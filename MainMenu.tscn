@@ -164,7 +164,7 @@ theme_override_fonts/font = ExtResource("4_qoqlk")
 theme_override_styles/normal = SubResource("ButtonNormal")
 theme_override_styles/pressed = SubResource("ButtonPressed")
 theme_override_styles/hover = SubResource("ButtonHover")
-text = "Continue"
+text = "CONTINUE"
 
 [node name="LoadGame" type="Button" parent="ContentMargin/ContentBox/MenuList" unique_id=1311373072]
 custom_minimum_size = Vector2(0, 46)
@@ -174,7 +174,7 @@ theme_override_fonts/font = ExtResource("4_qoqlk")
 theme_override_styles/normal = SubResource("ButtonNormal")
 theme_override_styles/pressed = SubResource("ButtonPressed")
 theme_override_styles/hover = SubResource("ButtonHover")
-text = "Load game"
+text = "LOAD_GAME"
 
 [node name="Settings" type="Button" parent="ContentMargin/ContentBox/MenuList" unique_id=979759188]
 custom_minimum_size = Vector2(0, 46)
@@ -184,7 +184,7 @@ theme_override_fonts/font = ExtResource("4_qoqlk")
 theme_override_styles/normal = SubResource("ButtonNormal")
 theme_override_styles/pressed = SubResource("ButtonPressed")
 theme_override_styles/hover = SubResource("ButtonHover")
-text = "Settings"
+text = "SETTINGS"
 
 [node name="Exit" type="Button" parent="ContentMargin/ContentBox/MenuList" unique_id=2019902261]
 custom_minimum_size = Vector2(0, 46)
@@ -194,7 +194,7 @@ theme_override_fonts/font = ExtResource("4_qoqlk")
 theme_override_styles/normal = SubResource("ButtonNormal")
 theme_override_styles/pressed = SubResource("ButtonPressed")
 theme_override_styles/hover = SubResource("ButtonHover")
-text = "Exit"
+text = "EXIT"
 
 [node name="VersionLabel" type="Label" parent="." unique_id=1010935648]
 layout_mode = 1

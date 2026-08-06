@@ -180,7 +180,7 @@ stretch_mode = 5
 layout_mode = 2
 theme_override_fonts/font = ExtResource("3_mxvw5")
 theme_override_font_sizes/font_size = 20
-text = "Regime collapsed"
+text = "REGIME_COLLAPSED_TITLE"
 horizontal_alignment = 1
 
 [node name="MiniLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=26305460]
@@ -188,7 +188,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.7204674, 0.7204675, 0.7204674, 1)
 theme_override_fonts/font = ExtResource("3_mxvw5")
 theme_override_font_sizes/font_size = 14
-text = "Your government has lost control of the country"
+text = "REGIME_COLLAPSED_SUBTITLE"
 horizontal_alignment = 1
 
 [node name="HSeparator" type="HSeparator" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=390174829]
@@ -201,7 +201,7 @@ layout_mode = 2
 layout_mode = 2
 theme_override_colors/font_color = Color(0.72156864, 0.72156864, 0.72156864, 1)
 theme_override_fonts/font = ExtResource("3_mxvw5")
-text = "Country"
+text = "LABEL_COUNTRY"
 
 [node name="Spacer" type="Control" parent="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer" unique_id=97524816]
 layout_mode = 2
@@ -219,7 +219,7 @@ layout_mode = 2
 layout_mode = 2
 theme_override_colors/font_color = Color(0.72156864, 0.72156864, 0.72156864, 1)
 theme_override_fonts/font = ExtResource("3_mxvw5")
-text = "Cause"
+text = "LABEL_CAUSE"
 
 [node name="Spacer" type="Control" parent="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer2" unique_id=180506980]
 layout_mode = 2
@@ -237,7 +237,7 @@ layout_mode = 2
 layout_mode = 2
 theme_override_colors/font_color = Color(0.72156864, 0.72156864, 0.72156864, 1)
 theme_override_fonts/font = ExtResource("3_mxvw5")
-text = "Date"
+text = "LABEL_DATE"
 
 [node name="Spacer" type="Control" parent="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer3" unique_id=1121674918]
 layout_mode = 2
@@ -255,7 +255,7 @@ layout_mode = 2
 layout_mode = 2
 theme_override_colors/font_color = Color(0.72156864, 0.72156864, 0.72156864, 1)
 theme_override_fonts/font = ExtResource("3_mxvw5")
-text = "Days in power"
+text = "LABEL_DAYS_IN_POWER"
 
 [node name="Spacer" type="Control" parent="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer4" unique_id=1034251065]
 layout_mode = 2
@@ -296,7 +296,7 @@ stretch_mode = 5
 [node name="Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/RestartButton/HBoxContainer" unique_id=2137130843]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("3_mxvw5")
-text = "Restart"
+text = "BTN_RESTART"
 
 [node name="SaveButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=1348635006]
 custom_minimum_size = Vector2(0, 42)
@@ -325,7 +325,7 @@ stretch_mode = 5
 [node name="Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/SaveButton/HBoxContainer" unique_id=303651972]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("3_mxvw5")
-text = "Load save"
+text = "BTN_LOAD_SAVE"
 
 [node name="MenuButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=1103130670]
 custom_minimum_size = Vector2(0, 42)
@@ -354,7 +354,7 @@ stretch_mode = 5
 [node name="Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/MenuButton/HBoxContainer" unique_id=295620750]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("3_mxvw5")
-text = "Main menu"
+text = "BTN_MAIN_MENU"
 
 [node name="ExitButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=103494462]
 custom_minimum_size = Vector2(0, 42)
@@ -384,7 +384,7 @@ stretch_mode = 5
 layout_mode = 2
 theme_override_colors/font_color = Color(0.37413925, 0.37413928, 0.37413922, 1)
 theme_override_fonts/font = ExtResource("3_mxvw5")
-text = "Quit game"
+text = "BTN_QUIT_GAME"
 
 [connection signal="pressed" from="PanelContainer/MarginContainer/VBoxContainer/RestartButton" to="." method="_on_restart_button_pressed"]
 [connection signal="pressed" from="PanelContainer/MarginContainer/VBoxContainer/MenuButton" to="." method="_on_menu_button_pressed"]
