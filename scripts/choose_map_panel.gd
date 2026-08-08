@@ -6,8 +6,8 @@ var text_color_inactive = Color(0.7, 0.7, 0.7)
 var icon_color_inactive = Color("8e8e93")
 var accent_color = Color("0a84ff")
 
-# ====== ДАННЫЕ ПУНКТОВ ======
-var menu_items = ["Politics", "Economy", "Population"]
+# ====== ДАННЫЕ ПУНКТОВ (ключи локализации) ======
+var menu_items = ["MAP_MODE_POLITICS", "MAP_MODE_ECONOMY", "MAP_MODE_POPULATION"]
 
 var selected_index = 0
 var item_buttons: Array[Button] = []
@@ -63,7 +63,8 @@ func _ready():
     arrow_icon.resized.connect(func(): arrow_icon.pivot_offset = arrow_icon.size / 2.0)
 
     _update_selection_visuals(selected_index)
-    dropdown_label.text = menu_items[selected_index]
+    dropdown_label.text = tr(menu_items[selected_index])
+    only_tick.text = tr("MAP_ONLY_OWN_COUNTRY")
 
     _set_only_tick_visible(selected_index != 0)
 
@@ -92,7 +93,7 @@ func _cache_list_height():
 func _on_item_pressed(index: int):
     selected_index = index
     _update_selection_visuals(index)
-    dropdown_label.text = menu_items[index]
+    dropdown_label.text = tr(menu_items[index])
 
     match index:
         0: # Politics
@@ -144,7 +145,7 @@ func _set_children_mouse_ignore(node: Node) -> void:
 func reset_to_default() -> void:
     selected_index = 0
     _update_selection_visuals(0)
-    dropdown_label.text = menu_items[0]
+    dropdown_label.text = tr(menu_items[0])
 
     only_tick.set_pressed_no_signal(false)
     _set_only_tick_visible(false)
@@ -173,7 +174,7 @@ func _update_selection_visuals(index: int):
         label.add_theme_color_override("font_color", text_color_active if is_sel else text_color_inactive)
         icon.modulate = Color.WHITE if is_sel else icon_color_inactive
         check.visible = is_sel
-        dropdown_label.text = menu_items[index]
+        dropdown_label.text = tr(menu_items[index])
 
 
 # ====== СВОРАЧИВАНИЕ / РАЗВОРАЧИВАНИЕ СПИСКА ======

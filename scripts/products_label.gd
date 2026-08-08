@@ -44,8 +44,13 @@ func _execute_sale(amount: float) -> void:
     amount = clamp(amount, 0.0, current_stock)
     
     if amount > 0:
+        # Цена продажи считается так же, как у ботов (см. AITrade.process_trade):
+        # санкции срезают процент от базовой цены товара.
+        var sanctions    = c_data.get("sanctions", 0.0)
+        var actual_price = settings.product_cost * (1.0 - (sanctions / 100.0))
+
         c_data["products"] -= amount
-        c_data["balance"] = c_data.get("balance", 0.0) + (amount * settings.product_cost)
+        c_data["balance"] = c_data.get("balance", 0.0) + (amount * actual_price)
         
     balance_label.balance_update()
     sell_input.value = 0

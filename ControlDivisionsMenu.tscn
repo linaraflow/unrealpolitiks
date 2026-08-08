@@ -199,7 +199,7 @@ stretch_mode = 5
 layout_mode = 2
 theme_override_fonts/font = ExtResource("3_c20sc")
 theme_override_font_sizes/font_size = 10
-text = "selected soliders: 128"
+text = "SELECTED_SOLIDERS"
 
 [node name="MainPanel" type="PanelContainer" parent="VBoxContainer" unique_id=1867035927]
 custom_minimum_size = Vector2(186, 65)
@@ -238,7 +238,7 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_ay1q4")
 icon = ExtResource("2_vqe8p")
 icon_alignment = 1
 
-[node name="SplitButton" type="Button" parent="VBoxContainer/MainPanel/MarginContainer/HBoxContainer" unique_id=468992242]
+[node name="DisbandButton" type="Button" parent="VBoxContainer/MainPanel/MarginContainer/HBoxContainer" unique_id=468992242]
 layout_mode = 2
 size_flags_horizontal = 3
 focus_mode = 0
@@ -249,6 +249,7 @@ icon = ExtResource("3_rkv8n")
 icon_alignment = 1
 
 [node name="DistributePanel" type="PanelContainer" parent="VBoxContainer" unique_id=1333265752]
+visible = false
 custom_minimum_size = Vector2(248, 103)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_ydoha")
@@ -264,6 +265,22 @@ theme_override_constants/margin_bottom = 14
 layout_mode = 2
 theme_override_constants/separation = 8
 
+[node name="HBoxContainer2" type="HBoxContainer" parent="VBoxContainer/DistributePanel/MarginContainer/VBoxContainer" unique_id=1108559328]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/DistributePanel/MarginContainer/VBoxContainer/HBoxContainer2" unique_id=1930851788]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72156864, 0.72156864, 0.72156864, 1)
+theme_override_fonts/font = ExtResource("3_c20sc")
+theme_override_font_sizes/font_size = 10
+text = "SELECTED_DIVISIONS"
+
+[node name="NumProvinces" type="Label" parent="VBoxContainer/DistributePanel/MarginContainer/VBoxContainer/HBoxContainer2" unique_id=1384369599]
+layout_mode = 2
+size_flags_horizontal = 10
+theme_override_font_sizes/font_size = 10
+text = "4"
+
 [node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/DistributePanel/MarginContainer/VBoxContainer" unique_id=1121794026]
 layout_mode = 2
 
@@ -272,7 +289,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.72156864, 0.72156864, 0.72156864, 1)
 theme_override_fonts/font = ExtResource("3_c20sc")
 theme_override_font_sizes/font_size = 10
-text = "selected provinces"
+text = "SELECTED_PROVINCES"
 
 [node name="NumProvinces" type="Label" parent="VBoxContainer/DistributePanel/MarginContainer/VBoxContainer/HBoxContainer" unique_id=789672252]
 layout_mode = 2
@@ -288,4 +305,40 @@ theme_override_font_sizes/font_size = 12
 theme_override_styles/normal = SubResource("StyleBoxFlat_qganp")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_ujaaa")
 theme_override_styles/hover = SubResource("StyleBoxFlat_g4shm")
-text = "Confirm"
+text = "CONFIRM"
+
+[node name="DisbandPanel" type="PanelContainer" parent="VBoxContainer" unique_id=476103254]
+custom_minimum_size = Vector2(248, 103)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_ydoha")
+
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/DisbandPanel" unique_id=1404514645]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 14
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/DisbandPanel/MarginContainer" unique_id=210768836]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="Label" type="Label" parent="VBoxContainer/DisbandPanel/MarginContainer/VBoxContainer" unique_id=1595036429]
+layout_mode = 2
+theme_override_font_sizes/font_size = 10
+text = "10.000"
+horizontal_alignment = 1
+
+[node name="HSlider" type="HSlider" parent="VBoxContainer/DisbandPanel/MarginContainer/VBoxContainer" unique_id=1211593083]
+layout_mode = 2
+
+[node name="ConfirmButton" type="Button" parent="VBoxContainer/DisbandPanel/MarginContainer/VBoxContainer" unique_id=1329039654]
+layout_mode = 2
+focus_mode = 0
+theme_override_fonts/font = ExtResource("3_c20sc")
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = SubResource("StyleBoxFlat_qganp")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_ujaaa")
+theme_override_styles/hover = SubResource("StyleBoxFlat_g4shm")
+text = "CONFIRM_DISBAND"

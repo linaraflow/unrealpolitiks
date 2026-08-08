@@ -1,0 +1,761 @@
+[gd_scene format=3 uid="uid://uh1sd1fvacpa"]
+
+[ext_resource type="Script" uid="uid://d061sein83pwj" path="res://scripts/panel.gd" id="1_e437t"]
+[ext_resource type="Resource" uid="uid://dpsywpq1i1i6j" path="res://new_resource.tres" id="3_e437t"]
+[ext_resource type="Texture2D" uid="uid://cax3w4hq1ih2k" path="res://assets/flags/Germany.png" id="3_l08fj"]
+[ext_resource type="Script" uid="uid://rs2yte7mkhc7" path="res://scripts/flag_rect.gd" id="4_xs2co"]
+[ext_resource type="Texture2D" uid="uid://cqy3mllueh8u4" path="res://assets/icons_country_menu/stability.svg" id="5_qw2xt"]
+[ext_resource type="FontVariation" uid="uid://eqbeyus3g4j1" path="res://fonts/new_font_variation.tres" id="5_r840y"]
+[ext_resource type="Texture2D" uid="uid://bs6vygkcp8s8t" path="res://assets/icons_country_menu/war_exhaustion.svg" id="6_l4hfs"]
+[ext_resource type="Texture2D" uid="uid://brpc2r1ap1q8a" path="res://assets/icons_country_menu/sanctions.svg" id="7_w0v6l"]
+[ext_resource type="Texture2D" uid="uid://dn1tgl5053my8" path="res://assets/icons_country_menu/impose.svg" id="8_p7bm5"]
+[ext_resource type="Texture2D" uid="uid://c1dlsstw2b8np" path="res://assets/icons_country_menu/worsen.svg" id="9_r840y"]
+[ext_resource type="Texture2D" uid="uid://cbf0bhufldiqs" path="res://assets/icons_country_menu/declare_war.svg" id="10_a3qja"]
+[ext_resource type="Texture2D" uid="uid://cdpnchr72vb42" path="res://assets/icons_country_menu/peace.svg" id="11_7su7u"]
+[ext_resource type="Texture2D" uid="uid://cxgtmyqws48pf" path="res://assets/icons_country_menu/change.svg" id="12_p7bm5"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hbrlp"]
+bg_color = Color(0.12156863, 0.12156863, 0.11764706, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.35156286, 0.35156295, 0.35156265, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+corner_detail = 20
+shadow_size = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7fbel"]
+bg_color = Color(0.12156863, 0.12156863, 0.11764706, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.35156286, 0.35156295, 0.35156265, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+corner_detail = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_m3tma"]
+content_margin_left = 14.0
+content_margin_top = 10.0
+content_margin_right = 14.0
+content_margin_bottom = 10.0
+bg_color = Color(0.18000475, 0.18000492, 0.18000486, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+corner_detail = 20
+
+[sub_resource type="Gradient" id="Gradient_hc05d"]
+offsets = PackedFloat32Array(0, 0.4939759, 1)
+colors = PackedColorArray(0.7529412, 0.22352941, 0.16862746, 1, 0.8509804, 0.6039216, 0.16862746, 1, 0.23137255, 0.5411765, 0.23137255, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_4c1hm"]
+gradient = SubResource("Gradient_hc05d")
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_qw2xt"]
+bg_color = Color(0.23392546, 0.23392549, 0.23392531, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+corner_radius_top_left = 11
+corner_radius_top_right = 11
+corner_radius_bottom_right = 11
+corner_radius_bottom_left = 11
+corner_detail = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_l4hfs"]
+content_margin_top = 8.0
+bg_color = Color(0.16924527, 0.16924533, 0.16924518, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.585062, 0.5850621, 0.5850618, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+corner_detail = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_a3qja"]
+content_margin_left = 0.0
+content_margin_top = 4.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+bg_color = Color(0.103743605, 0.103743516, 0.103743516, 1)
+border_color = Color(0.585062, 0.5850621, 0.5850618, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+corner_detail = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_r840y"]
+content_margin_left = 0.0
+content_margin_top = 4.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+bg_color = Color(0.14767182, 0.14767182, 0.14767176, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.585062, 0.5850621, 0.5850618, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+corner_detail = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dpeqq"]
+content_margin_top = 8.0
+bg_color = Color(0.24115619, 0.24115601, 0.24115604, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.585062, 0.5850621, 0.5850618, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+corner_detail = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7su7u"]
+content_margin_left = 0.0
+content_margin_top = 4.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+bg_color = Color(0.103743605, 0.103743516, 0.103743516, 1)
+border_color = Color(0.585062, 0.5850621, 0.5850618, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+corner_detail = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_s1i0l"]
+content_margin_top = 8.0
+bg_color = Color(0.16924527, 0.16924533, 0.16924518, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.585062, 0.5850621, 0.5850618, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+corner_detail = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ru30x"]
+content_margin_left = 0.0
+content_margin_top = 4.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+bg_color = Color(0.103743605, 0.103743516, 0.103743516, 1)
+border_color = Color(0.585062, 0.5850621, 0.5850618, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+corner_detail = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_m4ayv"]
+content_margin_top = 8.0
+bg_color = Color(0.16924527, 0.16924533, 0.16924518, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.585062, 0.5850621, 0.5850618, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+corner_detail = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_u2c8u"]
+content_margin_left = 0.0
+content_margin_top = 4.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+bg_color = Color(0.103743605, 0.103743516, 0.103743516, 1)
+border_color = Color(0.585062, 0.5850621, 0.5850618, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+corner_detail = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_l08fj"]
+content_margin_left = 10.0
+content_margin_top = 5.0
+content_margin_right = 10.0
+content_margin_bottom = 5.0
+bg_color = Color(0.18000475, 0.18000492, 0.18000486, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+corner_detail = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_p7bm5"]
+content_margin_left = 8.0
+content_margin_top = 4.0
+content_margin_right = 8.0
+content_margin_bottom = 4.0
+bg_color = Color(0.14406255, 0.14406255, 0.14406249, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.11858145, 0.11858136, 0.11858138, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+corner_detail = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vvsl0"]
+content_margin_top = 3.0
+content_margin_bottom = 3.0
+bg_color = Color(0.12156863, 0.12156863, 0.11764706, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.30990228, 0.3142515, 0.28586113, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="CountryMenu" type="Control" unique_id=1494951920]
+custom_minimum_size = Vector2(300, 433)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 1920.0
+offset_bottom = 1080.0
+
+[node name="Panel" type="Panel" parent="." unique_id=135916731 node_paths=PackedStringArray("FlagRect", "CountryLabel", "CountryLabelScroll", "ProvincesLabel", "PopulationLabel", "FactoriesLabel", "HappinessLabel", "HappinessBar", "WarExhaustionValueLabel", "WarExhaustionBar", "SanctionsValueLabel", "SanctionsBar", "RelationsRow", "RelationsValueLabel", "RelationsBarBox", "RelationsMarker", "DiplomacyActionsGrid", "ImproveBtn", "WorsenBtn", "SanctionBtn", "DeclareWarBtn", "NegotiationBtn", "IdeologyCard", "IdeologyLabel", "ChangeIdeologyBtn", "ideology_panel", "ideology_list", "change_btn", "close_btn")]
+layout_mode = 1
+offset_right = 300.0
+offset_bottom = 433.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_hbrlp")
+script = ExtResource("1_e437t")
+settings = ExtResource("3_e437t")
+FlagRect = NodePath("HeaderRow/FlagRect")
+CountryLabel = NodePath("HeaderRow/TitleBox/CountryLabelScroll/CountryLabel")
+CountryLabelScroll = NodePath("HeaderRow/TitleBox/CountryLabelScroll")
+ProvincesLabel = NodePath("HeaderRow/TitleBox/ProvincesLabel")
+PopulationLabel = NodePath("StatsCardsRow/PopulationCard/VBoxContainer/PopulationLabel")
+FactoriesLabel = NodePath("StatsCardsRow/GDPCard/VBoxContainer/FactoriesLabel")
+HappinessLabel = NodePath("BarsContainer/HappinessRow/HappinessHeader/HappinessLabel")
+HappinessBar = NodePath("BarsContainer/HappinessRow/HappinessBar")
+WarExhaustionValueLabel = NodePath("BarsContainer/WarExhaustionRow/WarExhaustionHeader/WarExhaustionLabel")
+WarExhaustionBar = NodePath("BarsContainer/WarExhaustionRow/WarExhaustionBar")
+SanctionsValueLabel = NodePath("BarsContainer/SanctionsRow/SanctionsHeader/SanctionsLabel")
+SanctionsBar = NodePath("BarsContainer/SanctionsRow/SanctionsBar")
+RelationsRow = NodePath("RelationsRow")
+RelationsValueLabel = NodePath("RelationsRow/RelationsHeader/RelationsValueLabel")
+RelationsBarBox = NodePath("RelationsRow/RelationsBarBox")
+RelationsMarker = NodePath("RelationsRow/RelationsBarBox/Marker")
+DiplomacyActionsGrid = NodePath("DiplomacyActionsGrid")
+ImproveBtn = NodePath("DiplomacyActionsGrid/ImproveRelationsBtn")
+WorsenBtn = NodePath("DiplomacyActionsGrid/WorsenRelationsBtn")
+SanctionBtn = NodePath("DiplomacyActionsGrid/ImposeSanctionsBtn")
+DeclareWarBtn = NodePath("DiplomacyActionsGrid/WarSlot/DeclareWar")
+NegotiationBtn = NodePath("DiplomacyActionsGrid/WarSlot/Negotiation")
+IdeologyCard = NodePath("IdeologyCard")
+IdeologyLabel = NodePath("IdeologyCard/HBoxContainer/IdeologyInfo/IdeologyLabel")
+ChangeIdeologyBtn = NodePath("IdeologyCard/HBoxContainer/ChangeIdeologyBtn")
+ideology_panel = NodePath("IdeologySelectionPanel")
+ideology_list = NodePath("IdeologySelectionPanel/VBoxContainer/ScrollContainer/IdeologyList")
+change_btn = NodePath("IdeologySelectionPanel/VBoxContainer/HBoxContainer/ChangeBtn")
+close_btn = NodePath("IdeologySelectionPanel/VBoxContainer/HBoxContainer/CloseBtn")
+
+[node name="HeaderRow" type="HBoxContainer" parent="Panel" unique_id=1500502106]
+layout_mode = 0
+offset_left = 12.0
+offset_top = 13.0
+offset_right = 288.0
+offset_bottom = 49.0
+theme_override_constants/separation = 6
+
+[node name="FlagRect" type="TextureRect" parent="Panel/HeaderRow" unique_id=1307867362]
+custom_minimum_size = Vector2(56, 0)
+layout_mode = 2
+mouse_filter = 0
+texture = ExtResource("3_l08fj")
+expand_mode = 1
+script = ExtResource("4_xs2co")
+settings = ExtResource("3_e437t")
+
+[node name="ColorPanel" type="Panel" parent="Panel/HeaderRow/FlagRect" unique_id=1622753563]
+visible = false
+layout_mode = 0
+offset_left = 294.0
+offset_top = -13.0
+offset_right = 600.0
+offset_bottom = 502.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_7fbel")
+
+[node name="ColorPicker" type="ColorPicker" parent="Panel/HeaderRow/FlagRect/ColorPanel" unique_id=273830029]
+layout_mode = 0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = 302.0
+offset_bottom = 506.0
+edit_alpha = false
+presets_visible = false
+
+[node name="TitleBox" type="VBoxContainer" parent="Panel/HeaderRow" unique_id=1916471191]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="CountryLabelScroll" type="ScrollContainer" parent="Panel/HeaderRow/TitleBox" unique_id=1541821600]
+custom_minimum_size = Vector2(214, 23)
+layout_mode = 2
+horizontal_scroll_mode = 3
+vertical_scroll_mode = 3
+
+[node name="CountryLabel" type="Label" parent="Panel/HeaderRow/TitleBox/CountryLabelScroll" unique_id=1384884281]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("5_r840y")
+theme_override_font_sizes/font_size = 16
+text = "Germany"
+
+[node name="ProvincesLabel" type="Label" parent="Panel/HeaderRow/TitleBox" unique_id=1943410449]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5330367, 0.5330367, 0.5330367, 1)
+theme_override_fonts/font = ExtResource("5_r840y")
+theme_override_font_sizes/font_size = 10
+text = "Provinces: 12"
+
+[node name="StatsCardsRow" type="HBoxContainer" parent="Panel" unique_id=1011465082]
+layout_mode = 0
+offset_left = 12.0
+offset_top = 62.0
+offset_right = 288.0
+offset_bottom = 120.0
+theme_override_constants/separation = 5
+
+[node name="PopulationCard" type="PanelContainer" parent="Panel/StatsCardsRow" unique_id=1593209546]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_m3tma")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel/StatsCardsRow/PopulationCard" unique_id=1506390785]
+layout_mode = 2
+
+[node name="PopulationCaption" type="Label" parent="Panel/StatsCardsRow/PopulationCard/VBoxContainer" unique_id=1499956374]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.53333336, 0.53333336, 0.53333336, 1)
+theme_override_fonts/font = ExtResource("5_r840y")
+theme_override_font_sizes/font_size = 10
+text = "POPULATION"
+
+[node name="PopulationLabel" type="Label" parent="Panel/StatsCardsRow/PopulationCard/VBoxContainer" unique_id=987333652]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("5_r840y")
+theme_override_font_sizes/font_size = 14
+text = "83.2 mln"
+
+[node name="GDPCard" type="PanelContainer" parent="Panel/StatsCardsRow" unique_id=1671953433]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_m3tma")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel/StatsCardsRow/GDPCard" unique_id=1921740271]
+layout_mode = 2
+
+[node name="GDPCaption" type="Label" parent="Panel/StatsCardsRow/GDPCard/VBoxContainer" unique_id=166147027]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.53333336, 0.53333336, 0.53333336, 1)
+theme_override_fonts/font = ExtResource("5_r840y")
+theme_override_font_sizes/font_size = 10
+text = "GDP"
+
+[node name="FactoriesLabel" type="Label" parent="Panel/StatsCardsRow/GDPCard/VBoxContainer" unique_id=2115104342]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("5_r840y")
+theme_override_font_sizes/font_size = 14
+text = "4.12 mlrd $"
+
+[node name="BarsContainer" type="VBoxContainer" parent="Panel" unique_id=2029524136]
+layout_mode = 0
+offset_left = 12.0
+offset_top = 128.0
+offset_right = 288.0
+offset_bottom = 222.0
+theme_override_constants/separation = 8
+
+[node name="HappinessRow" type="VBoxContainer" parent="Panel/BarsContainer" unique_id=922985660]
+layout_mode = 2
+
+[node name="HappinessHeader" type="HBoxContainer" parent="Panel/BarsContainer/HappinessRow" unique_id=1257330358]
+layout_mode = 2
+theme_override_constants/separation = -2
+
+[node name="HappinessIcon" type="TextureRect" parent="Panel/BarsContainer/HappinessRow/HappinessHeader" unique_id=54076569]
+custom_maximum_size = Vector2(14, 14)
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 4
+texture = ExtResource("5_qw2xt")
+
+[node name="HappinessCaption" type="Label" parent="Panel/BarsContainer/HappinessRow/HappinessHeader" unique_id=1552409562]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("5_r840y")
+theme_override_font_sizes/font_size = 12
+text = "STABILITY"
+
+[node name="HappinessLabel" type="Label" parent="Panel/BarsContainer/HappinessRow/HappinessHeader" unique_id=66384363]
+layout_mode = 2
+size_flags_horizontal = 10
+theme_override_fonts/font = ExtResource("5_r840y")
+theme_override_font_sizes/font_size = 12
+text = "0%"
+
+[node name="HappinessBar" type="ProgressBar" parent="Panel/BarsContainer/HappinessRow" unique_id=410055705]
+custom_minimum_size = Vector2(0, 5)
+custom_maximum_size = Vector2(-1, 6)
+layout_mode = 2
+theme_override_font_sizes/font_size = 9
+show_percentage = false
+
+[node name="WarExhaustionRow" type="VBoxContainer" parent="Panel/BarsContainer" unique_id=2109977956]
+layout_mode = 2
+
+[node name="WarExhaustionHeader" type="HBoxContainer" parent="Panel/BarsContainer/WarExhaustionRow" unique_id=792179916]
+layout_mode = 2
+theme_override_constants/separation = -2
+
+[node name="WarExhaustionIcon" type="TextureRect" parent="Panel/BarsContainer/WarExhaustionRow/WarExhaustionHeader" unique_id=759944189]
+custom_minimum_size = Vector2(14, 14)
+custom_maximum_size = Vector2(14, 14)
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 4
+texture = ExtResource("6_l4hfs")
+
+[node name="WarExhaustionCaption" type="Label" parent="Panel/BarsContainer/WarExhaustionRow/WarExhaustionHeader" unique_id=1762915357]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("5_r840y")
+theme_override_font_sizes/font_size = 12
+text = "WAR_EXHAUSTION"
+
+[node name="WarExhaustionLabel" type="Label" parent="Panel/BarsContainer/WarExhaustionRow/WarExhaustionHeader" unique_id=900261955]
+layout_mode = 2
+size_flags_horizontal = 10
+theme_override_fonts/font = ExtResource("5_r840y")
+theme_override_font_sizes/font_size = 12
+text = "0%"
+
+[node name="WarExhaustionBar" type="ProgressBar" parent="Panel/BarsContainer/WarExhaustionRow" unique_id=63531026]
+custom_minimum_size = Vector2(0, 5)
+custom_maximum_size = Vector2(-1, 6)
+layout_mode = 2
+theme_override_font_sizes/font_size = 9
+show_percentage = false
+
+[node name="SanctionsRow" type="VBoxContainer" parent="Panel/BarsContainer" unique_id=2053211792]
+layout_mode = 2
+
+[node name="SanctionsHeader" type="HBoxContainer" parent="Panel/BarsContainer/SanctionsRow" unique_id=441571536]
+layout_mode = 2
+theme_override_constants/separation = -2
+
+[node name="SanctionsIcon" type="TextureRect" parent="Panel/BarsContainer/SanctionsRow/SanctionsHeader" unique_id=1488823342]
+custom_maximum_size = Vector2(14, 14)
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 4
+texture = ExtResource("7_w0v6l")
+
+[node name="SanctionsCaption" type="Label" parent="Panel/BarsContainer/SanctionsRow/SanctionsHeader" unique_id=2067944403]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("5_r840y")
+theme_override_font_sizes/font_size = 12
+text = "SANCTIONS"
+
+[node name="SanctionsLabel" type="Label" parent="Panel/BarsContainer/SanctionsRow/SanctionsHeader" unique_id=265242887]
+layout_mode = 2
+size_flags_horizontal = 10
+theme_override_fonts/font = ExtResource("5_r840y")
+theme_override_font_sizes/font_size = 12
+text = "0%"
+
+[node name="SanctionsBar" type="ProgressBar" parent="Panel/BarsContainer/SanctionsRow" unique_id=2064770658]
+custom_minimum_size = Vector2(0, 5)
+custom_maximum_size = Vector2(-1, 5)
+layout_mode = 2
+theme_override_font_sizes/font_size = 9
+show_percentage = false
+
+[node name="RelationsRow" type="VBoxContainer" parent="Panel" unique_id=401075289]
+layout_mode = 0
+offset_left = 12.0
+offset_top = 230.0
+offset_right = 288.0
+offset_bottom = 270.0
+
+[node name="RelationsHeader" type="HBoxContainer" parent="Panel/RelationsRow" unique_id=1950867926]
+layout_mode = 2
+
+[node name="RelationsCaption" type="Label" parent="Panel/RelationsRow/RelationsHeader" unique_id=1827550210]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("5_r840y")
+theme_override_font_sizes/font_size = 12
+text = "RELATIONS"
+
+[node name="RelationsValueLabel" type="Label" parent="Panel/RelationsRow/RelationsHeader" unique_id=1178318114]
+layout_mode = 2
+size_flags_horizontal = 10
+theme_override_fonts/font = ExtResource("5_r840y")
+theme_override_font_sizes/font_size = 12
+text = "+28"
+
+[node name="RelationsBarBox" type="Control" parent="Panel/RelationsRow" unique_id=1860093601]
+custom_minimum_size = Vector2(0, 5)
+layout_mode = 2
+
+[node name="GradientBG" type="TextureRect" parent="Panel/RelationsRow/RelationsBarBox" unique_id=1202696091]
+custom_maximum_size = Vector2(-1, 5)
+layout_mode = 0
+offset_right = 276.0
+offset_bottom = 5.0
+texture = SubResource("GradientTexture2D_4c1hm")
+
+[node name="Marker" type="Panel" parent="Panel/RelationsRow/RelationsBarBox" unique_id=1814482371]
+layout_mode = 0
+offset_left = 115.0
+offset_top = -4.0
+offset_right = 128.0
+offset_bottom = 9.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_qw2xt")
+
+[node name="DiplomacyActionsGrid" type="GridContainer" parent="Panel" unique_id=1814125277]
+layout_mode = 0
+offset_left = 12.0
+offset_top = 280.0
+offset_right = 288.0
+offset_bottom = 421.0
+theme_override_constants/h_separation = 6
+theme_override_constants/v_separation = 11
+columns = 2
+
+[node name="ImproveRelationsBtn" type="Button" parent="Panel/DiplomacyActionsGrid" unique_id=459177796]
+modulate = Color(0.28298792, 0.9977966, 3.85046e-07, 1)
+custom_minimum_size = Vector2(135, 60.995)
+custom_maximum_size = Vector2(-1, 65)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 5
+tooltip_text = "Improve Relations
+-50.000"
+focus_mode = 0
+theme_override_fonts/font = ExtResource("5_r840y")
+theme_override_font_sizes/font_size = 11
+theme_override_styles/normal = SubResource("StyleBoxFlat_l4hfs")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_a3qja")
+theme_override_styles/hover = SubResource("StyleBoxFlat_r840y")
+text = "IMPOSE"
+icon = ExtResource("8_p7bm5")
+icon_alignment = 1
+vertical_icon_alignment = 0
+
+[node name="WorsenRelationsBtn" type="Button" parent="Panel/DiplomacyActionsGrid" unique_id=1163845843]
+custom_minimum_size = Vector2(135, 60.995)
+custom_maximum_size = Vector2(-1, 65)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 5
+tooltip_text = "Worsen Relations"
+focus_mode = 0
+theme_override_fonts/font = ExtResource("5_r840y")
+theme_override_font_sizes/font_size = 11
+theme_override_styles/normal = SubResource("StyleBoxFlat_dpeqq")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_7su7u")
+theme_override_styles/hover = SubResource("StyleBoxFlat_r840y")
+text = "WORSEN"
+icon = ExtResource("9_r840y")
+icon_alignment = 1
+vertical_icon_alignment = 0
+
+[node name="WarSlot" type="Control" parent="Panel/DiplomacyActionsGrid" unique_id=1324713031]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 5
+
+[node name="DeclareWar" type="Button" parent="Panel/DiplomacyActionsGrid/WarSlot" unique_id=2097490636]
+modulate = Color(1, 0.36244357, 0.3434031, 1)
+custom_minimum_size = Vector2(135, 60.995)
+custom_maximum_size = Vector2(-1, 65)
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = -67.0
+offset_top = -65.0
+offset_right = 68.0
+grow_vertical = 0
+focus_mode = 0
+theme_override_font_sizes/font_size = 11
+theme_override_styles/normal = SubResource("StyleBoxFlat_l4hfs")
+theme_override_styles/hover = SubResource("StyleBoxFlat_r840y")
+text = "DECLARE_WAR"
+icon = ExtResource("10_a3qja")
+icon_alignment = 1
+vertical_icon_alignment = 0
+
+[node name="Negotiation" type="Button" parent="Panel/DiplomacyActionsGrid/WarSlot" unique_id=1295766732]
+custom_minimum_size = Vector2(135, 60.995)
+custom_maximum_size = Vector2(-1, 65)
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = -67.0
+offset_top = -65.0
+offset_right = 68.0
+grow_vertical = 0
+focus_mode = 0
+theme_override_fonts/font = ExtResource("5_r840y")
+theme_override_font_sizes/font_size = 11
+theme_override_styles/normal = SubResource("StyleBoxFlat_s1i0l")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_ru30x")
+theme_override_styles/hover = SubResource("StyleBoxFlat_r840y")
+text = "MAKE_PEACE"
+icon = ExtResource("11_7su7u")
+icon_alignment = 1
+vertical_icon_alignment = 0
+
+[node name="ImposeSanctionsBtn" type="Button" parent="Panel/DiplomacyActionsGrid" unique_id=980555803]
+modulate = Color(1, 0.6671529, 0.027789155, 1)
+custom_minimum_size = Vector2(135, 60.995)
+custom_maximum_size = Vector2(-1, 65)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 5
+focus_mode = 0
+theme_override_fonts/font = ExtResource("5_r840y")
+theme_override_font_sizes/font_size = 11
+theme_override_styles/normal = SubResource("StyleBoxFlat_m4ayv")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_u2c8u")
+theme_override_styles/hover = SubResource("StyleBoxFlat_r840y")
+text = "DO_SANCTIONS"
+icon = ExtResource("7_w0v6l")
+icon_alignment = 1
+vertical_icon_alignment = 0
+
+[node name="IdeologyCard" type="PanelContainer" parent="Panel" unique_id=1726314955]
+visible = false
+layout_mode = 0
+offset_left = 12.0
+offset_top = 230.0
+offset_right = 288.0
+offset_bottom = 278.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_l08fj")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Panel/IdeologyCard" unique_id=1470832930]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="IdeologyInfo" type="VBoxContainer" parent="Panel/IdeologyCard/HBoxContainer" unique_id=791842711]
+layout_mode = 2
+alignment = 1
+
+[node name="IdeologyCaption" type="Label" parent="Panel/IdeologyCard/HBoxContainer/IdeologyInfo" unique_id=388219814]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.53333336, 0.53333336, 0.53333336, 1)
+theme_override_font_sizes/font_size = 10
+text = "IDEOLOGY"
+
+[node name="IdeologyLabel" type="Label" parent="Panel/IdeologyCard/HBoxContainer/IdeologyInfo" unique_id=967754002]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Liberalism"
+
+[node name="ChangeIdeologyBtn" type="Button" parent="Panel/IdeologyCard/HBoxContainer" unique_id=1110016441]
+layout_mode = 2
+size_flags_horizontal = 10
+size_flags_vertical = 4
+offset_transform_enabled = true
+tooltip_text = "CHANGE_IDEOLOGY"
+focus_mode = 0
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = SubResource("StyleBoxFlat_p7bm5")
+text = "CHANGE"
+icon = ExtResource("12_p7bm5")
+
+[node name="IdeologySelectionPanel" type="Panel" parent="Panel" unique_id=1096770221]
+unique_name_in_owner = true
+layout_mode = 1
+offset_left = 306.0
+offset_top = 171.0
+offset_right = 526.00024
+offset_bottom = 471.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_hbrlp")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel/IdeologySelectionPanel" unique_id=223116940]
+layout_mode = 0
+offset_left = 5.0
+offset_top = 5.0
+offset_right = 215.0
+offset_bottom = 295.0
+
+[node name="Label" type="Label" parent="Panel/IdeologySelectionPanel/VBoxContainer" unique_id=170327889]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("5_r840y")
+text = "CHOOSE_IDEOLOGY"
+horizontal_alignment = 1
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Panel/IdeologySelectionPanel/VBoxContainer" unique_id=1174452239]
+custom_minimum_size = Vector2(0, 227)
+layout_mode = 2
+
+[node name="IdeologyList" type="VBoxContainer" parent="Panel/IdeologySelectionPanel/VBoxContainer/ScrollContainer" unique_id=1085414924]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Panel/IdeologySelectionPanel/VBoxContainer" unique_id=805410781]
+layout_mode = 2
+
+[node name="ChangeBtn" type="Button" parent="Panel/IdeologySelectionPanel/VBoxContainer/HBoxContainer" unique_id=916835276]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("5_r840y")
+theme_override_styles/normal = SubResource("StyleBoxFlat_vvsl0")
+text = "CHANGE"
+
+[node name="CloseBtn" type="Button" parent="Panel/IdeologySelectionPanel/VBoxContainer/HBoxContainer" unique_id=561421025]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("5_r840y")
+theme_override_styles/normal = SubResource("StyleBoxFlat_vvsl0")
+text = "CLOSE"
+
+[connection signal="mouse_entered" from="Panel/HeaderRow/FlagRect" to="Panel/HeaderRow/FlagRect" method="_on_mouse_entered"]
+[connection signal="mouse_exited" from="Panel/HeaderRow/FlagRect" to="Panel/HeaderRow/FlagRect" method="_on_mouse_exited"]
+[connection signal="pressed" from="Panel/DiplomacyActionsGrid/ImproveRelationsBtn" to="Panel" method="_on_improve_relations_btn_pressed"]
+[connection signal="pressed" from="Panel/DiplomacyActionsGrid/WorsenRelationsBtn" to="Panel" method="_on_worsen_relations_btn_pressed"]
+[connection signal="pressed" from="Panel/DiplomacyActionsGrid/WarSlot/DeclareWar" to="Panel/DiplomacyActionsGrid/WarSlot/DeclareWar" method="_on_pressed"]
+[connection signal="pressed" from="Panel/DiplomacyActionsGrid/WarSlot/Negotiation" to="Panel" method="_on_negotiation_pressed"]
+[connection signal="pressed" from="Panel/DiplomacyActionsGrid/ImposeSanctionsBtn" to="Panel" method="_on_improve_sanctions_btn_pressed"]
+[connection signal="pressed" from="Panel/IdeologyCard/HBoxContainer/ChangeIdeologyBtn" to="Panel" method="_on_change_ideology_btn_pressed"]
+[connection signal="mouse_entered" from="Panel/IdeologySelectionPanel" to="Panel" method="_on_ideology_selection_panel_mouse_entered"]
+[connection signal="mouse_exited" from="Panel/IdeologySelectionPanel" to="Panel" method="_on_ideology_selection_panel_mouse_exited"]
+[connection signal="mouse_entered" from="Panel/IdeologySelectionPanel/VBoxContainer/ScrollContainer" to="Panel" method="_on_scroll_container_mouse_entered"]
+[connection signal="mouse_exited" from="Panel/IdeologySelectionPanel/VBoxContainer/ScrollContainer" to="Panel" method="_on_scroll_container_mouse_exited"]
+[connection signal="pressed" from="Panel/IdeologySelectionPanel/VBoxContainer/HBoxContainer/ChangeBtn" to="Panel" method="_on_change_btn_pressed"]
+[connection signal="pressed" from="Panel/IdeologySelectionPanel/VBoxContainer/HBoxContainer/CloseBtn" to="Panel" method="_on_close_btn_pressed"]

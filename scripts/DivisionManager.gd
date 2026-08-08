@@ -274,6 +274,49 @@ func kill_percent_in_province(province_id: int, kill_ratio: float) -> void:
     reposition_armies_in_province(province_id)
     print("[DivisionManager] Ракетный удар: потери личного состава в провинции ", province_id, " -> ", owners_lost)
 
+## Расформировывает amount солдат, начиная с первой дивизии в массиве divisions
+## (порядок = порядок выделения) и продолжая по следующим, пока не наберётся
+## нужное количество. Дивизии, у которых солдат не осталось, удаляются.
+func disband_from_divisions(divisions: Array, amount: int) -> void:
+    var remaining: int = amount
+    var affected_provinces: Dictionary = {} # p_id -> true
+
+    for div in divisions:
+        if remaining <= 0:
+            break
+        if not is_instance_valid(div):
+            continue
+
+        var owner_id: String = div.division_owner
+        var p_id: int = div.province_id
+        var take: int = min(remaining, div.soldiers)
+        if take <= 0:
+            continue
+
+        div.soldiers -= take
+        remaining -= take
+        affected_provinces[p_id] = true
+
+        var p_data = ProvinceRegistry.province_data.get(p_id, {})
+        if p_data.has("army"):
+            p_data["army"]["land"] = max(0, p_data["army"].get("land", 0) - take)
+        ProvinceRegistry.adjust_monthly_income_for_troops(owner_id, -take)
+
+        if div.soldiers <= 0:
+            if armies.has(p_id):
+                armies[p_id].erase(div)
+            if is_instance_valid(div.current_path_node):
+                div._stop_current_movement()
+            div.queue_free()
+
+    for p_id in affected_provinces:
+        if CombatManager.active_battles.has(p_id):
+            var sides = CombatManager.active_battles[p_id]["sides"]
+            for owner_id in sides.keys():
+                _refresh_combat_hp_manually(p_id, owner_id)
+        ProvinceRegistry.province_army_changed.emit(p_id)
+        reposition_armies_in_province(p_id)
+
 # ФИКС БАГА 2: Оптимизированное позиционирование с использованием кэшированного cam_factor
 func reposition_armies_in_province(p_id: int, cam_factor: float = -1.0) -> void:
     if not is_instance_valid(map_node):

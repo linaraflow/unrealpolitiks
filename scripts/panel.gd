@@ -1,11 +1,16 @@
 extends Panel
-
 @export var settings: Resource
 
 # --- Header ---
 @export var FlagRect: TextureRect
 @export var CountryLabel: Label
+@export var CountryLabelScroll: ScrollContainer
 @export var ProvincesLabel: Label
+
+# --- Marquee (бегущая строка для названия страны) ---
+var _marquee_tween: Tween
+const MARQUEE_SPEED: float = 40.0   # пикселей в секунду
+const MARQUEE_PAUSE: float = 1.0    # пауза у краёв в секундах
 
 # --- Stat cards ---
 @export var PopulationLabel: Label
@@ -63,6 +68,7 @@ func _ready() -> void:
     hide()
     add_to_group("CountryMenuPanel")
     GameClock.on_day_passed.connect(_on_day_passed)
+    visibility_changed.connect(_on_visibility_changed)
 
     for btn in [ImproveBtn, WorsenBtn, SanctionBtn, DeclareWarBtn, NegotiationBtn]:
         btn.custom_minimum_size.y = 40
@@ -88,6 +94,7 @@ func _check_nodes() -> void:
     var to_check = {
         "FlagRect": FlagRect,
         "CountryLabel": CountryLabel,
+        "CountryLabelScroll": CountryLabelScroll,
         "ProvincesLabel": ProvincesLabel,
         "PopulationLabel": PopulationLabel,
         "FactoriesLabel": FactoriesLabel,
@@ -118,6 +125,12 @@ func _check_nodes() -> void:
     for key in to_check.keys():
         if to_check[key] == null:
             push_error("panel.gd: узел '%s' не найден — проверь путь @onready и имя ноды в сцене." % key)
+
+
+func _on_visibility_changed() -> void:
+    if not visible and _marquee_tween:
+        _marquee_tween.kill()
+        _marquee_tween = null
 
 
 func _on_day_passed(_date: Dictionary) -> void:
@@ -152,6 +165,79 @@ func _set_stat_bar(bar: ProgressBar, value_label: Label, value: float, bad_when_
         value_label.text = str(int(round(value))) + "%"
 
 
+const MARQUEE_MIN_WIDTH: float = 212.0  # порог ширины CountryLabel, после которого включается бегущая строка
+const MARQUEE_GAP: float = 40.0         # пустой промежуток между концом и началом текста при зацикливании
+
+var _marquee_request_id: int = 0        # чтобы устаревшие (перегнанные) вызовы сами себя отменяли
+var _last_marquee_text: String = ""     # чтобы не перезапускать марки, если текст не менялся
+
+func _update_country_label_marquee() -> void:
+    # Если название не поменялось с прошлого раза — ничего не трогаем,
+    # иначе update_info() (вызывается каждый игровой день) будет дёргать
+    # и рестартить уже идущую анимацию, отсюда рывки.
+    if CountryLabel.text == _last_marquee_text and _marquee_tween and _marquee_tween.is_valid():
+        return
+    _last_marquee_text = CountryLabel.text
+
+    _marquee_request_id += 1
+    var my_id = _marquee_request_id
+
+    if _marquee_tween:
+        _marquee_tween.kill()
+        _marquee_tween = null
+
+    CountryLabelScroll.scroll_horizontal = 0
+
+    # Ждём два кадра: одного не всегда хватает, чтобы контейнеры выше по
+    # иерархии успели пересчитать layout после смены текста/видимости.
+    await get_tree().process_frame
+    await get_tree().process_frame
+
+    # Пока ждали кадры, могла прилететь ещё одна перегонка (или панель
+    # успели скрыть/удалить) — тогда этот вызов уже неактуален, выходим.
+    if my_id != _marquee_request_id or not is_instance_valid(CountryLabel) or not is_instance_valid(CountryLabelScroll):
+        return
+
+    # Измеряем реальную ширину текста через шрифт, а не CountryLabel.size.x —
+    # если у лейбла выставлен size flag EXPAND/FILL внутри ScrollContainer,
+    # его size растягивается под контейнер и overflow всегда получался <= 0,
+    # из-за чего марки то работала, то нет в зависимости от предыдущего layout.
+    var font: Font = CountryLabel.get_theme_font("font")
+    var font_size: int = CountryLabel.get_theme_font_size("font_size")
+    var text_width: float = font.get_string_size(CountryLabel.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+
+    var viewport_width: float = CountryLabelScroll.size.x
+
+    # Если название не вылезает за границы — просто оставляем как есть, без бегущей строки.
+    if text_width < MARQUEE_MIN_WIDTH or text_width <= viewport_width:
+        return
+
+    var overflow = text_width - viewport_width
+
+    # Едет непрерывно в одну сторону (как табло в трамвае), затем резко
+    # "перепрыгивает" в начало и снова едет — без движения назад.
+    var total_distance = overflow + MARQUEE_GAP
+    var duration = total_distance / MARQUEE_SPEED
+
+    _marquee_tween = create_tween()
+    _marquee_tween.set_loops()
+    # 1. Пауза в начале перед стартом
+    _marquee_tween.tween_interval(MARQUEE_PAUSE)
+
+    # 2. Анимация движения текста до конца
+    _marquee_tween.tween_property(CountryLabelScroll, "scroll_horizontal", overflow, duration * overflow / total_distance)\
+        .from(0).set_trans(Tween.TRANS_LINEAR)
+
+    # 3. Пауза, когда текст доехал до конца
+    _marquee_tween.tween_interval(MARQUEE_PAUSE)
+
+    # 4. Резкий сброс в начало
+    _marquee_tween.tween_callback(func():
+        if is_instance_valid(CountryLabelScroll):
+            CountryLabelScroll.scroll_horizontal = 0
+    )
+
+
 func _update_relations_bar(value: int) -> void:
     RelationsValueLabel.text = ("+" if value > 0 else "") + str(value)
 
@@ -180,6 +266,7 @@ func update_info():
 
     CountryLabel.text = tr(owner_name.to_upper())
     ProvincesLabel.text = tr("PROVINCES") + ": " + str(ProvinceRegistry.owner_province_count[owner_name]) + "   " + tr(data.get("ideology", "liberalism").to_upper()).capitalize()
+    _update_country_label_marquee()
     PopulationLabel.text = ProvinceRegistry._format_number(ProvinceRegistry.get_country_population(owner_name), " ")
 
     var GDP = (ProvinceRegistry.countries_data[owner_name].get("factories", 0) * settings.product_cost + data.get("monthly_income", 0)) * 12

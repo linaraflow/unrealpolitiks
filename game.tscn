@@ -5,7 +5,7 @@
 [ext_resource type="Texture2D" uid="uid://d4av1ydgjmb2n" path="res://VisualMap_alpha_03.png" id="2_215e1"]
 [ext_resource type="Script" uid="uid://mxtsm64ad2jr" path="res://scripts/map.gd" id="3_hb5m1"]
 [ext_resource type="Script" uid="uid://s5wqfaaqwfp" path="res://scripts/selection_box.gd" id="5_x5p1p"]
-[ext_resource type="PackedScene" uid="uid://uh1sd1fvacpa" path="res://CounrtyMenu.tscn" id="6_mfdv2"]
+[ext_resource type="PackedScene" uid="uid://uh1sd1fvacpa" path="res://CountryMenu.tscn" id="6_mfdv2"]
 [ext_resource type="Resource" uid="uid://dpsywpq1i1i6j" path="res://new_resource.tres" id="6_ryrav"]
 [ext_resource type="PackedScene" uid="uid://b50l3xjltcm0l" path="res://DivisionMenu.tscn" id="7_80cx4"]
 [ext_resource type="PackedScene" uid="uid://j7vowtqh1w7b" path="res://ControlDivisionsMenu.tscn" id="8_hb5m1"]
@@ -237,6 +237,7 @@ visible = false
 visible = false
 
 [node name="HeavyMetal2" type="Sprite2D" parent="CanvasLayer" unique_id=1250706083]
+visible = false
 position = Vector2(49.749992, 1030.25)
 scale = Vector2(0.09949998, 0.099499896)
 texture = ExtResource("23_vaj68")

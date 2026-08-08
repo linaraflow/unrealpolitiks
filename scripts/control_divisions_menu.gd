@@ -8,12 +8,22 @@ var settings = preload("res://new_resource.tres")
 @onready var MergeButton: Button = $VBoxContainer/MainPanel/MarginContainer/HBoxContainer/MergeButton
 @onready var SplitButton: Button = $VBoxContainer/QuanPanel/MarginContainer/HBoxContainer/SplitButton
 
+# ВАЖНО: путь ниже — предположение. Замени на реальный путь до DisbandButton
+# в твоей сцене (та же HBoxContainer, где DistributeButton и MergeButton).
+@onready var DisbandButton: Button = $VBoxContainer/MainPanel/MarginContainer/HBoxContainer/DisbandButton
+
 @onready var DistributePanel: PanelContainer = $VBoxContainer/DistributePanel
 @onready var NumTroops: Label = $VBoxContainer/DistributePanel/MarginContainer/VBoxContainer/HBoxContainer/NumProvinces
+@onready var NumDivisions: Label = $VBoxContainer/DistributePanel/MarginContainer/VBoxContainer/HBoxContainer2/NumProvinces
 
 # ВАЖНО: путь ниже — предположение. Замени на реальный путь до кнопки
 # подтверждения в твоей сцене DistributePanel (например ConfirmButton).
 @onready var ConfirmDistributeButton: Button = $VBoxContainer/DistributePanel/MarginContainer/VBoxContainer/ConfirmButton
+
+@onready var DisbandPanel: PanelContainer = $VBoxContainer/DisbandPanel
+@onready var DisbandLabel: Label = $VBoxContainer/DisbandPanel/MarginContainer/VBoxContainer/Label
+@onready var DisbandSlider: HSlider = $VBoxContainer/DisbandPanel/MarginContainer/VBoxContainer/HSlider
+@onready var ConfirmDisbandButton: Button = $VBoxContainer/DisbandPanel/MarginContainer/VBoxContainer/ConfirmButton
 
 @onready var Map = get_node("/root/Game/Map")
 
@@ -24,6 +34,7 @@ var _distribute_provinces: Array[int] = []   # порядок кликов = п�
 func _ready() -> void:
     SelectionManager.ControlDivisionsMenu = self
     DistributePanel.hide()
+    DisbandPanel.hide()
     hide()
 
     SelectionManager.selection_changed.connect(_on_selection_changed)
@@ -33,10 +44,16 @@ func _ready() -> void:
     DistributeButton.pressed.connect(_on_distribute_button_pressed)
     ConfirmDistributeButton.pressed.connect(_on_confirm_distribute_pressed)
 
+    DisbandButton.pressed.connect(_on_disband_button_pressed)
+    ConfirmDisbandButton.pressed.connect(_on_confirm_disband_pressed)
+    DisbandSlider.value_changed.connect(_on_disband_slider_changed)
+
 # ─── QUAN LABEL + СОСТОЯНИЕ КНОПОК ────────────────────────────────────────────
 
 func _on_selection_changed() -> void:
     _refresh_ui()
+    if _distribute_active:
+        NumDivisions.text = str(SelectionManager.selected_divisions.size())
 
 func _on_army_changed(_p_id: int, _division = null) -> void:
     # Реагируем только если это может касаться выделенных дивизий —
@@ -66,9 +83,14 @@ func _on_distribute_button_pressed() -> void:
     if not SelectionManager.has_selection():
         return
 
+    # Закрываем Disband, если он был открыт
+    if DisbandPanel.visible:
+        DisbandPanel.hide()
+
     _distribute_active = true
     _distribute_provinces.clear()
     NumTroops.text = "0"
+    NumDivisions.text = str(SelectionManager.selected_divisions.size())
     DistributePanel.show()
     Map.enter_distribute_mode()
 
@@ -114,3 +136,42 @@ func _finish_distribute(_cancelled: bool) -> void:
     _distribute_active = false
     Map.exit_distribute_mode()
     DistributePanel.hide()
+
+# ─── DISBAND ──────────────────────────────────────────────────────────────────
+
+func _on_disband_button_pressed() -> void:
+    if DisbandPanel.visible:
+        DisbandPanel.hide()
+        return
+
+    if not SelectionManager.has_selection():
+        return
+
+    # На всякий случай закрываем режим Distribute, если он был активен
+    if _distribute_active:
+        _cancel_distribute()
+
+    var total: int = SelectionManager.get_selected_soldiers_total()
+    if total <= 0:
+        return
+
+    DisbandSlider.min_value = 0
+    DisbandSlider.max_value = total
+    DisbandSlider.step = 1
+    DisbandSlider.value = 0
+    _update_disband_label(0)
+
+    DisbandPanel.show()
+
+func _on_disband_slider_changed(value: float) -> void:
+    _update_disband_label(int(value))
+
+func _update_disband_label(amount: int) -> void:
+    DisbandLabel.text = ProvinceRegistry._format_number(str(amount), ".")
+
+func _on_confirm_disband_pressed() -> void:
+    var amount: int = int(DisbandSlider.value)
+    if amount > 0 and SelectionManager.has_selection():
+        DivisionManager.disband_from_divisions(SelectionManager.selected_divisions, amount)
+
+    DisbandPanel.hide()

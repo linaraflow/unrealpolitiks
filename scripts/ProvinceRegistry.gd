@@ -526,6 +526,10 @@ func declare_war(attacker: String, defender: String):
     countries_data[attacker]["is_at_war"] = true
     countries_data[defender]["is_at_war"] = true
 
+    # Агрессор (тот, кто ИНИЦИИРОВАЛ войну) получает рост скрытой "агрессивности"
+    # и мировые санкции. Работает одинаково и для ИИ, и для игрока.
+    DiplomacyManager.register_aggression(attacker)
+
     print("War: ", attacker, " vs ", defender)
     war_declared.emit(attacker, defender)
 
@@ -544,7 +548,11 @@ func get_factory_destruction_ratio(country: String) -> float:
     var current: int = int(countries_data[country].get("factories", 0))
     return clamp(1.0 - (float(current) / float(prewar)), 0.0, 1.0)
 
-func end_war(country_a: String, country_b: String) -> void:
+## Снимает статус войны между двумя странами (флаги is_at_war, war_relations,
+## остановка активных боёв) — БЕЗ передела территории ("белого мира").
+## Вынесено отдельно от end_war(), чтобы _eliminate_country() могла снять
+## войну с мёртвой страной, не запуская возврат ей провинций (см. end_war).
+func _clear_war_state(country_a: String, country_b: String) -> void:
     if war_relations.has(country_a):
         war_relations[country_a].erase(country_b)
     if war_relations.has(country_b):
@@ -564,6 +572,9 @@ func end_war(country_a: String, country_b: String) -> void:
     # не имея урона (обе стороны больше не at_war), навсегда "зависает"
     # в active_battles, а армии не освобождаются.
     CombatManager.end_battles_between(country_a, country_b)
+
+func end_war(country_a: String, country_b: String) -> void:
+    _clear_war_state(country_a, country_b)
 
     # === Белый мир: провинции возвращаются своим корам ===
     var provinces_to_liberate = []
@@ -676,9 +687,15 @@ func _eliminate_country(country: String) -> void:
     # Сигналим -1, чтобы карта убрала звёздочку столицы у уничтоженной страны
     capital_changed.emit(country, -1)
 
-    # Снимаем со всех оставшихся врагов состояние "война" с мёртвой страной
+    # Снимаем со всех оставшихся врагов состояние "война" с мёртвой страной.
+    # ВАЖНО: используем _clear_war_state(), а НЕ end_war() — end_war() запускает
+    # "белый мир" и вернул бы уничтоженной стране (доля секунды до erase) все
+    # провинции, которые враг успел у неё захватить, но ещё не аннексировал.
+    # Это и было причиной бага "страна пропала, а её территория осталась
+    # на карте, но не кликается и не управляется ИИ": провинции получали
+    # owner = country прямо перед тем, как country стиралась из countries_data.
     for enemy in war_relations.get(country, []).duplicate():
-        end_war(country, enemy)
+        _clear_war_state(country, enemy)
     war_relations.erase(country)
 
     country_eliminated.emit(country)
@@ -972,11 +989,22 @@ func _process_missile_orders() -> void:
         missile_order_changed.emit(country)
 
 # Вызывать при постройке завода (в start_factory_construction):
+# ─── ЭКОНОМИКА ──────────────────────────────────────────────────────────────
+
+## Стоимость постройки фабрики с учётом идеологии страны (тот же множитель "eco",
+## что использует ИИ в AIEconomy.process_economy). Единая точка расчёта —
+## используется и для ИИ (через AIEconomy), и для игрока (через ProvinceMenu).
+func get_factory_cost(country: String) -> float:
+    var c_data   = countries_data.get(country, {})
+    var ideology = c_data.get("ideology", "liberalism")
+    var eco_mult = DiplomacyManager.IDEOLOGIES.get(ideology, DiplomacyManager.IDEOLOGIES["liberalism"])["eco"]
+    return settings.factory_cost * eco_mult
+
 func start_factory_construction(p_id: int, country: String) -> bool:
     var p = province_data[p_id]
     if p.get("factory_queue", []).size() >= 5:
         return false
-    var cost = settings.factory_cost
+    var cost = get_factory_cost(country)
     if countries_data[country].get("balance", 0.0) < cost:
         return false
         

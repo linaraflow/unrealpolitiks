@@ -25,7 +25,7 @@ signal casualties_inflicted(country: String, amount: int)
 const DAMAGE_PER_SOLDIER := 0.5
 # ════════════════════════════════════════════════════════════════════════════
 const TICK_INTERVAL  := 0.5       # секунды между тиками боя (реального времени)
-const WAR_EXHAUSTION_PER_TICK := 0.1  # усталость, начисляемая стороне за каждый боевой тик, в котором она участвует
+const WAR_EXHAUSTION_PER_TICK := 2  # усталость, начисляемая стороне за каждый боевой тик, в котором она участвует
 
 # Активные бои: province_id -> { "sides": { "CountryA": {...}, "CountryB": {...} }, "timer": float }
 # Структура стороны: { "countries": [str], "circles": [ArmyCircle], "hp": int }

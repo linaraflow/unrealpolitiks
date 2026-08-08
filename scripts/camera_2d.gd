@@ -31,13 +31,26 @@ func _update_min_zoom():
 func _is_mouse_over_gui() -> bool:
     # Спрашиваем у Viewport'а напрямую, без флагов и сигналов —
     # никакой гонки между mouse_entered/exited и _unhandled_input.
-    return get_viewport().gui_get_hovered_control() != null
+    var hovered = get_viewport().gui_get_hovered_control()
+    if hovered == null:
+        return false
+
+    # Кнопки армий (army_circle/Button) не должны блокировать управление
+    # камерой — над юнитами на карте камеру всё равно нужно крутить/таскать/
+    # зумить как обычно. Поднимаемся вверх по дереву в поисках узла из
+    # группы "army_circles" (сама кнопка — его дочерний Control).
+    var node: Node = hovered
+    while node:
+        if node.is_in_group("army_circles"):
+            return false
+        node = node.get_parent()
+
+    return true
 
 func _unhandled_input(event):
     if event is InputEventMouseButton:
         if _is_mouse_over_gui():
-            return # мышка над любым UI-контролом прямо сейчас
-
+            return
         if event.button_index == MOUSE_BUTTON_WHEEL_UP:
             _set_zoom(zoom.x + zoom_speed)
         elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:

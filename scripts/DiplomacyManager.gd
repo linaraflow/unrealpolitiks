@@ -67,6 +67,51 @@ const REGIME_COLLAPSE_EXHAUSTION_RESET := 40.0
 ## фабрики никуда не деваются и режим будет валиться каждый день подряд.
 const REGIME_COLLAPSE_IMMUNITY_DAYS := 60
 
+# ─── АГРЕССИВНОСТЬ И МИРОВЫЕ САНКЦИИ ────────────────────────────────────────────
+#
+# У каждой страны есть скрытый параметр "aggression" (0..100), хранящийся в
+# countries_data[country]["aggression"]. Он растёт каждый раз, когда страна САМА
+# объявляет войну (см. register_aggression, вызывается из ProvinceRegistry.declare_war).
+#
+# Если страна набрала AGGRESSION_SANCTION_THRESHOLD агрессии — мир вводит против неё
+# санкции (сила 20-30%, случайно). Санкции хранятся в том же sanctioned_by, что и
+# обычные двусторонние санкции, под спецключом WORLD_SANCTION_KEY — поэтому они
+# автоматически суммируются в c_data["sanctions"] через _recalculate_total_sanctions
+# и одинаково влияют на ВВП/цены (get_gdp), ничего в остальном коде менять не нужно.
+#
+# Санкции снимаются, только если страна ПОСЛЕ объявления войны выдержала
+# PEACE_DAYS_TO_LIFT_SANCTIONS дней подряд без единой войны (счётчик сбрасывается
+# в 0 каждый раз, когда страна воюет — не важно, атакующая она сторона или нет).
+
+const WORLD_SANCTION_KEY := "__WORLD__"
+
+## Порог санкций (%), после которого страна считается "сильно засанкционированной".
+## Используется в т.ч. ИИ-дипломатией (AIDiplomacy) для повышения агрессии соседей
+## и появления шанса войны даже со стороны стран без общей границы.
+const HIGH_SANCTIONS_THRESHOLD := 50.0
+
+## Кэш стран с sanctions >= HIGH_SANCTIONS_THRESHOLD, вида {country: true}.
+## Поддерживается в актуальном состоянии в _recalculate_total_sanctions —
+## не нужно каждый день перебирать countries_data целиком, чтобы найти
+## засанкционированные страны (используется в AIDiplomacy).
+var high_sanctions_countries: Dictionary = {}
+
+## Сколько агрессии добавляется за одно объявление войны (как агрессор).
+const AGGRESSION_GAIN_PER_WAR := 25.0
+
+## Порог агрессии, при котором мир вводит санкции.
+const AGGRESSION_SANCTION_THRESHOLD := 25.0
+
+## Диапазон силы мировых санкций (в процентах, как и обычные санкции).
+const WORLD_SANCTION_MIN := 20.0
+const WORLD_SANCTION_MAX := 30.0
+
+## Сколько дней подряд без войны нужно продержаться, чтобы санкции сняли (1 игровой год).
+const PEACE_DAYS_TO_LIFT_SANCTIONS := 365
+
+## Насколько агрессия "остывает" за каждый мирный день (медленный распад).
+const AGGRESSION_DECAY_PER_DAY := 0.1
+
 func _ready() -> void:
     GameClock.on_day_passed.connect(_on_day_passed_diplomacy)
     # НЕ подключать country_lost_all_provinces сюда напрямую на trigger_regime_collapse:
@@ -90,6 +135,7 @@ func _on_day_passed_diplomacy(_date: Dictionary) -> void:
 
     _tick_regime_immunity()
     _check_regime_collapses()
+    _tick_aggression_and_sanctions()
 
 ## Раз в день уменьшаем счётчик "неприкасаемости" новых режимов.
 func _tick_regime_immunity() -> void:
@@ -188,7 +234,7 @@ func trigger_regime_collapse(country: String, cause: String, forced_ideology: St
 
     c_data[country]["regime_collapse_immunity_days"] = REGIME_COLLAPSE_IMMUNITY_DAYS
 
-    _resolve_regime_collapse_territories(country)
+    #_resolve_regime_collapse_territories(country)
 
     # Если после передела территорий у страны не осталось ни одной провинции
     # (ни своей, ни оккупированной) — она физически перестала существовать,
@@ -346,6 +392,92 @@ func toggle_sanctions(attacker: String, target: String, cost: float) -> bool:
         
     return false
 
+## Вызывается из ProvinceRegistry.declare_war для АГРЕССОРА (того, кто объявил войну).
+## Поднимает скрытую агрессивность и, если она перевалила за порог, накладывает
+## на страну мировые санкции 20-30% (независимо от того, ИИ это или игрок).
+func register_aggression(attacker: String) -> void:
+    var c_data = ProvinceRegistry.countries_data
+    if not c_data.has(attacker):
+        return
+
+    var attacker_data = c_data[attacker]
+    var aggression: float = float(attacker_data.get("aggression", 0.0))
+    aggression = clamp(aggression + AGGRESSION_GAIN_PER_WAR, 0.0, 100.0)
+    attacker_data["aggression"] = aggression
+
+    # Каждая новая война сбрасывает счётчик "мирных дней" — санкции не начнут
+    # сниматься, пока страна снова не будет год подряд без войны.
+    attacker_data["peace_days_without_war"] = 0
+
+    if aggression >= AGGRESSION_SANCTION_THRESHOLD:
+        _apply_world_sanctions(attacker)
+
+## Накладывает (или обновляет) мировые санкции за агрессию. Хранится в sanctioned_by
+## под ключом WORLD_SANCTION_KEY — суммируется в общий % санкций автоматически.
+func _apply_world_sanctions(country: String) -> void:
+    var c_data = ProvinceRegistry.countries_data
+    if not c_data.has(country):
+        return
+
+    var target_data = c_data[country]
+    if not target_data.has("sanctioned_by"):
+        target_data["sanctioned_by"] = {}
+
+    var had_world_sanctions: bool = target_data["sanctioned_by"].has(WORLD_SANCTION_KEY)
+    var added_power := randf_range(WORLD_SANCTION_MIN, WORLD_SANCTION_MAX)
+
+    # Каждая НОВАЯ война агрессора добавляет ещё 20-30% сверху уже имеющихся
+    # мировых санкций (а не просто переустанавливает их) — санкции накапливаются.
+    var current_power: float = float(target_data["sanctioned_by"].get(WORLD_SANCTION_KEY, 0.0))
+    var new_power: float = clamp(current_power + added_power, 0.0, 100.0)
+    target_data["sanctioned_by"][WORLD_SANCTION_KEY] = new_power
+    _recalculate_total_sanctions(country)
+
+    if not had_world_sanctions:
+        print("[Diplomacy] МИРОВЫЕ САНКЦИИ за агрессию: %s (+%.1f%% -> %.1f%%)" % [country, added_power, new_power])
+        sanctions_imposed.emit(WORLD_SANCTION_KEY, country)
+    else:
+        print("[Diplomacy] Мировые санкции усилены за новую агрессию: %s (+%.1f%% -> %.1f%%)" % [country, added_power, new_power])
+
+## Снимает мировые санкции за агрессию (вызывается после 1 года без войны).
+func _lift_world_sanctions(country: String) -> void:
+    var c_data = ProvinceRegistry.countries_data
+    if not c_data.has(country):
+        return
+
+    var target_data = c_data[country]
+    if not target_data.get("sanctioned_by", {}).has(WORLD_SANCTION_KEY):
+        return
+
+    target_data["sanctioned_by"].erase(WORLD_SANCTION_KEY)
+    _recalculate_total_sanctions(country)
+
+    print("[Diplomacy] Мировые санкции сняты (1 год без войны): ", country)
+    sanctions_removed.emit(WORLD_SANCTION_KEY, country)
+
+## Ежедневный тик: считает "мирные дни" для санкций за агрессию и медленно
+## остужает саму агрессивность, пока страна не воюет.
+func _tick_aggression_and_sanctions() -> void:
+    var c_data = ProvinceRegistry.countries_data
+    for country in c_data.keys():
+        var at_war: bool = not ProvinceRegistry.war_relations.get(country, []).is_empty()
+
+        if at_war:
+            c_data[country]["peace_days_without_war"] = 0
+            continue
+
+        var peace_days: int = int(c_data[country].get("peace_days_without_war", 0)) + 1
+        c_data[country]["peace_days_without_war"] = peace_days
+
+        # Агрессия медленно остывает, пока страна не воюет.
+        var aggression: float = float(c_data[country].get("aggression", 0.0))
+        if aggression > 0.0:
+            c_data[country]["aggression"] = clamp(aggression - AGGRESSION_DECAY_PER_DAY, 0.0, 100.0)
+
+        if peace_days >= PEACE_DAYS_TO_LIFT_SANCTIONS:
+            if c_data[country].get("sanctioned_by", {}).has(WORLD_SANCTION_KEY):
+                _lift_world_sanctions(country)
+
 func _recalculate_total_sanctions(country: String) -> void:
     var target_data = ProvinceRegistry.countries_data[country]
     var total_power: float = 0.0
@@ -353,7 +485,24 @@ func _recalculate_total_sanctions(country: String) -> void:
         total_power += target_data["sanctioned_by"][attacker]
         
     # Округляем до целого числа через roundi
-    target_data["sanctions"] = float(roundi(clamp(total_power, 0.0, 100.0)))
+    var sanctions: float = float(roundi(clamp(total_power, 0.0, 100.0)))
+    target_data["sanctions"] = sanctions
+
+    # Держим кэш высоких санкций в актуальном состоянии
+    if sanctions >= HIGH_SANCTIONS_THRESHOLD:
+        high_sanctions_countries[country] = true
+    else:
+        high_sanctions_countries.erase(country)
+
+## Возвращает true, если у страны санкции >= HIGH_SANCTIONS_THRESHOLD.
+## O(1) — читает готовый кэш вместо чтения countries_data[country]["sanctions"].
+func has_high_sanctions(country: String) -> bool:
+    return high_sanctions_countries.has(country)
+
+## Возвращает список стран с санкциями >= HIGH_SANCTIONS_THRESHOLD. O(1)/O(k),
+## где k — число таких стран (обычно очень маленькое), а не общее число стран.
+func get_high_sanctions_countries() -> Array:
+    return high_sanctions_countries.keys()
 
 func get_world_gdp(product_cost: float) -> float:
     var total_gdp = 0.0
@@ -367,3 +516,11 @@ func get_world_gdp(product_cost: float) -> float:
 ## RESET
 func reset() -> void:
     active_processes = {}
+    high_sanctions_countries = {}
+
+    # Пересобираем кэш высоких санкций из уже загруженных данных стран
+    # (важно при загрузке сохранения — там sanctions уже посчитаны).
+    for country in ProvinceRegistry.countries_data.keys():
+        var sanctions: float = float(ProvinceRegistry.countries_data[country].get("sanctions", 0.0))
+        if sanctions >= HIGH_SANCTIONS_THRESHOLD:
+            high_sanctions_countries[country] = true

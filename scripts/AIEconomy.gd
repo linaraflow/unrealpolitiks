@@ -15,16 +15,18 @@ static func tick_factory_cooldown(country: String) -> void:
             AIManager.factory_cooldowns.erase(country)
 
 static func process_economy(country: String) -> void:
+    # Во время войны все деньги идут на войска — фабрики не строим
+    if not ProvinceRegistry.war_relations.get(country, []).is_empty():
+        return
+
     # Ждём кулдауна
     if AIManager.factory_cooldowns.has(country):
         return
 
     var c_data   = ProvinceRegistry.countries_data[country]
-    var ideology = c_data.get("ideology", "liberalism")
-    var eco_mult = DiplomacyManager.IDEOLOGIES[ideology]["eco"]
     var balance  = c_data.get("balance", 0.0)
 
-    var factory_cost = AIManager.settings.factory_cost * eco_mult
+    var factory_cost = ProvinceRegistry.get_factory_cost(country)
 
     # Строим только если баланс перекрывает стоимость + резерв
     var required = factory_cost * (1.0 + AIManager.RESERVE_RATIO)

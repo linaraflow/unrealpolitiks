@@ -3,11 +3,54 @@
 [ext_resource type="Script" uid="uid://838jasvewi4h" path="res://scripts/negotiation_menu.gd" id="1_fa6gv"]
 [ext_resource type="FontVariation" uid="uid://eqbeyus3g4j1" path="res://fonts/new_font_variation.tres" id="2_40vur"]
 [ext_resource type="Texture2D" uid="uid://cax3w4hq1ih2k" path="res://assets/flags/Germany.png" id="2_df4wd"]
+[ext_resource type="FontVariation" uid="uid://cuvy4x6nihfev" path="res://fonts/PrimaryFont.tres" id="3_fe0qs"]
 [ext_resource type="Texture2D" uid="uid://cl63kylm71fv2" path="res://assets/flags/Ukraine.png" id="3_v1y1u"]
 [ext_resource type="Texture2D" uid="uid://cq7sp04od60d4" path="res://assets/icons_negotiation_menu/map.svg" id="4_uul61"]
 [ext_resource type="Texture2D" uid="uid://da71g3xldsniu" path="res://assets/icons_negotiation_menu/coin.svg" id="5_nf8vq"]
 [ext_resource type="Texture2D" uid="uid://b7jftx0dqtbkg" path="res://assets/icons_negotiation_menu/flag.svg" id="6_40vur"]
 [ext_resource type="Texture2D" uid="uid://d1qb5ockrsvma" path="res://assets/icons_negotiation_menu/crown.svg" id="7_fe0qs"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_d7daq"]
+content_margin_left = 5.0
+content_margin_right = 5.0
+bg_color = Color(0.08468992, 0.08468994, 0.08468988, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.26293263, 0.26293242, 0.2629323, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fe0qs"]
+content_margin_left = 5.0
+content_margin_right = 5.0
+bg_color = Color(0.033853274, 0.03385328, 0.033853255, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.26293263, 0.26293242, 0.2629323, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pcu2e"]
+content_margin_left = 5.0
+content_margin_right = 5.0
+bg_color = Color(0.056291588, 0.056291603, 0.056291595, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.26293263, 0.26293242, 0.2629323, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fa6gv"]
 bg_color = Color(0.14406255, 0.14406255, 0.14406249, 1)
@@ -53,17 +96,37 @@ color = Color(0, 0, 0, 0.5921569)
 
 [node name="SendDemands" type="Button" parent="MainRect" unique_id=1077653473]
 layout_mode = 1
-anchors_preset = 3
+anchors_preset = -1
 anchor_left = 1.0
-anchor_top = 1.0
+anchor_top = 0.99100006
 anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -141.0
-offset_top = -36.0
+anchor_bottom = 0.99100006
+offset_left = -143.0
+offset_top = -36.28003
+offset_bottom = -0.2800293
 grow_horizontal = 0
 grow_vertical = 0
 theme_override_fonts/font = ExtResource("2_40vur")
+theme_override_styles/normal = SubResource("StyleBoxFlat_d7daq")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_fe0qs")
+theme_override_styles/hover = SubResource("StyleBoxFlat_pcu2e")
 text = "SEND_DEMANDS"
+
+[node name="Label" type="Label" parent="MainRect" unique_id=726118625]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.071
+anchor_right = 0.5
+anchor_bottom = 0.071
+offset_left = -139.5
+offset_top = 0.3199997
+offset_right = 139.5
+offset_bottom = 38.320015
+grow_horizontal = 2
+theme_override_fonts/font = ExtResource("3_fe0qs")
+theme_override_font_sizes/font_size = 29
+text = "PEACE_NEGOTIATIONS"
 
 [node name="TopRect" type="ColorRect" parent="." unique_id=682133900]
 layout_mode = 1
@@ -100,6 +163,9 @@ offset_top = 0.11999893
 offset_right = 94.479996
 offset_bottom = 32.12
 theme_override_fonts/font = ExtResource("2_40vur")
+theme_override_styles/normal = SubResource("StyleBoxFlat_d7daq")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_fe0qs")
+theme_override_styles/hover = SubResource("StyleBoxFlat_pcu2e")
 text = "LEAVE"
 
 [node name="ReparationsSlider" type="HSlider" parent="." unique_id=561755127]
@@ -211,7 +277,7 @@ icon_alignment = 1
 [node name="ChangeIdeologyButton" type="Button" parent="VBoxContainer" unique_id=1823391533]
 custom_minimum_size = Vector2(94, 50)
 layout_mode = 2
-tooltip_text = "Force enemy to adopt your ideology"
+tooltip_text = "FORCE_ENEMY"
 focus_mode = 0
 theme_override_styles/normal = SubResource("StyleBoxFlat_4c1hm")
 icon = ExtResource("6_40vur")
@@ -220,6 +286,7 @@ icon_alignment = 1
 [node name="ControlButton" type="Button" parent="VBoxContainer" unique_id=1992808077]
 custom_minimum_size = Vector2(94, 50)
 layout_mode = 2
+tooltip_text = "MAKE_PUPPET"
 focus_mode = 0
 theme_override_styles/normal = SubResource("StyleBoxFlat_4c1hm")
 icon = ExtResource("7_fe0qs")

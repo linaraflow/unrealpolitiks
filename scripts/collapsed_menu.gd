@@ -6,6 +6,7 @@ var settings = preload("res://new_resource.tres")
 @onready var cause_label: Label = $PanelContainer/MarginContainer/VBoxContainer/HBoxContainer2/NameLabel
 @onready var date_label: Label = $PanelContainer/MarginContainer/VBoxContainer/HBoxContainer3/NameLabel
 @onready var days_in_power_label: Label = $PanelContainer/MarginContainer/VBoxContainer/HBoxContainer4/NameLabel
+@onready var SelectionBox = get_node("/root/Game/CanvasLayer/SelectionBox")
 
 @onready var Map = get_node("/root/Game/Map")
 
@@ -53,6 +54,7 @@ func get_date_new(date_old):
 
 func restart():
     Map.restart()
+    SelectionBox.show()
     hide()
 
 

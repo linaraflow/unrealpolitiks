@@ -26,6 +26,10 @@ static func try_make_peace(country: String, c_data: Dictionary, enemies: Array) 
     if randf() < (0.10 * peace_mult):
         var target_enemy = enemies.pick_random()
 
+        # --- ИИ никогда не заключает мир с игроком ---
+        if target_enemy == AIManager.settings.active_country:
+            return
+
         # --- Если у одной из сторон 0 провинций — мир заключается безусловно ---
         var country_provinces = ProvinceRegistry.owner_province_count.get(country, 0)
         var enemy_provinces    = ProvinceRegistry.owner_province_count.get(target_enemy, 0)
@@ -44,7 +48,7 @@ static func try_make_peace(country: String, c_data: Dictionary, enemies: Array) 
                 return
         # ------------------------------------------
 
-        if target_enemy != AIManager.settings.active_country:
+        if true:
             # Если у одной из сторон есть провинция, до которой нельзя добраться
             # нормально (только через свои провинции или море) — мир не заключаем,
             # война продолжается (например, страна разрезана надвое оккупацией).
@@ -56,14 +60,35 @@ static func try_make_peace(country: String, c_data: Dictionary, enemies: Array) 
             ProvinceRegistry.annex_all_occupied_by(target_enemy)
             ProvinceRegistry.end_war(country, target_enemy)
 
+## Во сколько раз умножается шанс объявления войны соседу, у которого
+## санкции >= DiplomacyManager.HIGH_SANCTIONS_THRESHOLD.
+const HIGH_SANCTIONS_WAR_MULT := 4.0
+
+## Базовый (до применения war_mult идеологии) шанс/день, что НЕ граничащая
+## страна тоже объявит войну сильно засанкционированной стране.
+const HIGH_SANCTIONS_DISTANT_WAR_CHANCE := 0.03
+
 static func try_declare_war(country: String, c_data: Dictionary) -> void:
-    var ideology          = c_data.get("ideology", "liberalism")
-    var war_mult          = DiplomacyManager.IDEOLOGIES[ideology]["war"]
-    var neighbor          = AIManager.get_random_neighbor_country(country)
+    var ideology = c_data.get("ideology", "liberalism")
+    var war_mult = DiplomacyManager.IDEOLOGIES[ideology]["war"]
 
-    if neighbor == "" or neighbor == country:
-        return
+    # --- Обычная логика: сосед с плохими отношениями (+бонус за санкции) ---
+    var neighbor = AIManager.get_random_neighbor_country(country)
+    if neighbor != "" and neighbor != country:
+        var declare_chance = _get_neighbor_war_chance(country, ideology, neighbor, war_mult)
 
+        if DiplomacyManager.has_high_sanctions(neighbor):
+            declare_chance *= HIGH_SANCTIONS_WAR_MULT
+
+        if randf() < declare_chance:
+            ProvinceRegistry.declare_war(country, neighbor)
+            return
+
+    # --- Санкционные войны: если в мире есть сильно засанкционированная страна,
+    #     на неё может напасть и НЕ граничащий с ней сосед ---
+    _try_declare_war_on_distant_sanctioned(country, ideology, neighbor, war_mult)
+
+static func _get_neighbor_war_chance(country: String, ideology: String, neighbor: String, war_mult: float) -> float:
     var relations         = DiplomacyManager.get_relation(country, neighbor)
     var neighbor_ideology = ProvinceRegistry.countries_data[neighbor].get("ideology", "liberalism")
 
@@ -82,8 +107,32 @@ static func try_declare_war(country: String, c_data: Dictionary) -> void:
     if ideology == neighbor_ideology and relations >= -20.0:
         declare_chance *= 0.5
 
-    if randf() < declare_chance:
-        ProvinceRegistry.declare_war(country, neighbor)
+    return declare_chance
+
+## Даёт шанс объявить войну засанкционированной (кэш DiplomacyManager.high_sanctions_countries)
+## стране, даже если с ней нет общей границы. skip_neighbor исключает страну,
+## которую уже проверили как соседа (чтобы не откатывать бросок дважды).
+## Использует готовый кэш вместо перебора всех countries_data — быстро даже
+## при большом числе стран в мире.
+static func _try_declare_war_on_distant_sanctioned(country: String, ideology: String, skip_neighbor: String, war_mult: float) -> void:
+    var candidates: Array = []
+    for other in DiplomacyManager.get_high_sanctions_countries():
+        if other == country or other == skip_neighbor:
+            continue
+        if ProvinceRegistry.owner_province_count.get(other, 0) <= 0:
+            continue
+        # Уже воюем — новую войну не объявляем
+        if ProvinceRegistry.war_relations.get(country, []).has(other):
+            continue
+        candidates.append(other)
+
+    if candidates.is_empty():
+        return
+
+    var target = candidates.pick_random()
+
+    if randf() < HIGH_SANCTIONS_DISTANT_WAR_CHANCE * war_mult:
+        ProvinceRegistry.declare_war(country, target)
 
 ## Ответные санкции
 static func process_sanctions(country: String) -> void:

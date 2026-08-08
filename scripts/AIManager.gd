@@ -153,7 +153,13 @@ func _process(delta: float) -> void:
 func _on_day_passed(_date: Dictionary) -> void:
     var current_day: int = int(_date.get("day", 1))
 
-    for country in ProvinceRegistry.countries_data:
+    # Снимок ключей: обработка одной страны (бой/уничтожение) может стереть
+    # ДРУГУЮ страну из countries_data прямо во время этого цикла — итерация
+    # по живому словарю в такой ситуации небезопасна и может пропустить
+    # часть стран в этом тике.
+    for country in ProvinceRegistry.countries_data.keys().duplicate():
+        if not ProvinceRegistry.countries_data.has(country):
+            continue  # страна была уничтожена уже в этом тике, пропускаем
         if country == settings.active_country:
             # Игрок обычно управляется вручную и пропускает весь ИИ-блок.
             # Но если включен чекбокс "AI Army" — обрабатываем его армию
@@ -213,13 +219,21 @@ func _on_day_passed(_date: Dictionary) -> void:
 
 # ── Ежемесячный тик ───────────────────────────────────────────────────────────
 func _on_month_passed(_date: Dictionary) -> void:
-    for country in ProvinceRegistry.countries_data:
+    for country in ProvinceRegistry.countries_data.keys().duplicate():
+        if not ProvinceRegistry.countries_data.has(country):
+            continue
         _update_monthly_income(country)
 
-    for country in ProvinceRegistry.countries_data:
+    # Снимок ключей: try_make_peace/аннексия могут уничтожить страну
+    # (см. ProvinceRegistry._eliminate_country) прямо в процессе этого цикла.
+    for country in ProvinceRegistry.countries_data.keys().duplicate():
+        if not ProvinceRegistry.countries_data.has(country):
+            continue
         if country == settings.active_country:
             continue
         AIDiplomacy.process_diplomacy(country)
+        if not ProvinceRegistry.countries_data.has(country):
+            continue  # страна могла быть уничтожена внутри process_diplomacy
         AIDiplomacy.process_relations_drift(country)
 
 # -----------------------------------------------------------------------------

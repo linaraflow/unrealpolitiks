@@ -45,10 +45,16 @@ func _on_war_ended(country_a: String, country_b: String) -> void:
     _add_notification(country_a, country_b, title_text, Color(0.3, 0.75, 0.3))
 
 func _on_sanctions_imposed(attacker: String, target: String) -> void:
+    # Мировые санкции за агрессию (WORLD_SANCTION_KEY) в уведомлениях не показываем
+    if attacker == DiplomacyManager.WORLD_SANCTION_KEY:
+        return
     var title_text := tr("NOTIF_SANCTIONS_IMPOSED_FMT") % [tr(attacker.to_upper()), tr("CTRY_" + _ctry_key(target))]
     _add_notification(attacker, target, title_text, Color(0.85, 0.65, 0.15))
 
 func _on_sanctions_removed(attacker: String, target: String) -> void:
+    # Мировые санкции за агрессию (WORLD_SANCTION_KEY) в уведомлениях не показываем
+    if attacker == DiplomacyManager.WORLD_SANCTION_KEY:
+        return
     var title_text := tr("NOTIF_SANCTIONS_REMOVED_FMT") % [tr(attacker.to_upper()), tr("CTRY_" + _ctry_key(target))]
     _add_notification(attacker, target, title_text, Color(0.55, 0.55, 0.55))
 

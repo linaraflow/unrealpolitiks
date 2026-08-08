@@ -230,7 +230,7 @@ func _on_build_factory_button_pressed() -> void:
         var updated_queue: Array = ProvinceRegistry.province_data.get(p_id, {}).get("factory_queue", [])
         show_queue_toast(tr("TOAST_FACTORY_PROGRESS_FMT") % [updated_queue.size(), MAX_QUEUE_SIZE], COLOR_GOOD)
     else:
-        var factory_cost: String = ProvinceRegistry._format_number(settings.factory_cost, ".")
+        var factory_cost: String = ProvinceRegistry._format_number(ProvinceRegistry.get_factory_cost(settings.active_country), ".")
         show_queue_toast(tr("TOAST_NOT_ENOUGH_MONEY_FMT") % factory_cost, COLOR_BAD)
 
 # --- recruit (перенесено из recruite_button.gd) -----------------------------

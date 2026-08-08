@@ -1148,7 +1148,7 @@ stretch_mode = 5
 [node name="Label" type="Label" parent="ChooseMapPanel/VBoxContainer/ListPanel/VBoxContainer/ItemPolitics/MarginContainer/HBoxContainer" unique_id=606104873]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("12_111l2")
-text = "Politics"
+text = "MAP_MODE_POLITICS"
 
 [node name="Spacer" type="Control" parent="ChooseMapPanel/VBoxContainer/ListPanel/VBoxContainer/ItemPolitics/MarginContainer/HBoxContainer" unique_id=2080493389]
 layout_mode = 2
@@ -1198,7 +1198,7 @@ stretch_mode = 5
 [node name="Label" type="Label" parent="ChooseMapPanel/VBoxContainer/ListPanel/VBoxContainer/ItemEconomy/MarginContainer/HBoxContainer" unique_id=325251966]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("12_111l2")
-text = "Economy"
+text = "MAP_MODE_ECONOMY"
 
 [node name="Spacer" type="Control" parent="ChooseMapPanel/VBoxContainer/ListPanel/VBoxContainer/ItemEconomy/MarginContainer/HBoxContainer" unique_id=190252933]
 layout_mode = 2
@@ -1248,7 +1248,7 @@ stretch_mode = 5
 [node name="Label" type="Label" parent="ChooseMapPanel/VBoxContainer/ListPanel/VBoxContainer/ItemPopulation/MarginContainer/HBoxContainer" unique_id=1399067309]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("12_111l2")
-text = "Population"
+text = "MAP_MODE_POPULATION"
 
 [node name="Spacer" type="Control" parent="ChooseMapPanel/VBoxContainer/ListPanel/VBoxContainer/ItemPopulation/MarginContainer/HBoxContainer" unique_id=2022822512]
 layout_mode = 2
@@ -1296,7 +1296,7 @@ stretch_mode = 5
 [node name="DropdownLabel" type="Label" parent="ChooseMapPanel/VBoxContainer/DropdownPanel/DropdownButton/MarginContainer/HBoxContainer" unique_id=264903307]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("12_111l2")
-text = "Politics"
+text = "MAP_MODE_POLITICS"
 
 [node name="OnlyTick" type="CheckBox" parent="ChooseMapPanel/VBoxContainer/DropdownPanel/DropdownButton/MarginContainer/HBoxContainer" unique_id=193713521]
 layout_mode = 2
@@ -1304,7 +1304,7 @@ size_flags_horizontal = 3
 focus_mode = 0
 theme_override_fonts/font = ExtResource("12_111l2")
 theme_override_font_sizes/font_size = 8
-text = "only your country"
+text = "MAP_ONLY_OWN_COUNTRY"
 
 [node name="ArrowIcon" type="TextureRect" parent="ChooseMapPanel/VBoxContainer/DropdownPanel/DropdownButton/MarginContainer/HBoxContainer" unique_id=691331168]
 layout_mode = 2
