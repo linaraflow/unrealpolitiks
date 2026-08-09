@@ -58,6 +58,7 @@ func _on_confirm_pressed():
         var province_happiness = ProvinceRegistry.province_data[current_province_id]["happiness"]
         ProvinceRegistry.province_data[current_province_id]["happiness"] = max(0.0, province_happiness - happiness_drain)
         balance_label.balance_update()
+        balance_label.flash_spent()
         hide()
         # Вызываем обновление UI (например, в ProvinceMenu и DivisionMenu)
         get_parent().update_info(ProvinceRegistry.province_data[current_province_id])

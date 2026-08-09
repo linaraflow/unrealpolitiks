@@ -4,10 +4,10 @@ var settings = preload("res://new_resource.tres")
 
 func find_path(start_id: int, goal_id: int, country: String) -> Array:
     if not ProvinceMap.adjacency.has(start_id):
-        print("Провинция ", start_id, " не найдена в графе")
+        #print("Провинция ", start_id, " не найдена в графе")
         return []
     if not ProvinceMap.adjacency.has(goal_id):
-        print("Провинция ", goal_id, " не найдена в графе")
+        #print("Провинция ", goal_id, " не найдена в графе")
         return []
     if start_id == goal_id:
         return [start_id]
@@ -59,7 +59,7 @@ func find_path(start_id: int, goal_id: int, country: String) -> Array:
                 return _reconstruct_path(previous, start_id, goal_id)
             queue.append(n)
 
-    print("Путь от ", start_id, " до ", goal_id, " не найден")
+    #print("Путь от ", start_id, " до ", goal_id, " не найден")
     return []
 
 func _reconstruct_path(previous: Dictionary, start_id: int, goal_id: int) -> Array:

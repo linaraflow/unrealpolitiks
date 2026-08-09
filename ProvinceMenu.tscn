@@ -155,16 +155,14 @@ size_flags_horizontal = 4
 script = ExtResource("1_ehxlg")
 settings = ExtResource("4_lsrs6")
 
-[node name="Panel" type="Panel" parent="." unique_id=283001299]
+[node name="Panel" type="PanelContainer" parent="." unique_id=540301045]
 layout_mode = 1
 offset_right = 300.0
-offset_bottom = 245.0
+offset_bottom = 278.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_n6hjb")
 
 [node name="MarginContainer" type="MarginContainer" parent="Panel" unique_id=1804025954]
-layout_mode = 0
-offset_right = 300.0
-offset_bottom = 245.0
+layout_mode = 2
 theme_override_constants/margin_left = 12
 theme_override_constants/margin_top = 12
 theme_override_constants/margin_right = 12
@@ -288,6 +286,21 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_7oiae")
 theme_override_styles/hover = SubResource("StyleBoxFlat_5cf6e")
 text = "BUILD_FACOTRY"
 icon = ExtResource("6_5cf6e")
+alignment = 0
+expand_icon = true
+
+[node name="DefendButton" type="Button" parent="Panel/MarginContainer/VBoxContainer/ActionsRow" unique_id=1586493153]
+modulate = Color(0.5312036, 0.8550829, 0.99999994, 1)
+layout_mode = 2
+offset_transform_enabled = true
+focus_mode = 0
+theme_override_fonts/font = ExtResource("3_kgwgh")
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_iy337")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_ddf8l")
+theme_override_styles/hover = SubResource("StyleBoxFlat_kgwgh")
+text = "BUILD_FORTIFICATIONS"
+icon = ExtResource("5_7oiae")
 alignment = 0
 expand_icon = true
 

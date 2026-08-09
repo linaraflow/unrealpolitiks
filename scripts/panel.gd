@@ -328,9 +328,9 @@ func _on_negotiation_pressed() -> void:
 func _on_declare_war_btn_pressed() -> void:
     if owner_name == "" or owner_name == settings.active_country:
         return
+    # WarBanner теперь сам подписан на ProvinceRegistry.war_declared
+    # и показывается независимо от того, кто объявил войну.
     ProvinceRegistry.declare_war(settings.active_country, owner_name)
-    var WarBanner = get_node("/root/Game/WarBanner")
-    WarBanner.show_declaration(settings.active_country, owner_name)
     update_info()
 
 

@@ -122,6 +122,15 @@ func _ready():
     _load_province_adjacency()
     GameClock.on_day_passed.connect(_on_day_passed)
     GameClock.on_month_passed.connect(_on_month_passed)
+    # ВАЖНО: элиминация страны ВСЕГДА должна проходить через _eliminate_country(),
+    # чтобы гарантированно чистились war_relations, capital и т.д. Раньше сигнал
+    # country_lost_all_provinces просто эмитился, а элиминация страны при потере
+    # последней провинции НЕ через аннексию (например, при белом мире в end_war())
+    # нигде централизованно не обрабатывалась — из-за этого где-то во внешнем коде
+    # страна могла "убиваться" по кустарному пути (например, просто erase из своего
+    # кэша), не трогая countries_data/war_relations здесь, и потом другие места
+    # (dev_menu, AI и т.п.) падали на "мёртвой" стране. Подключаем здесь напрямую.
+    country_lost_all_provinces.connect(_eliminate_country)
     _recalculate_all_populations()
     _recalculate_all_happiness()
     _recalculate_all_factories() # Первичный расчет фабрик при старте игры
@@ -377,6 +386,10 @@ func capture_province(province_id: int, new_owner: String) -> void:
         _check_province_loss(old_owner)
     _check_province_loss(new_owner)
 
+    # Владение провинцией изменилось — старые закэшированные пути через неё
+    # (посчитанные для старого владельца) могут стать неверными.
+    PathCache.invalidate_cache()
+
 func _set_owner(p_id: int, new_owner: String) -> void:
     province_owners[p_id] = new_owner
     province_captured.emit(p_id, new_owner)
@@ -410,7 +423,7 @@ func occupy_province(province_id: int, occupier: String) -> void:
         province_occupants.erase(province_id)
         capture_province(province_id, occupier)
         province_occupied.emit(province_id, "")
-        print("[Registry] Провинция %d освобождена и возвращена %s" % [province_id, occupier])
+        #print("[Registry] Провинция %d освобождена и возвращена %s" % [province_id, occupier])
         return
 
     # НОВОЕ: провинция принадлежит ТРЕТЬЕЙ стороне (её true owner — не текущий
@@ -422,11 +435,25 @@ func occupy_province(province_id: int, occupier: String) -> void:
     # обратно. Теперь она сразу автоматически освобождается и возвращается
     # истинному владельцу, минуя нового захватчика.
     if core_owner != occupier and core_owner != current_owner:
+        # Защита: если "истинный владелец" уже не существует (страна была
+        # уничтожена, а по какой-то причине эта провинция не была почищена
+        # в _eliminate_country — например, старое сохранение), возвращать
+        # провинцию некому. Оставляем её текущему захватчику как обычную
+        # оккупацию, а не создаём owner'а-призрака.
+        if not countries_data.has(core_owner):
+            province_data[key]["core_owner"] = occupier
+            province_data[key]["against_occupation"] = ""
+            province_occupants.erase(province_id)
+            capture_province(province_id, occupier)
+            province_occupied.emit(province_id, "")
+            #print("[Registry] Провинция %d: истинный владелец %s не существует, закреплена за %s" % [province_id, core_owner, occupier])
+            return
+
         province_data[key]["against_occupation"] = ""
         province_occupants.erase(province_id)
         capture_province(province_id, core_owner)
         province_occupied.emit(province_id, "")
-        print("[Registry] Провинция %d (третья сторона, истинный владелец %s) освобождена при захвате %s" % [province_id, core_owner, occupier])
+        #print("[Registry] Провинция %d (третья сторона, истинный владелец %s) освобождена при захвате %s" % [province_id, core_owner, occupier])
         return
 
     # Полосы ВСЕГДА показывают истинного владельца, а не последнего контролёра
@@ -435,7 +462,7 @@ func occupy_province(province_id: int, occupier: String) -> void:
     capture_province(province_id, occupier)
     province_occupied.emit(province_id, core_owner)
 
-    print("[Registry] Провинция %d захвачена %s (полосы: %s)" % [province_id, occupier, core_owner])
+    #print("[Registry] Провинция %d захвачена %s (полосы: %s)" % [province_id, occupier, core_owner])
     
 
 ## Снять оккупацию (например при освобождении провинции)
@@ -450,21 +477,33 @@ func liberate_province(province_id: int) -> void:
     # owner провинции не меняется (это только снятие "полос") — на фабрики,
     # которые уже считаются за текущим owner'ом, это никак не влияет.
 
-    print("[Registry] Оккупация снята с провинции %d" % province_id)
+    #print("[Registry] Оккупация снята с провинции %d" % province_id)
     province_occupied.emit(province_id, "")
 
 ## Аннексировать все оккупированные провинции одной страны.
 ## Вызывать при мирном договоре или кнопкой в тестовом режиме.
-func annex_all_occupied_by(occupier: String) -> void:
-    print("=== ANNEX === occupier:", occupier)
-    print("=== ANNEX === province_occupants:", province_occupants)
+##
+## only_from — опционально ограничивает аннексию провинциями, чей core_owner
+## именно эта страна. БЕЗ этого ограничения (only_from == "") occupier
+## аннексирует ВСЁ, что он сейчас оккупирует, включая территории третьих
+## стран, отжатые в других, не связанных с этим миром войнах — из-за чего
+## заключение мира с одним врагом могло случайно "добить" (аннексировать
+## последнюю провинцию и удалить из countries_data) совершенно постороннюю
+## страну, парализуя её на карте (см. AIDiplomacy.try_make_peace).
+func annex_all_occupied_by(occupier: String, only_from: String = "") -> void:
+    #print("=== ANNEX === occupier:", occupier, " only_from:", only_from)
+    #print("=== ANNEX === province_occupants:", province_occupants)
     
     var to_annex: Array[int] = []
     for p_id in province_occupants:
         if province_occupants[p_id] != "":
             var current_owner = province_data[p_id].get("owner", "")
-            print("p_id:", p_id, " owner:", current_owner)
+            #print("p_id:", p_id, " owner:", current_owner)
             if current_owner == occupier:
+                if only_from != "":
+                    var core = province_data[p_id].get("core_owner", "")
+                    if core != only_from:
+                        continue
                 to_annex.append(p_id)
 
     # Запоминаем, у кого именно аннексия отбирает провинции (core_owner ДО перезаписи),
@@ -485,7 +524,7 @@ func annex_all_occupied_by(occupier: String) -> void:
     # полосы — owner провинции при этом не меняется, значит и фабрики уже
     # засчитаны occupier'у (см. capture_province), пересчитывать нечего.
 
-    print("[Registry] Полосы убраны с %d провинций %s" % [to_annex.size(), occupier])
+    #print("[Registry] Полосы убраны с %d провинций %s" % [to_annex.size(), occupier])
 
     # Аннексия могла лишить кого-то из прежних владельцев ПОСЛЕДНЕЙ провинции —
     # capture_province() тут не вызывается, поэтому _check_capital_transfer сам
@@ -505,6 +544,13 @@ func get_occupant(province_id: int) -> String:
 # ─── ВОЙНА ────────────────────────────────────────────────────────────────────
 
 func declare_war(attacker: String, defender: String):
+    if not countries_data.has(attacker):
+        push_error("declare_war: страна-агрессор '%s' отсутствует в countries_data" % attacker)
+        return
+    if not countries_data.has(defender):
+        push_error("declare_war: страна-защитник '%s' отсутствует в countries_data" % defender)
+        return
+
     # Снимок фабрик "на начало войны" — только когда страна входит в войну ИЗ МИРА
     # (0 активных войн). Пока страна не вернётся к 0 войнам, снимок не обновляется,
     # даже если по пути она объявит войну ещё кому-то или на неё нападут ещё раз.
@@ -530,8 +576,12 @@ func declare_war(attacker: String, defender: String):
     # и мировые санкции. Работает одинаково и для ИИ, и для игрока.
     DiplomacyManager.register_aggression(attacker)
 
-    print("War: ", attacker, " vs ", defender)
+    #print("War: ", attacker, " vs ", defender)
     war_declared.emit(attacker, defender)
+
+    # Проходимость чужой территории зависит от is_at_war() — начало войны
+    # могло открыть новые пути, которые раньше считались недоступными.
+    PathCache.invalidate_cache()
 
 func is_at_war(country_a: String, country_b: String) -> bool:
     return war_relations.get(country_a, []).has(country_b)
@@ -573,6 +623,10 @@ func _clear_war_state(country_a: String, country_b: String) -> void:
     # в active_battles, а армии не освобождаются.
     CombatManager.end_battles_between(country_a, country_b)
 
+    # Окончание войны тоже меняет проходимость (мир может закрыть транзит
+    # через территорию бывшего врага) — сбрасываем кэш путей.
+    PathCache.invalidate_cache()
+
 func end_war(country_a: String, country_b: String) -> void:
     _clear_war_state(country_a, country_b)
 
@@ -605,7 +659,7 @@ func end_war(country_a: String, country_b: String) -> void:
         capture_province(p_id, core)
         province_occupied.emit(p_id, "")
 
-    print("[Registry] Война завершена: %s и %s (возвращено провинций: %d)" % [country_a, country_b, provinces_to_liberate.size()])
+    #print("[Registry] Война завершена: %s и %s (возвращено провинций: %d)" % [country_a, country_b, provinces_to_liberate.size()])
     war_ended.emit(country_a, country_b)
     
 ## Установить столицу страны и сохранить ТОЛЬКО поле "capital" в countries.json
@@ -613,11 +667,11 @@ func end_war(country_a: String, country_b: String) -> void:
 ## чтобы не затереть то, что могло измениться помимо памяти рантайма).
 func set_capital(country: String, province_id: int) -> void:
     if country == "" or not countries_data.has(country):
-        print("[Registry] set_capital: нет такой страны: ", country)
+        #print("[Registry] set_capital: нет такой страны: ", country)
         return
 
     countries_data[country]["capital"] = province_id
-    print("[Registry] Столица %s установлена вручную: %d" % [country, province_id])
+    #print("[Registry] Столица %s установлена вручную: %d" % [country, province_id])
 
     _save_capital_to_file(country, province_id)
     capital_changed.emit(country, province_id)
@@ -626,7 +680,7 @@ func set_capital(country: String, province_id: int) -> void:
 func _save_capital_to_file(country: String, province_id: int) -> void:
     var path = "res://scripts/countries.json"
     if not FileAccess.file_exists(path):
-        print("[Registry] _save_capital_to_file: файл не найден: ", path)
+        #print("[Registry] _save_capital_to_file: файл не найден: ", path)
         return
 
     var read_file = FileAccess.open(path, FileAccess.READ)
@@ -635,12 +689,12 @@ func _save_capital_to_file(country: String, province_id: int) -> void:
     read_file.close()
 
     if parse_err != OK:
-        print("[Registry] _save_capital_to_file: ошибка парсинга JSON")
+        #print("[Registry] _save_capital_to_file: ошибка парсинга JSON")
         return
 
     var data: Dictionary = json.data
     if not data.has(country):
-        print("[Registry] _save_capital_to_file: страны нет в файле: ", country)
+        #print("[Registry] _save_capital_to_file: страны нет в файле: ", country)
         return
 
     # Меняем на диске ТОЛЬКО поле capital, всё остальное в файле остаётся как было
@@ -650,7 +704,7 @@ func _save_capital_to_file(country: String, province_id: int) -> void:
     write_file.store_string(JSON.stringify(data, "\t"))
     write_file.close()
 
-    print("[Registry] countries.json обновлён: capital[%s] = %d" % [country, province_id])
+    #print("[Registry] countries.json обновлён: capital[%s] = %d" % [country, province_id])
 
 
 ## Есть ли у страны хоть одна провинция — своя (owner) или "по праву" (core_owner,
@@ -680,7 +734,7 @@ func _eliminate_country(country: String) -> void:
     # эмит через guard всё равно сработает (и не задублируется, если уже сработал).
     _check_province_loss(country)
 
-    print("[Registry] Страна %s потеряла последнюю провинцию (столицу)" % country)
+    #print("[Registry] Страна %s потеряла последнюю провинцию (столицу)" % country)
     # Сначала чистим поле в самих данных — чтобы к моменту сигнала
     # никто, читающий countries_data напрямую, не увидел старую столицу.
     countries_data[country]["capital"] = -1
@@ -697,6 +751,25 @@ func _eliminate_country(country: String) -> void:
     for enemy in war_relations.get(country, []).duplicate():
         _clear_war_state(country, enemy)
     war_relations.erase(country)
+
+    # КРИТИЧНО: провинции, которые ждали возврата ЭТОЙ стране как "истинному
+    # владельцу" (core_owner == country, но сейчас оккупированы кем-то ещё),
+    # больше не могут ей вернуться — страны больше нет. Если это не почистить,
+    # occupy_province()/end_war() рано или поздно попробуют сделать
+    # capture_province(p_id, country) для уже стёртой из countries_data страны —
+    # провинция получит "призрачного" owner'а, которого нет в countries_data,
+    # и это уронит любой код, читающий countries_data[owner] (dev_menu и т.п.).
+    # Поэтому сразу закрепляем такие провинции за их текущим фактическим
+    # владельцем (по сути — молчаливая аннексия) и убираем полосы оккупации.
+    for p_id in province_data.keys():
+        var p = province_data[p_id]
+        if p.get("core_owner", "") == country:
+            var current_owner = p.get("owner", "")
+            p["core_owner"] = current_owner
+            p["against_occupation"] = ""
+            if province_occupants.has(p_id):
+                province_occupants.erase(p_id)
+                province_occupied.emit(p_id, "")
 
     country_eliminated.emit(country)
     countries_data.erase(country)
@@ -749,7 +822,7 @@ func _check_capital_transfer(captured_p_id: int, old_owner: String) -> void:
         if not owned_provinces.is_empty():
             var new_capital = owned_provinces.pick_random()
             countries_data[old_owner]["capital"] = new_capital
-            print("[Registry] Столица %s перенесена в провинцию %d" % [old_owner, new_capital])
+            #print("[Registry] Столица %s перенесена в провинцию %d" % [old_owner, new_capital])
             capital_changed.emit(old_owner, new_capital)
             return
 
@@ -759,7 +832,7 @@ func _check_capital_transfer(captured_p_id: int, old_owner: String) -> void:
         if not core_provinces.is_empty():
             var parked_capital = core_provinces.pick_random()
             countries_data[old_owner]["capital"] = parked_capital
-            print("[Registry] %s полностью оккупирована, столица временно перенесена в %d (ждёт освобождения)" % [old_owner, parked_capital])
+            #print("[Registry] %s полностью оккупирована, столица временно перенесена в %d (ждёт освобождения)" % [old_owner, parked_capital])
             capital_changed.emit(old_owner, parked_capital)
             return
 
@@ -879,7 +952,7 @@ func start_uav_order(country: String, amount: int) -> bool:
         "per_day": speed,
     }
 
-    print("[Registry] %s заказал %d БПЛА (скорость %.2f/день)" % [country, amount, speed])
+    #print("[Registry] %s заказал %d БПЛА (скорость %.2f/день)" % [country, amount, speed])
     uav_order_changed.emit(country)
     return true
 
@@ -907,7 +980,7 @@ func _process_uav_orders() -> void:
 
     for country in finished:
         active_uav_orders.erase(country)
-        print("[Registry] Заказ БПЛА страны %s завершён" % country)
+        #print("[Registry] Заказ БПЛА страны %s завершён" % country)
         uav_order_changed.emit(country)
 
 # ─── ЗАКАЗ РАКЕТ ────────────────────────────────────────────────────────────────
@@ -954,7 +1027,7 @@ func start_missile_order(country: String, amount: int) -> bool:
         "per_day": speed_month / MISSILE_DAYS_PER_MONTH,
     }
 
-    print("[Registry] %s заказал %d ракет (скорость %.3f/месяц)" % [country, amount, speed_month])
+    #print("[Registry] %s заказал %d ракет (скорость %.3f/месяц)" % [country, amount, speed_month])
     missile_order_changed.emit(country)
     return true
 
@@ -985,7 +1058,7 @@ func _process_missile_orders() -> void:
 
     for country in finished:
         active_missile_orders.erase(country)
-        print("[Registry] Заказ ракет страны %s завершён" % country)
+        #print("[Registry] Заказ ракет страны %s завершён" % country)
         missile_order_changed.emit(country)
 
 # Вызывать при постройке завода (в start_factory_construction):
@@ -1040,7 +1113,7 @@ func destroy_factory(p_id: int, amount: int = 1, attacker_country: String = "") 
             if countries_data.has(owner):
                 countries_data[owner]["factories"] = max(0, countries_data[owner].get("factories", 0) - destroyed)
                 
-        print("[Registry] Фабрик уничтожено: ", destroyed, " в провинции ", p_id)
+        #print("[Registry] Фабрик уничтожено: ", destroyed, " в провинции ", p_id)
         factory_destroyed.emit(p_id, owner, destroyed)
 
         # НАГРАДА АТАКУЮЩЕМУ: за каждую уничтоженную фабрику — product_cost * 12 продукта
@@ -1048,7 +1121,7 @@ func destroy_factory(p_id: int, amount: int = 1, attacker_country: String = "") 
             var product_cost: float = settings.product_cost
             var reward: float = destroyed * 12.0
             countries_data[attacker_country]["products"] = countries_data[attacker_country].get("products", 0.0) + reward
-            print("[Registry] %s получил %.2f продукта за уничтожение %d фабрик" % [attacker_country, reward, destroyed])
+            #print("[Registry] %s получил %.2f продукта за уничтожение %d фабрик" % [attacker_country, reward, destroyed])
         
     # НАСЕЛЕНИЕ
     var kill_pop = settings.KILLS_PER_DRONE * amount
@@ -1077,21 +1150,21 @@ func missile_strike(province_id: int, attacker_country: String = "") -> void:
             if countries_data.has(owner):
                 countries_data[owner]["factories"] = max(0, countries_data[owner].get("factories", 0) - current_factories)
                 
-        print("[Registry] Ракетный удар: уничтожено фабрик ", current_factories, " в провинции ", province_id)
+        #print("[Registry] Ракетный удар: уничтожено фабрик ", current_factories, " в провинции ", province_id)
         factory_destroyed.emit(province_id, owner, current_factories)
 
         # НАГРАДА АТАКУЮЩЕМУ: за каждую уничтоженную фабрику — 36 продукта
         if _is_real_country_owner(attacker_country) and countries_data.has(attacker_country):
             var reward: float = current_factories * 36.0
             countries_data[attacker_country]["products"] = countries_data[attacker_country].get("products", 0.0) + reward
-            print("[Registry] %s получил %.2f продукта за уничтожение %d фабрик (ракета)" % [attacker_country, reward, current_factories])
+            #print("[Registry] %s получил %.2f продукта за уничтожение %d фабрик (ракета)" % [attacker_country, reward, current_factories])
 
     # ДИВИЗИИ — уничтожение 90% личного состава в провинции
     DivisionManager.kill_percent_in_province(province_id, MISSILE_KILL_RATIO)
     
     missile_strike_landed.emit(province_id)
     
-    print("[Registry] Ракетный удар по провинции ", province_id, " завершён")
+    #print("[Registry] Ракетный удар по провинции ", province_id, " завершён")
     
     
 # ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ

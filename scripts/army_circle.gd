@@ -221,7 +221,7 @@ func start_movement_to(target_province_id: int, target_pos: Vector2) -> void:
 
     # Если легального пути нет вообще
     if provinces_path.is_empty():
-        print(army_name, ": легальный путь не найден.")
+        #print(army_name, ": легальный путь не найден.")
         var current_owner = ProvinceRegistry.province_data.get(current_p_id, {}).get("owner", "")
         
         if not _can_enter_territory(current_owner):
@@ -232,7 +232,7 @@ func start_movement_to(target_province_id: int, target_pos: Vector2) -> void:
     if final_target_id != target_province_id:
         target_province_id = final_target_id
         target_pos = settings.province_centers.get(final_target_id, position)
-        print(army_name, ": маршрут скорректирован до доступной провинции ", target_province_id)
+        #print(army_name, ": маршрут скорректирован до доступной провинции ", target_province_id)
 
     current_target_province_id = target_province_id
     target_owner = ProvinceRegistry.province_data.get(target_province_id, {}).get("owner", "")
@@ -388,18 +388,31 @@ func _transfer_data_to(new_p_id: int) -> void:
 
     new_data["army"]["land"] += soldiers
 
+    # Провинция, которую армия покидает, может либо ещё содержать другие
+    # армии (тогда там имеет смысл reposition/check_for_battle), либо
+    # опустеть полностью — тогда эти дорогие вызовы (по профайлеру
+    # check_for_battle съедает ~869мс из ~872мс времени скрипта всего на
+    # ~106 вызовах) делать незачем: проверять/переставлять там больше нечего.
+    var old_province_still_has_armies := false
     if DivisionManager.armies.has(province_id):
         DivisionManager.armies[province_id].erase(self)
-        if DivisionManager.armies[province_id].is_empty(): DivisionManager.armies.erase(province_id)
-        
+        if DivisionManager.armies[province_id].is_empty():
+            DivisionManager.armies.erase(province_id)
+        else:
+            old_province_still_has_armies = true
+
     if not DivisionManager.armies.has(new_p_id): DivisionManager.armies[new_p_id] = []
     DivisionManager.armies[new_p_id].append(self)
-    
-    DivisionManager.reposition_armies_in_province(province_id)
+    DivisionManager._unregister_army(division_owner, province_id)
+    DivisionManager._register_army(division_owner, new_p_id)
+
+    if old_province_still_has_armies:
+        DivisionManager.reposition_armies_in_province(province_id)
     ProvinceRegistry.province_army_changed.emit(province_id, self)
     ProvinceRegistry.province_army_changed.emit(new_p_id, self)
 
-    CombatManager.check_for_battle(self, province_id)
+    if old_province_still_has_armies:
+        CombatManager.check_for_battle(self, province_id)
     CombatManager.check_for_battle(self, new_p_id)
 
 func _stop_current_movement() -> void:
@@ -420,7 +433,7 @@ func _arrive_at_destination(target_pos: Vector2) -> void:
 
     DivisionManager.reposition_armies_in_province(province_id)
     CombatManager.check_for_battle(self, province_id)
-    print(army_name, " прибыла! Солдат внутри: ", soldiers)
+    #print(army_name, " прибыла! Солдат внутри: ", soldiers)
 
 # ─── ЛОГИКА ОКРУЖЕНИЯ И УНИЧТОЖЕНИЯ ─────────────────────────────────────────
 
@@ -430,7 +443,7 @@ func _check_if_stranded(check_p_id: int) -> void:
         _destroy_division()
 
 func _destroy_division() -> void:
-    print(army_name, ": осталась без снабжения и уничтожена в окружении!")
+    #print(army_name, ": осталась без снабжения и уничтожена в окружении!")
     
     var current_key = province_id
     if ProvinceRegistry.province_data.has(current_key):
@@ -441,6 +454,7 @@ func _destroy_division() -> void:
     if DivisionManager.armies.has(province_id):
         DivisionManager.armies[province_id].erase(self)
         if DivisionManager.armies[province_id].is_empty(): DivisionManager.armies.erase(province_id)
+    DivisionManager._unregister_army(division_owner, province_id)
             
     ProvinceRegistry.province_army_changed.emit(province_id, self)
     _stop_current_movement()

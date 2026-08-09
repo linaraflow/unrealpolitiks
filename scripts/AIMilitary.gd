@@ -128,11 +128,13 @@ static func process_military_movement(country: String) -> void:
     var provinces_with_armies: Dictionary = {}
     for p in own_provinces:
         provinces_with_armies[p] = true
-    for p_id in DivisionManager.armies.keys():
-        for army in DivisionManager.armies[p_id]:
-            if is_instance_valid(army) and army.division_owner == country:
-                provinces_with_armies[p_id] = true
-                break
+    # ОПТИМИЗАЦИЯ: раньше здесь был двойной цикл по DivisionManager.armies.keys()
+    # и по всем кружкам в каждой провинции — т.е. полный скан ВСЕХ армий на
+    # карте ради поиска армий одной страны, повторяющийся для каждой страны
+    # каждый день (O(countries * total_armies) синхронно в кадре смены дня).
+    # Теперь используем инкрементальный индекс DivisionManager.armies_by_country — O(k).
+    for p_id in DivisionManager.get_country_provinces_with_armies(country):
+        provinces_with_armies[p_id] = true
 
     var assigned_count: Dictionary = {}
 

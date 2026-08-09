@@ -227,6 +227,7 @@ func _on_build_factory_button_pressed() -> void:
     var success = ProvinceRegistry.start_factory_construction(p_id, settings.active_country)
     if success:
         balance_label.balance_update()
+        balance_label.flash_spent()
         var updated_queue: Array = ProvinceRegistry.province_data.get(p_id, {}).get("factory_queue", [])
         show_queue_toast(tr("TOAST_FACTORY_PROGRESS_FMT") % [updated_queue.size(), MAX_QUEUE_SIZE], COLOR_GOOD)
     else:
@@ -286,6 +287,7 @@ func _on_instant_max_recruit() -> void:
     ProvinceRegistry.province_data[province_id]["happiness"] = max(0.0, province_happiness - happiness_drain)
 
     balance_label.balance_update()
+    balance_label.flash_spent()
     update_army_info()
     show_queue_toast(tr("TOAST_RECRUITED_FMT") % amount, COLOR_GOOD)
 

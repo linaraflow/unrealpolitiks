@@ -70,25 +70,18 @@ func check_for_battle(division, province_id: int) -> void:
                 break
     countries_present = belligerents
 
+    # ОПТИМИЗАЦИЯ: раньше здесь был ещё один O(C²) проход с is_at_war(),
+    # заново искавший "хоть одну вражескую пару" среди countries_present.
+    # Он был математически избыточен: is_at_war() симметрична, а страна
+    # попадает в belligerents ТОЛЬКО если для неё нашёлся враг среди
+    # all_countries — значит и этот враг (по той же причине, в обратную
+    # сторону) тоже остался в belligerents. Поэтому если после фильтра
+    # осталось >= 2 страны, вражеская пара среди них гарантированно есть,
+    # и второй проход всегда возвращал true, дублируя уже сделанную работу.
     if countries_present.size() < 2:
         _maybe_end_battle(province_id)
         return
-        
-    # Проверяем: есть ли хоть одна пара врагов
-    var country_list = countries_present.keys()
-    var enemies_found := false
-    for i in range(country_list.size()):
-        for j in range(i + 1, country_list.size()):
-            if ProvinceRegistry.is_at_war(country_list[i], country_list[j]):
-                enemies_found = true
-                break
-        if enemies_found:
-            break
-        
-    if not enemies_found:
-        _maybe_end_battle(province_id)
-        return
-        
+
         # Если бой уже идёт — просто обновляем состав (дивизии могли подойти)
     if active_battles.has(province_id):
         _refresh_battle_sides(province_id, countries_present)
@@ -113,7 +106,7 @@ func _start_battle(province_id: int, countries_present: Dictionary) -> void:
     for circle in circles:
         circle._stop_current_movement()
 
-    print("[Combat] Бой начался в провинции %d: %s" % [province_id, sides.keys()])
+    #print("[Combat] Бой начался в провинции %d: %s" % [province_id, sides.keys()])
     battle_started.emit(province_id, sides)
 
 ## Перестраивает стороны боя без сброса HP (при подходе подкреплений)
@@ -139,7 +132,7 @@ func _refresh_battle_sides(province_id: int, countries_present: Dictionary) -> v
             if new_hp_to_add > 0:
                 side["hp"] += new_hp_to_add
                 side["max_hp"] += new_hp_to_add
-                print("[Combat] Провинция %d | Подкрепление принесло %s: +%d HP" % [province_id, country, new_hp_to_add])
+                #print("[Combat] Провинция %d | Подкрепление принесло %s: +%d HP" % [province_id, country, new_hp_to_add])
             
             # Обновляем массив кружков на актуальный
             side["circles"] = circles
@@ -158,7 +151,7 @@ func _refresh_battle_sides(province_id: int, countries_present: Dictionary) -> v
                     "hp": max_hp,
                     "max_hp": max_hp,
                 }
-                print("[Combat] Подкрепление вошло в бой в провинции %d: %s" % [province_id, country])
+                #print("[Combat] Подкрепление вошло в бой в провинции %d: %s" % [province_id, country])
 
 func _build_sides(province_id: int, countries_present: Dictionary) -> Dictionary:
     # Группируем страны по воюющим коалициям (упрощённо: две стороны)
@@ -224,7 +217,7 @@ func _process_battle_tick(province_id: int) -> bool:
     # но друг с другом не воюют — раньше такой бой зависал навсегда).
     if side_keys.size() < 2 or not _has_enemies_pair(sides):
         var winner: String = side_keys[0] if side_keys.size() == 1 else ""
-        print("[Combat] Бой в провинции %d завершён. Победитель: %s" % [province_id, winner])
+        #print("[Combat] Бой в провинции %d завершён. Победитель: %s" % [province_id, winner])
         battle_ended.emit(province_id, winner)
         return true
     
@@ -266,10 +259,10 @@ func _process_battle_tick(province_id: int) -> bool:
             if real_loss > 0:
                 casualties_inflicted.emit(enemies[0], real_loss)
                 ProvinceRegistry.adjust_monthly_income_for_troops(enemies[0], -real_loss)
-            print("[Combat] Провинция %d | %s (численность: %d) → %s: -%d HP (осталось %d) [усталость атакующего: %.2f%%]" % [
-                province_id, attacker, _calc_side_max_hp(sides[attacker]["circles"]), enemies[0],
-                dmg_per_enemy, sides[enemies[0]]["hp"], ProvinceRegistry.get_war_exhaustion(attacker)
-            ])
+            #print("[Combat] Провинция %d | %s (численность: %d) → %s: -%d HP (осталось %d) [усталость атакующего: %.2f%%]" % [
+                #province_id, attacker, _calc_side_max_hp(sides[attacker]["circles"]), enemies[0],
+                #dmg_per_enemy, sides[enemies[0]]["hp"], ProvinceRegistry.get_war_exhaustion(attacker)
+            #])
             hit.append(enemies[0])
         
         # Атакующая сторона получает усталость от войны за участие в этом тике боя.
@@ -287,7 +280,7 @@ func _process_battle_tick(province_id: int) -> bool:
     for country in to_eliminate:
         _eliminate_side(province_id, country, sides[country]["circles"])
         sides.erase(country)
-        print("[Combat] %s полностью разгромлен в провинции %d!" % [country, province_id])
+        #print("[Combat] %s полностью разгромлен в провинции %d!" % [country, province_id])
     
     battle_tick.emit(province_id, sides)
     
@@ -296,7 +289,7 @@ func _process_battle_tick(province_id: int) -> bool:
     var remaining_keys = sides.keys()
     if remaining_keys.size() < 2 or not _has_enemies_pair(sides):
         var winner: String = remaining_keys[0] if remaining_keys.size() == 1 else ""
-        print("[Combat] Бой в провинции %d завершён. Победитель: %s" % [province_id, winner])
+        #print("[Combat] Бой в провинции %d завершён. Победитель: %s" % [province_id, winner])
         battle_ended.emit(province_id, winner)
         return true
     
@@ -354,7 +347,8 @@ func _destroy_circle(circle: Node) -> void:
         return
     
     var p_id = circle.province_id
-    
+    var owner_id = circle.division_owner
+
     # Убираем кружок из выделения если он там был
     if SelectionManager.selected_divisions.has(circle):
         circle.deselect()
@@ -365,6 +359,7 @@ func _destroy_circle(circle: Node) -> void:
         DivisionManager.armies[p_id].erase(circle)
         if DivisionManager.armies[p_id].is_empty():
             DivisionManager.armies.erase(p_id)
+    DivisionManager._unregister_army(owner_id, p_id)
     
     circle.queue_free()
     
@@ -397,7 +392,7 @@ func _maybe_end_battle(province_id: int) -> void:
     if not active_battles.has(province_id):
         return
     active_battles.erase(province_id)
-    print("[Combat] Бой в провинции %d завершён (враги ушли или уничтожены)" % province_id)
+    #print("[Combat] Бой в провинции %d завершён (враги ушли или уничтожены)" % province_id)
 
 ## Принудительно останавливает бои между двумя странами — вызывается при мире.
 ## Логика: если в бою кроме country_a/country_b больше никто ни с кем не воюет,
@@ -423,7 +418,7 @@ func end_battles_between(country_a: String, country_b: String) -> void:
             continue
 
         active_battles.erase(province_id)
-        print("[Combat] Бой в провинции %d остановлен: %s и %s заключили мир" % [province_id, country_a, country_b])
+        #print("[Combat] Бой в провинции %d остановлен: %s и %s заключили мир" % [province_id, country_a, country_b])
         battle_ended.emit(province_id, "")
 
 ## Есть ли в бою враждующая пара, не считая саму пару country_a/country_b

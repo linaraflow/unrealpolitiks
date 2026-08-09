@@ -767,7 +767,7 @@ func _on_province_captured(p_id: int, new_owner: String):
 
 
 func _on_province_occupied(p_id: int, occupier: String):
-    print("=== ON_PROVINCE_OCCUPIED CALLED === p_id:", p_id, " occupier:", occupier)
+    #print("=== ON_PROVINCE_OCCUPIED CALLED === p_id:", p_id, " occupier:", occupier)
 
     var r = p_id & 0xFF
     var g = (p_id >> 8) & 0xFF
@@ -798,12 +798,12 @@ func _on_battle_ended(province_id: int, winner: String) -> void:
 
     var current_owner = ProvinceRegistry.province_data.get(province_id, {}).get("owner", "")
 
-    print("=== BATTLE ENDED === province:", province_id, " winner:", winner, " owner:", current_owner)
+    #print("=== BATTLE ENDED === province:", province_id, " winner:", winner, " owner:", current_owner)
 
     if current_owner != winner:
         ProvinceRegistry.occupy_province(province_id, winner)
     
-    print("=== OCCUPY CALLED ===")
+    #print("=== OCCUPY CALLED ===")
 
     CountryPanel.update_info()
     FlagRect.update()

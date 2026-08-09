@@ -3,7 +3,7 @@ extends Node
 var _cache: Dictionary = {}
 
 func find_path_cached(from_id: int, to_id: int, country: String) -> Array:
-    var key: String = "%d:%d" % [from_id, to_id]
+    var key: String = "%d:%d:%s" % [from_id, to_id, country]
     if _cache.has(key):
         return _cache[key]
     var path: Array = Pathfinder.find_path(from_id, to_id, country)

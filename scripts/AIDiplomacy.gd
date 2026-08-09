@@ -56,17 +56,31 @@ static func try_make_peace(country: String, c_data: Dictionary, enemies: Array) 
             or not Pathfinder.is_capital_connected(target_enemy):
                 return
 
-            ProvinceRegistry.annex_all_occupied_by(country)
-            ProvinceRegistry.annex_all_occupied_by(target_enemy)
+            # only_from ограничивает аннексию провинциями именно этой пары
+            # воюющих сторон — иначе, если country/target_enemy параллельно
+            # оккупируют земли третьей страны в ДРУГОЙ войне, этот мир мог
+            # случайно аннексировать и её последнюю провинцию, стерев её из
+            # countries_data (см. разбор бага "страна пропала, но её земли
+            # остались на карте").
+            ProvinceRegistry.annex_all_occupied_by(country, target_enemy)
+            ProvinceRegistry.annex_all_occupied_by(target_enemy, country)
+
+            # Подстраховка: аннексия теоретически может по цепочке (через
+            # _check_capital_transfer) элиминировать одну из сторон ЭТОГО
+            # мира. Если так — end_war() для неё уже бессмысленен и не нужен.
+            if not ProvinceRegistry.countries_data.has(country) \
+            or not ProvinceRegistry.countries_data.has(target_enemy):
+                return
+
             ProvinceRegistry.end_war(country, target_enemy)
 
 ## Во сколько раз умножается шанс объявления войны соседу, у которого
 ## санкции >= DiplomacyManager.HIGH_SANCTIONS_THRESHOLD.
-const HIGH_SANCTIONS_WAR_MULT := 4.0
+const HIGH_SANCTIONS_WAR_MULT := 2.5
 
 ## Базовый (до применения war_mult идеологии) шанс/день, что НЕ граничащая
 ## страна тоже объявит войну сильно засанкционированной стране.
-const HIGH_SANCTIONS_DISTANT_WAR_CHANCE := 0.03
+const HIGH_SANCTIONS_DISTANT_WAR_CHANCE := 0.00375
 
 static func try_declare_war(country: String, c_data: Dictionary) -> void:
     var ideology = c_data.get("ideology", "liberalism")
@@ -96,11 +110,11 @@ static func _get_neighbor_war_chance(country: String, ideology: String, neighbor
     if relations >= 0:
         base_chance = 0.0
     elif relations > -30:
-        base_chance = 0.01
+        base_chance = 0.0025
     elif relations > -70:
-        base_chance = 0.05
+        base_chance = 0.0125
     else:
-        base_chance = 0.15
+        base_chance = 0.0375
 
     var declare_chance = base_chance * war_mult
 

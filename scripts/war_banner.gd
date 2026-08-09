@@ -1,5 +1,7 @@
 extends CanvasLayer
 
+var settings = preload("res://new_resource.tres")
+
 @onready var panel = $BannerPanel
 @onready var aggressor_name = $BannerPanel/AggressorName
 @onready var defender_name = $BannerPanel/DefenderName
@@ -11,6 +13,13 @@ var tween: Tween
 
 func _ready() -> void:
     hide()
+    ProvinceRegistry.war_declared.connect(_on_war_declared)
+
+func _on_war_declared(attacker: String, defender: String) -> void:
+    # Показываем баннер, если игрок — одна из сторон войны
+    # (не важно, объявил её игрок сам или войну объявили ему).
+    if attacker == settings.active_country or defender == settings.active_country:
+        show_declaration(attacker, defender)
     
 func load_flag(texture_rect: TextureRect, country_name: String) -> void:
     var flag_path = "res://assets/flags/" + country_name + ".png"

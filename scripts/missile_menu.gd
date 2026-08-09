@@ -44,7 +44,7 @@ func open_missile_mode(enemies: Array) -> void:
         menu.hide()
 
     show()
-    print("[MissileMenu] Открыт режим запуска ракеты, противников: ", enemies.size())
+    #print("[MissileMenu] Открыт режим запуска ракеты, противников: ", enemies.size())
 
 
 ## Клик по дивизии (ArmyCircle) на карте в режиме ракеты.
@@ -56,19 +56,19 @@ func on_division_clicked(division: Node) -> void:
 
     var owner = division.division_owner
     if not (owner in _enemies):
-        print("[MissileMenu] Дивизия не является целью (владелец: ", owner, ")")
+        #print("[MissileMenu] Дивизия не является целью (владелец: ", owner, ")")
         return
 
     if selected_target_division == division:
         division.deselect_missile_target()
         selected_target_division = null
-        print("[MissileMenu] Дивизия убрана из цели")
+        #print("[MissileMenu] Дивизия убрана из цели")
     else:
         if is_instance_valid(selected_target_division):
             selected_target_division.deselect_missile_target()
         selected_target_division = division
         division.select_missile_target()
-        print("[MissileMenu] Дивизия ", division.army_name, " выбрана целью")
+        #print("[MissileMenu] Дивизия ", division.army_name, " выбрана целью")
 
     _update_target_line()
 
@@ -81,7 +81,7 @@ func _update_target_line() -> void:
 
     var cap_id = int(ProvinceRegistry.countries_data.get(settings.active_country, {}).get("capital", 0))
     if not Map.province_centers.has(cap_id):
-        print("[MissileMenu] Не найдена позиция столицы своей страны (cap_id=", cap_id, ")")
+        #print("[MissileMenu] Не найдена позиция столицы своей страны (cap_id=", cap_id, ")")
         return
 
     var from_pos: Vector2 = Map.province_centers[cap_id]
@@ -118,14 +118,14 @@ func _clear_selection() -> void:
 ## ракета довернёт следом (см. missile.gd/_update_homing).
 func _on_launch_button_pressed() -> void:
     if not is_instance_valid(selected_target_division):
-        print("[MissileMenu] Цель не выбрана")
+        #print("[MissileMenu] Цель не выбрана")
         return
 
     var country_data = ProvinceRegistry.countries_data.get(settings.active_country, {})
     var current_missiles = int(country_data.get("missile", 0))
 
     if current_missiles < 1:
-        print("[MissileMenu] Не хватает ракет для запуска!")
+        #print("[MissileMenu] Не хватает ракет для запуска!")
         return
 
     country_data["missile"] = current_missiles - 1

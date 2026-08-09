@@ -526,6 +526,11 @@ func _load_divisions(d: Dictionary, map_node: Node) -> void:
         if not DivisionManager.armies.has(p_id):
             DivisionManager.armies[p_id] = []
         DivisionManager.armies[p_id].append(army)
+        # ВАЖНО: армии тут создаются в обход DivisionManager.recruit(), поэтому
+        # индекс armies_by_country (см. оптимизацию AIMilitary.process_military_movement)
+        # нужно заполнять вручную — иначе после загрузки сейва ИИ "не видит"
+        # армии, которые на момент сохранения стояли не на своей территории.
+        DivisionManager._register_army(army.division_owner, p_id)
 
         # Если дивизия была в пути — пересчитываем маршрут от текущей позиции
         # до сохранённой цели (саму кривую не сериализуем, она строится заново).

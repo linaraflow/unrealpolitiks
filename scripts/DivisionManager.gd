@@ -9,6 +9,43 @@ const ArmyScene = preload("res://ArmyCircle.tscn")
 var armies: Dictionary = {}
 var army_counters: Dictionary = {}
 
+# ОПТИМИЗАЦИЯ: инкрементальный индекс "страна -> {province_id: кол-во армий страны в ней}".
+# Раньше AIMilitary.process_military_movement() каждый день для КАЖДОЙ страны
+# сканировал ВСЕ армии на карте (armies.keys() × все кружки в них), чтобы найти
+# провинции, где стоят армии этой страны — O(countries * total_armies) синхронно
+# в один кадр смены дня. Чем больше армий скапливается на карте, тем длиннее
+# становился этот кадр — отсюда растущий раз-в-день лаг.
+# Индекс поддерживается точечно (O(1)) во всех местах, где армия появляется,
+# перемещается или уничтожается — см. _register_army()/_unregister_army().
+var armies_by_country: Dictionary = {}
+
+## Регистрирует армию country в province_id в индексе (вызывать при создании/приходе армии)
+func _register_army(country: String, province_id: int) -> void:
+    if not armies_by_country.has(country):
+        armies_by_country[country] = {}
+    var d = armies_by_country[country]
+    d[province_id] = d.get(province_id, 0) + 1
+
+## Снимает регистрацию армии country из province_id (вызывать при уходе/уничтожении армии)
+func _unregister_army(country: String, province_id: int) -> void:
+    if not armies_by_country.has(country):
+        return
+    var d = armies_by_country[country]
+    if not d.has(province_id):
+        return
+    d[province_id] -= 1
+    if d[province_id] <= 0:
+        d.erase(province_id)
+    if d.is_empty():
+        armies_by_country.erase(country)
+
+## O(1)/O(k) — провинции, где у country есть хотя бы одна армия. Заменяет полный
+## скан DivisionManager.armies в AIMilitary.process_military_movement().
+func get_country_provinces_with_armies(country: String) -> Array:
+    if not armies_by_country.has(country):
+        return []
+    return armies_by_country[country].keys()
+
 var _cached_cam_factor: float = 1.0
 
 func _ready() -> void:
@@ -20,6 +57,7 @@ func _ready() -> void:
 
 ## Удаляет с карты все дивизии уничтоженной страны (в т.ч. те, что в движении).
 func _on_country_eliminated(country: String) -> void:
+    armies_by_country.erase(country)
     for p_id in armies.keys():
         var province_armies = armies[p_id]
         for circle in province_armies.duplicate():
@@ -108,6 +146,7 @@ func recruit(province_id: int, local_pos: Vector2, recruit_amount: int):
         
         armies[province_id].append(army)
         army.setup(province_id, army_name)
+        _register_army(owner_id, province_id)
 
     ProvinceRegistry.province_army_changed.emit(province_id)
     reposition_armies_in_province(province_id)
@@ -164,6 +203,7 @@ func merge_divisions(province_id: int) -> void:
             if is_instance_valid(circle_to_remove.current_path_node):
                 circle_to_remove._stop_current_movement()
             circle_to_remove.queue_free()
+            _unregister_army(owner_id, province_id)
 
         affected_owners.append(owner_id)
 
@@ -210,6 +250,7 @@ func merge_specific_divisions(divisions: Array) -> void:
             if is_instance_valid(c.current_path_node):
                 c._stop_current_movement()
             c.queue_free()
+            _unregister_army(owner_id, province_id)
 
     if CombatManager.active_battles.has(province_id):
         var sides = CombatManager.active_battles[province_id]["sides"]
@@ -245,6 +286,7 @@ func kill_percent_in_province(province_id: int, kill_ratio: float) -> void:
             if is_instance_valid(circle.current_path_node):
                 circle._stop_current_movement()
             circle.queue_free()
+            _unregister_army(circle.division_owner, province_id)
 
     if owners_lost.is_empty():
         return
@@ -272,7 +314,7 @@ func kill_percent_in_province(province_id: int, kill_ratio: float) -> void:
 
     ProvinceRegistry.province_army_changed.emit(province_id)
     reposition_armies_in_province(province_id)
-    print("[DivisionManager] Ракетный удар: потери личного состава в провинции ", province_id, " -> ", owners_lost)
+    #print("[DivisionManager] Ракетный удар: потери личного состава в провинции ", province_id, " -> ", owners_lost)
 
 ## Расформировывает amount солдат, начиная с первой дивизии в массиве divisions
 ## (порядок = порядок выделения) и продолжая по следующим, пока не наберётся
@@ -308,6 +350,7 @@ func disband_from_divisions(divisions: Array, amount: int) -> void:
             if is_instance_valid(div.current_path_node):
                 div._stop_current_movement()
             div.queue_free()
+            _unregister_army(owner_id, p_id)
 
     for p_id in affected_provinces:
         if CombatManager.active_battles.has(p_id):
@@ -372,3 +415,4 @@ func reset() -> void:
                 circle.queue_free()
     armies = {}
     army_counters = {}
+    armies_by_country = {}

@@ -241,11 +241,11 @@ func trigger_regime_collapse(country: String, cause: String, forced_ideology: St
     # даже если официальный мир так и не заключён. Вычёркиваем её полностью,
     # иначе она будет бесконечно "менять идеологию" без единого клочка земли.
     if ProvinceRegistry.owner_province_count.get(country, 0) <= 0:
-        print("[Diplomacy] %s потеряла все территории после свержения — страна уничтожена" % country)
+        #print("[Diplomacy] %s потеряла все территории после свержения — страна уничтожена" % country)
         ProvinceRegistry._eliminate_country(country)
         return
 
-    print("[Diplomacy] РЕЖИМ СВЕРГНУТ: %s (%s -> %s)" % [country, old_ideology, new_ideology])
+    #print("[Diplomacy] РЕЖИМ СВЕРГНУТ: %s (%s -> %s)" % [country, old_ideology, new_ideology])
     regime_collapsed.emit(country, old_ideology, new_ideology)
 
     if _is_player_country(country):
@@ -299,9 +299,9 @@ func _resolve_regime_collapse_territories(country: String) -> void:
         province_occupants.erase(p_id)
         ProvinceRegistry.province_occupied.emit(p_id, "")
 
-    print("[Diplomacy] Территории после свержения %s: возвращено %d, аннексировано %d" % [
-        country, to_liberate.size(), to_annex.size()
-    ])
+    #print("[Diplomacy] Территории после свержения %s: возвращено %d, аннексировано %d" % [
+        #country, to_liberate.size(), to_annex.size()
+    #])
 
 func start_relations_process(sender: String, target: String, type: String) -> bool:
     var key = sender + "_" + target
@@ -452,7 +452,7 @@ func _lift_world_sanctions(country: String) -> void:
     target_data["sanctioned_by"].erase(WORLD_SANCTION_KEY)
     _recalculate_total_sanctions(country)
 
-    print("[Diplomacy] Мировые санкции сняты (1 год без войны): ", country)
+    #print("[Diplomacy] Мировые санкции сняты (1 год без войны): ", country)
     sanctions_removed.emit(WORLD_SANCTION_KEY, country)
 
 ## Ежедневный тик: считает "мирные дни" для санкций за агрессию и медленно
