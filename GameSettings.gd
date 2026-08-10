@@ -24,3 +24,5 @@ var KILLS_PER_DRONE: int = 100
 var missile_cost: int = 100   # ПРОДУКТЫ
 var MISSILE_COMPANY_COST: int = 100_000_000
 var MISSILE_KILL_RATIO: float = 0.9
+var FORTIFICATION_COST: int = 50_000_000
+var TIME_FORTIFICATION: int = 10

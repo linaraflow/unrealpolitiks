@@ -49,7 +49,7 @@ const MARQUEE_PAUSE: float = 1.0    # пауза у краёв в секунда
 @export var IdeologyLabel: Label
 @export var ChangeIdeologyBtn: Button
 
-@export var ideology_panel: Panel
+@export var ideology_panel: PanelContainer
 @export var ideology_list: VBoxContainer
 @export var change_btn: Button
 @export var close_btn: Button
@@ -365,11 +365,12 @@ func _populate_ideology_list() -> void:
         child.queue_free()
 
     var ideologies = DiplomacyManager.IDEOLOGIES.keys()
-    var current_ideology = tr(ProvinceRegistry.countries_data[settings.active_country].get("ideology", "liberalism").to_upper())
+    var current_ideology: String = ProvinceRegistry.countries_data[settings.active_country].get("ideology", "liberalism")
 
     for ideo in ideologies:
         var btn = Button.new()
         btn.text = tr(ideo.to_upper()).capitalize()
+        btn.set_meta("ideology_key", ideo)
         btn.mouse_entered.connect(_on_ideology_selection_panel_mouse_entered)
         btn.mouse_exited.connect(_on_ideology_selection_panel_mouse_exited)
         btn.pressed.connect(_on_ideology_button_pressed.bind(btn, ideo))
@@ -381,7 +382,7 @@ func _populate_ideology_list() -> void:
 func _highlight_ideology(ideo: String) -> void:
     for child in ideology_list.get_children():
         if child is Button:
-            child.modulate = Color.YELLOW if child.text == ideo.capitalize() else Color.WHITE
+            child.modulate = Color.YELLOW if child.get_meta("ideology_key", "") == ideo else Color.WHITE
 
 
 func _on_ideology_button_pressed(btn: Button, ideo: String) -> void:

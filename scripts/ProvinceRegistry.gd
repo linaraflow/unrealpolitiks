@@ -25,6 +25,10 @@ signal country_eliminated(country: String)
 ## Сбрасывается (можно словить снова), если страна отвоюет хоть одну провинцию обратно.
 signal country_lost_all_provinces(country: String)
 signal factory_built(province_id: int, country: String)
+## Эмитится, когда в провинции достроено укрепление (fortification)
+signal fortification_built(province_id: int, country: String)
+## Эмитится, когда укрепление в провинции уничтожено (например ракетой)
+signal fortification_destroyed(province_id: int)
 ## Эмитится, когда у страны уничтожены заводы (удар БПЛА или ракетой). amount — сколько именно уничтожено.
 signal factory_destroyed(province_id: int, country: String, amount: int)
 
@@ -89,6 +93,9 @@ func _check_province_loss(country: String) -> void:
 var _production_by_country: Dictionary = {}
 var active_constructions: Dictionary = {}
 
+# province_id -> true, пока идёт стройка укрепления (аналогично active_constructions для заводов)
+var active_fortification_constructions: Dictionary = {}
+
 # ─── ЗАКАЗ БПЛА ────────────────────────────────────────────────────────────────
 # country -> {"total": int, "remaining": float, "per_day": float}
 # "per_day" фиксируется в момент оформления заказа (скорость на основе ВВП на тот момент)
@@ -130,7 +137,7 @@ func _ready():
     # страна могла "убиваться" по кустарному пути (например, просто erase из своего
     # кэша), не трогая countries_data/war_relations здесь, и потом другие места
     # (dev_menu, AI и т.п.) падали на "мёртвой" стране. Подключаем здесь напрямую.
-    country_lost_all_provinces.connect(_eliminate_country)
+    country_lost_all_provinces.connect(_on_country_lost_all_provinces)
     _recalculate_all_populations()
     _recalculate_all_happiness()
     _recalculate_all_factories() # Первичный расчет фабрик при старте игры
@@ -378,6 +385,19 @@ func capture_province(province_id: int, new_owner: String) -> void:
         if _is_real_country_owner(new_owner) and countries_data.has(new_owner):
             countries_data[new_owner]["factories"] = countries_data[new_owner].get("factories", 0) + f_count
 
+    # Население провинции точно так же переносим сразу, а не ждём ежемесячного
+    # _recalculate_daily_stats(). Без этого, например, страна, возвращённая по миру
+    # после полной оккупации, месяц показывает population == 0 (её провинции не
+    # засчитывались владельцу, пока были оккупированы, а кэш population страны
+    # обновляется только раз в игровой месяц).
+    var p_count = int(province_data[province_id].get("population", 0))
+    if p_count > 0:
+        if _is_real_country_owner(old_owner) and countries_data.has(old_owner):
+            countries_data[old_owner]["population"] = max(0, countries_data[old_owner].get("population", 0) - p_count)
+        if _is_real_country_owner(new_owner) and countries_data.has(new_owner):
+            countries_data[new_owner]["population"] = countries_data[new_owner].get("population", 0) + p_count
+
+
     # ВАЖНО: вызывать после того, как все поля выше уже обновлены — эмит сигнала
     # ниже может синхронно вызвать код, который что-то стирает из countries_data
     # (например, элиминацию страны), и делать это нужно только когда capture_province
@@ -416,6 +436,25 @@ func occupy_province(province_id: int, occupier: String) -> void:
         province_data[key]["core_owner"] = existing_stripes if existing_stripes != "" else current_owner
 
     var core_owner = province_data[key]["core_owner"]
+
+    # ЗАЩИТА ОТ "ПРИЗРАЧНОГО" ВЛАДЕЛЬЦА: страна-core_owner уже могла быть
+    # уничтожена _eliminate_country() РАНЬШЕ в этом же батче захвата (например,
+    # когда последняя "живая" провинция страны берётся раньше, чем эта — та,
+    # что оккупируется впервые только сейчас). В этом случае _check_province_loss
+    # для неё больше не сработает (флаг _lost_provinces_notified уже стоит), и
+    # провинция навсегда зависнет в province_occupants с owner'ом-призраком,
+    # которого нет в countries_data — её нельзя будет ни аннексировать, ни
+    # вернуть миром, потому что война уже завершена вместе со смертью страны.
+    # Поэтому сразу закрепляем такую провинцию за захватчиком, как и в случае
+    # с "третьей стороной" ниже.
+    if not countries_data.has(core_owner):
+        province_data[key]["core_owner"] = occupier
+        province_data[key]["against_occupation"] = ""
+        province_occupants.erase(province_id)
+        capture_province(province_id, occupier)
+        province_occupied.emit(province_id, "")
+        #print("[Registry] Провинция %d: истинный владелец %s уже уничтожен, закреплена за %s" % [province_id, core_owner, occupier])
+        return
 
     # Возврат провинции происходит только если оккупант — это ИСТИННЫЙ владелец
     if occupier == core_owner:
@@ -722,6 +761,20 @@ func _has_any_province_left(country: String, ignore_p_id: int = -1) -> bool:
             return true
     return false
 
+## Обработчик country_lost_all_provinces: у страны не осталось ни одной provinces с
+## owner == country (owner_province_count упал до 0). Это ещё НЕ значит, что страна
+## уничтожена — у неё могут оставаться core-owned провинции, которые она удерживает
+## только оккупацией противника и которые гарантированно вернутся после заключения
+## мира. В этом случае страна физически ещё жива, у неё просто нет территории под
+## прямым контролем — правильная реакция игры на это: свержение режима (сдача/
+## коллапс фронта), а НЕ полное уничтожение страны. Полностью уничтожаем страну
+## только если у неё нет вообще никаких провинций — ни owner, ни core_owner.
+func _on_country_lost_all_provinces(country: String) -> void:
+    if _has_any_province_left(country):
+        DiplomacyManager.trigger_regime_collapse(country, tr("CAUSE_TOTAL_OCCUPATION"))
+        return
+    _eliminate_country(country)
+
 ## Полное уничтожение страны: убираем столицу, снимаем войны, стираем из countries_data.
 ## Вызывать только когда точно установлено, что у страны не осталось НИ одной
 ## провинции (ни своей, ни core-owned).
@@ -892,6 +945,26 @@ func _process_economy() -> void:
     # Чистим завершенные стройки
     for p_id in to_remove:
         active_constructions.erase(p_id)
+
+    # 2. Продвигаем стройки укреплений (fortification)
+    var fort_to_remove = []
+    for p_id in active_fortification_constructions:
+        var p = province_data[p_id]
+
+        # Если провинцию за это время оккупировали/захватили — стройку укрепления
+        # отменяем (деньги не возвращаем, как и для заводов, но и не достраиваем).
+        p["fortification_progress"] = int(p.get("fortification_progress", 0)) + 1
+
+        if p["fortification_progress"] >= int(settings.TIME_FORTIFICATION):
+            p["fortification"] = true
+            p.erase("fortification_progress")
+            fort_to_remove.append(p_id)
+
+            var owner = p.get("owner", "")
+            fortification_built.emit(p_id, owner)
+
+    for p_id in fort_to_remove:
+        active_fortification_constructions.erase(p_id)
 
     # 3. Начисляем продукты
     for country in countries_data:
@@ -1089,8 +1162,42 @@ func start_factory_construction(p_id: int, country: String) -> bool:
     
     active_constructions[p_id] = true # <-- ДОБАВЛЕНО: запоминаем, где идет стройка
     return true
-    
-    
+
+# ─── УКРЕПЛЕНИЕ (FORTIFICATION) ─────────────────────────────────────────────
+
+## Стоимость постройки укрепления. Берётся напрямую из settings, без модификатора
+## идеологии (в отличие от get_factory_cost) — при необходимости можно добавить
+## тот же eco_mult, что и для заводов.
+func get_fortification_cost(_country: String) -> float:
+    return settings.FORTIFICATION_COST
+
+## Начинает строительство укрепления в провинции. Правила:
+##  - в провинции может быть только одно укрепление (уже построенное или строящееся);
+##  - строить можно только за деньги владельца провинции (settings.FORTIFICATION_COST);
+##  - строится settings.TIME_FORTIFICATION игровых дней (см. _process_economy).
+## Возвращает false, если укрепление уже есть/строится, или не хватает денег.
+func start_fortification_construction(p_id: int, country: String) -> bool:
+    if not province_data.has(p_id):
+        return false
+
+    var p = province_data[p_id]
+
+    if p.get("fortification", false):
+        return false
+    if active_fortification_constructions.has(p_id):
+        return false
+
+    var cost = get_fortification_cost(country)
+    if countries_data[country].get("balance", 0.0) < cost:
+        return false
+
+    countries_data[country]["balance"] -= cost
+    p["fortification_progress"] = 0
+
+    active_fortification_constructions[p_id] = true
+    return true
+
+
 # ДРОНЫ / РАКЕТЫ
 ## attacker_country — страна, чей БПЛА нанёс удар. Если указана и является реальной страной,
 ## ей начисляется продукт за каждую уничтоженную фабрику: destroyed * product_cost * 12.
@@ -1141,6 +1248,18 @@ func missile_strike(province_id: int, attacker_country: String = "") -> void:
 
     # ЗВУК ВЗРЫВА — играет при любом ракетном ударе, независимо от наличия заводов
     Global.play("res://audio/sfx/explosion.ogg", "SFX")
+
+    # УКРЕПЛЕНИЕ — если в провинции построено укрепление, ракета уничтожает ЕГО
+    # и на этом гасится: фабрики в этот раз не трогаем. Без укрепления ракета
+    # бьёт по фабрикам как обычно (см. ниже).
+    if p.get("fortification", false):
+        p["fortification"] = false
+        fortification_destroyed.emit(province_id)
+
+        # Дивизии всё равно несут потери от удара, невзирая на укрепление.
+        DivisionManager.kill_percent_in_province(province_id, MISSILE_KILL_RATIO)
+        missile_strike_landed.emit(province_id)
+        return
 
     # ФАБРИКИ — снос ВСЕХ фабрик в провинции
     var current_factories = int(p.get("factories", 0))
@@ -1213,6 +1332,7 @@ func reset() -> void:
     active_missile_orders = {}
     active_uav_orders = {}
     active_constructions = {}
+    active_fortification_constructions = {}
     _production_by_country = {}
     owner_province_count = {}
     _lost_provinces_notified = {}

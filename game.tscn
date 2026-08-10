@@ -130,7 +130,7 @@ anchor_bottom = 0.052
 offset_left = 0.23999977
 offset_top = -0.15999985
 offset_right = 300.24
-offset_bottom = 878.84
+offset_bottom = 911.84
 mouse_filter = 2
 theme_override_constants/separation = 6
 
@@ -139,7 +139,7 @@ layout_mode = 2
 size_flags_horizontal = 4
 
 [node name="ProvinceMenu" parent="CanvasLayer/VBoxContainer" unique_id=329358764 instance=ExtResource("8_j5wjh")]
-custom_minimum_size = Vector2(300, 245)
+custom_minimum_size = Vector2(300, 278)
 layout_mode = 2
 
 [node name="DivisionMenu" parent="CanvasLayer/VBoxContainer" unique_id=770860264 instance=ExtResource("7_80cx4")]

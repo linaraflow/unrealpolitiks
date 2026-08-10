@@ -6,7 +6,7 @@ extends Control
 # сцену: временно закомментируй строки ниже, запусти игру, наведи на
 # "свою" провинцию (кнопки видны), глянь Panel.size.y в Remote-инспекторе,
 # повтори для чужой (кнопки скрыты), впиши оба значения сюда.
-const PANEL_HEIGHT_WITH_ACTIONS := 245.0
+const PANEL_HEIGHT_WITH_ACTIONS := 278.0
 const PANEL_HEIGHT_WITHOUT_ACTIONS := 145.0
 
 @onready var owner_label = $Panel/MarginContainer/VBoxContainer/HeaderRow/OwnerLabel
@@ -19,6 +19,7 @@ const PANEL_HEIGHT_WITHOUT_ACTIONS := 145.0
 @onready var actions_separator = $Panel/MarginContainer/VBoxContainer/HSeparator
 @onready var recruit_btn = $Panel/MarginContainer/VBoxContainer/ActionsRow/RecruitButton
 @onready var build_factory_btn = $Panel/MarginContainer/VBoxContainer/ActionsRow/BuildFactoryButton
+@onready var fortification_btn = $Panel/MarginContainer/VBoxContainer/ActionsRow/FortificationButton
 @onready var balance_label = get_node_or_null("/root/Game/CanvasLayer/TopMenu/TopPanel/BalanceLabel")
 @onready var division_menu = get_node_or_null("/root/Game/CanvasLayer/DivisionMenu")
 @onready var recruit_slider_panel = $RecruitSliderPanel
@@ -43,6 +44,7 @@ func _ready():
     GameClock.on_day_passed.connect(_on_day_passed)
     recruit_btn.pressed.connect(_on_recruit_button_pressed)
     build_factory_btn.pressed.connect(_on_build_factory_button_pressed)
+    fortification_btn.pressed.connect(_on_build_fortification_button_pressed)
     _setup_queue_toast()
     hide()
 
@@ -55,6 +57,9 @@ func _unhandled_input(event: InputEvent) -> void:
 
     if Input.is_action_just_pressed("build_factory"):
         _on_build_factory_button_pressed()
+
+    if Input.is_action_just_pressed("build_fortification"):
+        _on_build_fortification_button_pressed()
 
     if Input.is_action_just_pressed("summon_troops"):
         _on_recruit_button_pressed()
@@ -234,6 +239,33 @@ func _on_build_factory_button_pressed() -> void:
         var factory_cost: String = ProvinceRegistry._format_number(ProvinceRegistry.get_factory_cost(settings.active_country), ".")
         show_queue_toast(tr("TOAST_NOT_ENOUGH_MONEY_FMT") % factory_cost, COLOR_BAD)
 
+# --- build fortification -----------------------------------------------------
+
+func _on_build_fortification_button_pressed() -> void:
+    var p_id = settings.last_clicked_province_id
+    var p_data = ProvinceRegistry.province_data.get(p_id, {})
+
+    if p_data.get("against_occupation", "") != "":
+        print("Нельзя строить в оккупированной провинции!")
+        return
+
+    if p_data.get("fortification", false):
+        show_queue_toast(tr("TOAST_FORTIFICATION_ALREADY_BUILT"), COLOR_BAD)
+        return
+
+    if ProvinceRegistry.active_fortification_constructions.has(p_id):
+        show_queue_toast(tr("TOAST_FORTIFICATION_IN_PROGRESS"), COLOR_BAD)
+        return
+
+    var success = ProvinceRegistry.start_fortification_construction(p_id, settings.active_country)
+    if success:
+        balance_label.balance_update()
+        balance_label.flash_spent()
+        show_queue_toast(tr("TOAST_FORTIFICATION_STARTED"), COLOR_GOOD)
+    else:
+        var fort_cost: String = ProvinceRegistry._format_number(ProvinceRegistry.get_fortification_cost(settings.active_country), ".")
+        show_queue_toast(tr("TOAST_NOT_ENOUGH_MONEY_FMT") % fort_cost, COLOR_BAD)
+
 # --- recruit (перенесено из recruite_button.gd) -----------------------------
 
 func _on_recruit_button_pressed() -> void:
@@ -296,3 +328,7 @@ func update_army_info():
     update_info(p_data)
     if division_menu:
         division_menu.update_info(p_data)
+
+
+func _on_defend_button_pressed() -> void:
+    pass # Replace with function body.

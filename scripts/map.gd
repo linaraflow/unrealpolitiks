@@ -64,6 +64,25 @@ var factory_labels_layer: Node2D
 
 var country_labels_layer: Node2D
 
+# ─── ИКОНКИ УКРЕПЛЕНИЙ (fortification) НА КАРТЕ ──────────────────────────────
+## Слой-контейнер для иконок укреплений. Создаётся как child-нода в _ready(),
+## координаты — как у province_centers (та же система, что у остальных слоёв).
+var fortification_icons_layer: Node2D
+const FORTIFICATION_ICON_PATH := "res://assets/icons_on_map/fortification.svg"
+## Множитель размера иконки. SVG рендерится Godot в текстуру заранее (в
+## оригинальном разрешении), поэтому уменьшение через Sprite2D.scale — это
+## downscale уже готовой чёткой картинки (не блочное увеличение), качество
+## не страдает — в отличие от увеличения scale выше 1.0.
+const FORTIFICATION_ICON_SCALE := 0.5 / 1.5
+var fortification_icon_texture: Texture2D
+## province_id -> Sprite2D иконки укрепления, уже добавленной на карту
+var fortification_icons: Dictionary = {}
+## Зум камеры (cam.zoom.x), начиная с которого названия стран полностью
+## пропадают (последняя точка fade_stops в country_labels_layer) — иконки
+## укреплений показываются ТОЛЬКО начиная с этого же зума (т.е. когда
+## подписи стран уже не видны).
+var fortification_icons_zoom_threshold: float = INF
+
 # Сохраняем локальные координаты последнего физического клика мыши
 var _last_click_local_pos: Vector2 = Vector2.ZERO
 
@@ -132,6 +151,12 @@ func _ready():
     country_labels_layer.name = "CountryLabelsLayer"
     add_child(country_labels_layer)
     country_labels_layer.setup(self)
+
+    # Берём порог зума из последней точки fade_stops (там, где название
+    # страны окончательно исчезает, alpha = 0) — иконки укреплений включаются
+    # начиная ровно с этого зума.
+    if not country_labels_layer.fade_stops.is_empty():
+        fortification_icons_zoom_threshold = country_labels_layer.fade_stops[-1].x
     # -----------------------------------------------------------------
     
     var tech_tex = load("res://TechMap_alpha_06.png")
@@ -197,6 +222,12 @@ func _ready():
     factory_labels_layer.name = "FactoryLabelsLayer"
     add_child(factory_labels_layer)
 
+    # Слой иконок укреплений (fortification) — над центром провинции.
+    fortification_icons_layer = Node2D.new()
+    fortification_icons_layer.name = "FortificationIconsLayer"
+    add_child(fortification_icons_layer)
+    fortification_icon_texture = load(FORTIFICATION_ICON_PATH)
+
     material.set_shader_parameter("tech_map",      tech_tex)
     material.set_shader_parameter("data_texture",  data_texture)
     material.set_shader_parameter("occup_texture", occup_texture)
@@ -244,6 +275,8 @@ func _ready():
     ProvinceRegistry.capital_changed.connect(_on_capital_changed)
     ProvinceRegistry.factory_built.connect(_on_factory_built)
     ProvinceRegistry.factory_destroyed.connect(_on_factory_destroyed)
+    ProvinceRegistry.fortification_built.connect(_on_fortification_built)
+    ProvinceRegistry.fortification_destroyed.connect(_on_fortification_destroyed)
     ProvinceRegistry.missile_strike_landed.connect(_on_missile_strike_landed)   # <-- НОВОЕ
     ProvinceRegistry.uav_strike_landed.connect(_on_uav_strike_landed)
 
@@ -251,6 +284,10 @@ func _ready():
 
     DivisionManager.map_node = self
     province_centers = settings.province_centers
+
+    # Иконки укреплений для провинций, где fortification уже построен
+    # (например, при загрузке сохранения) — расставляем один раз при старте.
+    _rebuild_all_fortification_icons()
 
     CombatManager.battle_ended.connect(_on_battle_ended)
 
@@ -261,8 +298,10 @@ func _ready():
     if cam:
         material.set_shader_parameter("camera_zoom", cam.zoom.x)
         material.set_shader_parameter("camera_pos", cam.position)
+        _update_fortification_icons_visibility(cam.zoom.x)
         cam.zoom_changed.connect(func(new_zoom):
             material.set_shader_parameter("camera_zoom", new_zoom.x)
+            _update_fortification_icons_visibility(new_zoom.x)
         )
 
     _restore_occupation_from_data()
@@ -911,6 +950,75 @@ func _on_factory_destroyed(p_id: int, country: String, amount: int) -> void:
         _update_mode_pixel(p_id)
 
 
+## Реакция на ProvinceRegistry.fortification_built — добавляем иконку
+## укрепления на карту над центром провинции.
+func _on_fortification_built(p_id: int, country: String) -> void:
+    _add_fortification_icon(p_id)
+
+
+## Реакция на ProvinceRegistry.fortification_destroyed (например, ракетный
+## удар уничтожил укрепление) — убираем иконку с карты.
+func _on_fortification_destroyed(p_id: int) -> void:
+    _remove_fortification_icon(p_id)
+
+
+## Показывает/скрывает СЛОЙ иконок укреплений целиком в зависимости от зума
+## камеры — иконки видны только начиная с того же зума, на котором названия
+## стран уже полностью пропали (см. fortification_icons_zoom_threshold).
+func _update_fortification_icons_visibility(zoom_x: float) -> void:
+    if not is_instance_valid(fortification_icons_layer):
+        return
+    fortification_icons_layer.visible = zoom_x >= fortification_icons_zoom_threshold
+
+
+## Добавляет иконку укрепления в провинции p_id, если её там ещё нет.
+## Позиция — выше центра провинции ровно на высоту самой иконки (по Y),
+## т.е. её нижний край касается центра провинции.
+func _add_fortification_icon(p_id: int) -> void:
+    if fortification_icons.has(p_id):
+        return
+    if fortification_icon_texture == null:
+        return
+    if not province_centers.has(p_id):
+        return
+
+    var icon := Sprite2D.new()
+    icon.texture = fortification_icon_texture
+    icon.centered = true
+    icon.scale = Vector2.ONE * FORTIFICATION_ICON_SCALE
+
+    # Позиция считается по УЖЕ уменьшенному (визуальному) размеру иконки,
+    # иначе она "улетела" бы выше, чем нужно, на исходный (не уменьшенный) размер.
+    var icon_size: Vector2 = fortification_icon_texture.get_size() * FORTIFICATION_ICON_SCALE
+    var center: Vector2 = province_centers[p_id]
+    icon.position = center - Vector2(0, icon_size.y)
+
+    fortification_icons_layer.add_child(icon)
+    fortification_icons[p_id] = icon
+
+
+## Убирает иконку укрепления с провинции p_id (если она там была).
+func _remove_fortification_icon(p_id: int) -> void:
+    if not fortification_icons.has(p_id):
+        return
+    var icon: Sprite2D = fortification_icons[p_id]
+    if is_instance_valid(icon):
+        icon.queue_free()
+    fortification_icons.erase(p_id)
+
+
+## Полностью пересобирает иконки укреплений по текущим данным province_data —
+## используется при старте игры и при restart() (после сброса/загрузки).
+func _rebuild_all_fortification_icons() -> void:
+    for p_id in fortification_icons.keys().duplicate():
+        _remove_fortification_icon(p_id)
+
+    for p_id in ProvinceRegistry.province_data:
+        var p = ProvinceRegistry.province_data[p_id]
+        if p.get("fortification", false):
+            _add_fortification_icon(p_id)
+
+
 ## Запускает плавную зелёную вспышку на провинции p_id.
 ## Использует кольцевой буфер слотов, поэтому несколько вспышек
 ## могут идти одновременно (например, если построилось сразу
@@ -1272,6 +1380,7 @@ func restart() -> void:
     _paint_all_provinces_from_data()
     country_labels_layer.rebuild()
     _init_capital_borders()
+    _rebuild_all_fortification_icons()
 
     date._on_clock_day_passed({})
     date._update_speed_label(1)

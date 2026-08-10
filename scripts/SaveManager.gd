@@ -230,6 +230,7 @@ func _save_province_registry() -> Dictionary:
         "active_uav_orders": pr.active_uav_orders,
         "active_missile_orders": pr.active_missile_orders,
         "active_constructions": pr.active_constructions,
+        "active_fortification_constructions": pr.active_fortification_constructions,
         "days_in_power": pr.days_in_power,
     }
 
@@ -423,6 +424,8 @@ func load_game(slot: String) -> bool:
     map_node._paint_all_provinces_from_data()
     map_node.country_labels_layer.rebuild()
     map_node._init_capital_borders()
+    if map_node.has_method("_rebuild_all_fortification_icons"):
+        map_node._rebuild_all_fortification_icons()
 
     _load_divisions(data.get("divisions", {}), map_node)
     _load_projectiles(data.get("projectiles", {}), map_node)
@@ -480,6 +483,7 @@ func _load_province_registry(d: Dictionary) -> void:
     pr.active_uav_orders = d.get("active_uav_orders", {})
     pr.active_missile_orders = d.get("active_missile_orders", {})
     pr.active_constructions = _intkeys(d.get("active_constructions", {}))
+    pr.active_fortification_constructions = _intkeys(d.get("active_fortification_constructions", {}))
     pr.days_in_power = int(d.get("days_in_power", 0))
 
 func _load_diplomacy(d: Dictionary) -> void:

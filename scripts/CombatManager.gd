@@ -226,12 +226,18 @@ func _process_battle_tick(province_id: int) -> bool:
     # Считаем ДО применения урона, чтобы все стороны били одновременно
     # по численности на начало тика.
     var damage_dealt: Dictionary = {}   # country -> damage
-    
+
     for country in sides:
         var soldiers := _calc_side_max_hp(sides[country]["circles"])
         var fatigue := ProvinceRegistry.get_war_exhaustion(country)
         var dmg := int(soldiers * DAMAGE_PER_SOLDIER * (1.0 - fatigue / 100.0))
         damage_dealt[country] = max(dmg, 0)
+
+    # Укрепление (fortification) в этой провинции снижает на 50% урон,
+    # который получает её ЗАЩИТНИК (владелец провинции) от любого врага —
+    # урон, наносимый самим защитником, не меняется.
+    var p_data: Dictionary = ProvinceRegistry.province_data.get(province_id, {})
+    var fortified_defender: String = p_data.get("owner", "") if p_data.get("fortification", false) else ""
     
     # Применяем урон (все стороны бьют одновременно)
     var to_eliminate: Array = []
@@ -250,6 +256,10 @@ func _process_battle_tick(province_id: int) -> bool:
             continue
         
         var dmg_per_enemy: int = damage_dealt[attacker]
+
+        # Цель защищена укреплением своей провинции — урон по ней снижен на 50%.
+        if enemies[0] == fortified_defender:
+            dmg_per_enemy = int(dmg_per_enemy * 0.5)
         
         if not enemies[0] in hit:
             var hp_before = sides[enemies[0]]["hp"]

@@ -6,13 +6,25 @@ var settings = preload("res://new_resource.tres")
 
 # ─── ССЫЛКИ НА ОБЫЧНЫЕ LABEL ─────────────────────────────────────────────────
 @onready var player_flag_rect: TextureRect = $VBoxContainer/PlayerFlag
-@onready var player_title_label: Label = $VBoxContainer/PlayerProvincePanel/PlayerTitleLabel
-@onready var player_count_label: Label = $VBoxContainer/PlayerProvincePanel/PlayerCountLabel
+@onready var player_title_label: Label = $VBoxContainer/PlayerProvincePanel/MarginContainer/VBoxContainer/PlayerTitleLabelScroll/PlayerTitleLabel
+@onready var player_title_label_scroll: ScrollContainer = $VBoxContainer/PlayerProvincePanel/MarginContainer/VBoxContainer/PlayerTitleLabelScroll
+@onready var player_count_label: Label = $VBoxContainer/PlayerProvincePanel/MarginContainer/VBoxContainer/PlayerCountLabel
 
 @onready var enemy_flag_rect: TextureRect = $VBoxContainer/EnemyFlag
-@onready var enemy_title_label: Label = $VBoxContainer/EnemyProvincePanel/EnemyTitleLabel
-@onready var enemy_count_label: Label = $VBoxContainer/EnemyProvincePanel/EnemyCountLabel
+@onready var enemy_title_label: Label = $VBoxContainer/EnemyProvincePanel/MarginContainer/VBoxContainer/EnemyTitleLabelScroll/EnemyTitleLabel
+@onready var enemy_title_label_scroll: ScrollContainer = $VBoxContainer/EnemyProvincePanel/MarginContainer/VBoxContainer/EnemyTitleLabelScroll
+@onready var enemy_count_label: Label = $VBoxContainer/EnemyProvincePanel/MarginContainer/VBoxContainer/EnemyCountLabel
 # ─────────────────────────────────────────────────────────────────────────────
+
+# --- Marquee (бегущая строка для названий стран) ---
+const TITLE_MARQUEE_SPEED: float = 40.0     # пикселей в секунду
+const TITLE_MARQUEE_PAUSE: float = 1.0      # пауза у краёв в секундах
+const TITLE_MARQUEE_MIN_WIDTH: float = 82.0 # порог ширины лейбла, после которого включается бегущая строка
+const TITLE_MARQUEE_GAP: float = 40.0       # пустой промежуток между концом и началом текста при зацикливании
+
+# состояние марки хранится отдельно для каждого из двух лейблов
+var _player_marquee_state := {"tween": null, "last_text": "", "request_id": 0}
+var _enemy_marquee_state := {"tween": null, "last_text": "", "request_id": 0}
 
 @onready var SelectAllButton: Button = $VBoxContainer/SelectAllButton
 @onready var WarReparationsButton: Button = $VBoxContainer/WarReparationsButton
@@ -55,6 +67,17 @@ func _ready():
     ReparationsSlider.step = 1
     ReparationsSlider.value_changed.connect(_on_reparations_slider_changed)
     ReparationsSlider.hide()
+
+    visibility_changed.connect(_on_visibility_changed)
+
+
+func _on_visibility_changed() -> void:
+    if visible:
+        return
+    for state in [_player_marquee_state, _enemy_marquee_state]:
+        if state["tween"] != null:
+            state["tween"].kill()
+            state["tween"] = null
 
 func open_negotiation(enemy: String) -> void:
     _enemy = enemy
@@ -252,10 +275,65 @@ func _update_country_info() -> void:
     
     player_title_label.text = tr(my_country.to_upper())
     enemy_title_label.text = tr(_enemy.to_upper())
+    _update_title_marquee(player_title_label, player_title_label_scroll, _player_marquee_state)
+    _update_title_marquee(enemy_title_label, enemy_title_label_scroll, _enemy_marquee_state)
 
     # Просто передаем числа. Цвета и размеры уже настроены в самом Godot!
     player_count_label.text = str(my_count) + " " + tr("PROV")
     enemy_count_label.text = str(enemy_count) + " " + tr("PROV")
+
+
+# ---------------- Marquee helper ----------------
+# Универсальная бегущая строка: если реальная ширина текста лейбла превышает
+# TITLE_MARQUEE_MIN_WIDTH (82px) и не помещается в видимую область ScrollContainer,
+# запускаем зацикленную анимацию scroll_horizontal (как в panel.gd).
+# state — Dictionary с ключами "tween", "last_text", "request_id" — своя для
+# каждого из двух лейблов, чтобы они анимировались независимо.
+func _update_title_marquee(label: Label, scroll: ScrollContainer, state: Dictionary) -> void:
+    if label.text == state["last_text"] and state["tween"] != null and state["tween"].is_valid():
+        return
+    state["last_text"] = label.text
+
+    state["request_id"] += 1
+    var my_id = state["request_id"]
+
+    if state["tween"] != null:
+        state["tween"].kill()
+        state["tween"] = null
+
+    scroll.scroll_horizontal = 0
+
+    # Ждём два кадра, чтобы layout успел пересчитаться после смены текста.
+    await get_tree().process_frame
+    await get_tree().process_frame
+
+    if my_id != state["request_id"] or not is_instance_valid(label) or not is_instance_valid(scroll):
+        return
+
+    var font: Font = label.get_theme_font("font")
+    var font_size: int = label.get_theme_font_size("font_size")
+    var text_width: float = font.get_string_size(label.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+
+    var viewport_width: float = scroll.size.x
+
+    if text_width < TITLE_MARQUEE_MIN_WIDTH or text_width <= viewport_width:
+        return
+
+    var overflow = text_width - viewport_width
+    var total_distance = overflow + TITLE_MARQUEE_GAP
+    var duration = total_distance / TITLE_MARQUEE_SPEED
+
+    var tween = create_tween()
+    state["tween"] = tween
+    tween.set_loops()
+    tween.tween_interval(TITLE_MARQUEE_PAUSE)
+    tween.tween_property(scroll, "scroll_horizontal", overflow, duration * overflow / total_distance)\
+        .from(0).set_trans(Tween.TRANS_LINEAR)
+    tween.tween_interval(TITLE_MARQUEE_PAUSE)
+    tween.tween_callback(func():
+        if is_instance_valid(scroll):
+            scroll.scroll_horizontal = 0
+    )
 
 
 func _on_press(button: Button):

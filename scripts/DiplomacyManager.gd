@@ -225,6 +225,10 @@ func trigger_regime_collapse(country: String, cause: String, forced_ideology: St
 
     c_data[country]["ideology"] = new_ideology
 
+    # Пересчитываем доход/ВВП сразу — иначе tax_mult новой идеологии применится
+    # только через месяц, на следующем ежемесячном тике AIManager.
+    AIManager.force_recalculate_income(country)
+
     # Переходный период: новый режим ещё не консолидировал власть, но усталость
     # частично снимается — иначе страна тут же рухнет второй раз подряд.
     c_data[country]["war_exhaustion"] = min(
@@ -236,11 +240,16 @@ func trigger_regime_collapse(country: String, cause: String, forced_ideology: St
 
     #_resolve_regime_collapse_territories(country)
 
-    # Если после передела территорий у страны не осталось ни одной провинции
-    # (ни своей, ни оккупированной) — она физически перестала существовать,
-    # даже если официальный мир так и не заключён. Вычёркиваем её полностью,
-    # иначе она будет бесконечно "менять идеологию" без единого клочка земли.
-    if ProvinceRegistry.owner_province_count.get(country, 0) <= 0:
+    # Если у страны не осталось ВООБЩЕ никакой провинции (ни своей, ни core-owned
+    # оккупированной, которая вернулась бы после мира) — она физически перестала
+    # существовать, даже если официальный мир так и не заключён. Вычёркиваем её
+    # полностью, иначе она будет бесконечно "менять идеологию" без единого клочка
+    # земли. ВАЖНО: проверяем именно _has_any_province_left, а не owner_province_count —
+    # страна может быть полностью оккупирована (owner_province_count == 0), но всё ещё
+    # жива за счёт core-owned провинций, ждущих возврата по миру; именно из-за такой
+    # страны нас сюда и позвали (trigger_regime_collapse при полной оккупации), убивать
+    # её сразу же после смены идеологии нельзя.
+    if not ProvinceRegistry._has_any_province_left(country):
         #print("[Diplomacy] %s потеряла все территории после свержения — страна уничтожена" % country)
         ProvinceRegistry._eliminate_country(country)
         return
@@ -344,6 +353,11 @@ func change_ideology(country: String, new_ideology: String, cost: float) -> bool
     if c_data.get("balance", 0.0) >= cost and IDEOLOGIES.has(new_ideology):
         c_data["balance"] -= cost
         c_data["ideology"] = new_ideology
+
+        # Пересчитываем доход/ВВП сразу — иначе tax_mult новой идеологии применится
+        # только через месяц, на следующем ежемесячном тике AIManager.
+        AIManager.force_recalculate_income(country)
+
         return true
     return false
 

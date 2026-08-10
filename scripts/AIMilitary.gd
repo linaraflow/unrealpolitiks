@@ -13,6 +13,71 @@ static func tick_recruitment_cooldown(country: String) -> void:
         if AIManager.recruitment_cooldowns[country] <= 0:
             AIManager.recruitment_cooldowns.erase(country)
 
+static func tick_fortification_cooldown(country: String) -> void:
+    if AIManager.fortification_cooldowns.has(country):
+        AIManager.fortification_cooldowns[country] -= 1
+        if AIManager.fortification_cooldowns[country] <= 0:
+            AIManager.fortification_cooldowns.erase(country)
+
+## ИИ строит укрепления в первую очередь на границе (с врагом — приоритет,
+## иначе с любой другой страной), чтобы усилить оборону самых уязвимых
+## провинций. Тратит с оглядкой на резерв баланса, не мешает найму/фабрикам.
+static func process_fortifications(country: String) -> void:
+    if AIManager.fortification_cooldowns.has(country):
+        return
+
+    var c_data  = ProvinceRegistry.countries_data[country]
+    var balance = c_data.get("balance", 0.0)
+
+    var cost = ProvinceRegistry.get_fortification_cost(country)
+    var required = cost * (1.0 + AIManager.RESERVE_RATIO)
+    if balance < required:
+        return
+
+    var target_p = get_best_fortification_province(country)
+    if target_p == -1:
+        return
+
+    # Шанс постройки 25%, если страна не воюет. Во время войны укрепления
+    # нужны немедленно, поэтому шанс отключается — строим всегда.
+    var is_at_war = not ProvinceRegistry.war_relations.get(country, []).is_empty()
+    if not is_at_war and randf() >= 0.05:
+        return
+
+    if ProvinceRegistry.start_fortification_construction(target_p, country):
+        AIManager.fortification_cooldowns[country] = AIManager.FORTIFICATION_COOLDOWN_DAYS
+
+## Выбирает лучшую провинцию под укрепление: свою, без активного боя и без
+## оккупации, без уже построенного/строящегося укрепления — из них берём
+## провинцию с наибольшим числом фабрик (ключевой промышленный центр, который
+## важнее всего защитить). При равенстве фабрик — большее население.
+static func get_best_fortification_province(country: String) -> int:
+    var best_id       = -1
+    var best_factories = -1
+    var best_pop       = -1
+
+    for p_id in AIManager.get_country_provinces(country):
+        if CombatManager.active_battles.has(p_id):
+            continue
+        if ProvinceRegistry.is_occupied(p_id):
+            continue
+
+        var p_data = ProvinceRegistry.province_data.get(p_id, {})
+        if p_data.get("fortification", false):
+            continue
+        if ProvinceRegistry.active_fortification_constructions.has(p_id):
+            continue
+
+        var factories = int(p_data.get("factories", 0))
+        var pop = p_data.get("population", 0)
+
+        if factories > best_factories or (factories == best_factories and pop > best_pop):
+            best_factories = factories
+            best_pop = pop
+            best_id = p_id
+
+    return best_id
+
 static func process_recruitment(country: String) -> void:
     # 1. Проверка кулдауна
     if AIManager.recruitment_cooldowns.has(country):

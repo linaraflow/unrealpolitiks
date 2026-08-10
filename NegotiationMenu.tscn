@@ -198,27 +198,36 @@ layout_mode = 2
 texture = ExtResource("2_df4wd")
 expand_mode = 1
 
-[node name="PlayerProvincePanel" type="Panel" parent="VBoxContainer" unique_id=2001342176]
+[node name="PlayerProvincePanel" type="PanelContainer" parent="VBoxContainer" unique_id=238020587]
 custom_minimum_size = Vector2(94, 50)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_fa6gv")
 
-[node name="PlayerTitleLabel" type="Label" parent="VBoxContainer/PlayerProvincePanel" unique_id=2054537127]
-layout_mode = 0
-offset_left = 6.0
-offset_top = 5.0
-offset_right = 100.0
-offset_bottom = 22.0
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/PlayerProvincePanel" unique_id=644070184]
+layout_mode = 2
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 5
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/PlayerProvincePanel/MarginContainer" unique_id=1421587781]
+layout_mode = 2
+alignment = 1
+
+[node name="PlayerTitleLabelScroll" type="ScrollContainer" parent="VBoxContainer/PlayerProvincePanel/MarginContainer/VBoxContainer" unique_id=194742294]
+custom_minimum_size = Vector2(0, 15)
+layout_mode = 2
+horizontal_scroll_mode = 3
+vertical_scroll_mode = 3
+
+[node name="PlayerTitleLabel" type="Label" parent="VBoxContainer/PlayerProvincePanel/MarginContainer/VBoxContainer/PlayerTitleLabelScroll" unique_id=2054537127]
+layout_mode = 2
 theme_override_fonts/font = ExtResource("2_40vur")
 theme_override_font_sizes/font_size = 12
 text = "Germany"
 
-[node name="PlayerCountLabel" type="Label" parent="VBoxContainer/PlayerProvincePanel" unique_id=1381243706]
-layout_mode = 0
-offset_left = 6.0
-offset_top = 22.000002
-offset_right = 100.0
-offset_bottom = 45.000004
+[node name="PlayerCountLabel" type="Label" parent="VBoxContainer/PlayerProvincePanel/MarginContainer/VBoxContainer" unique_id=1381243706]
+layout_mode = 2
 theme_override_colors/font_color = Color(0.28436446, 0.7817348, 0.09893442, 1)
 theme_override_fonts/font = ExtResource("2_40vur")
 text = "23 Prov."
@@ -232,27 +241,36 @@ layout_mode = 2
 texture = ExtResource("3_v1y1u")
 expand_mode = 1
 
-[node name="EnemyProvincePanel" type="Panel" parent="VBoxContainer" unique_id=598756758]
+[node name="EnemyProvincePanel" type="PanelContainer" parent="VBoxContainer" unique_id=228250524]
 custom_minimum_size = Vector2(94, 50)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_fa6gv")
 
-[node name="EnemyTitleLabel" type="Label" parent="VBoxContainer/EnemyProvincePanel" unique_id=1072758819]
-layout_mode = 0
-offset_left = 6.0
-offset_top = 5.0
-offset_right = 100.0
-offset_bottom = 22.0
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/EnemyProvincePanel" unique_id=38721816]
+layout_mode = 2
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 5
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/EnemyProvincePanel/MarginContainer" unique_id=1062324678]
+layout_mode = 2
+alignment = 1
+
+[node name="EnemyTitleLabelScroll" type="ScrollContainer" parent="VBoxContainer/EnemyProvincePanel/MarginContainer/VBoxContainer" unique_id=1633221557]
+custom_minimum_size = Vector2(0, 15)
+layout_mode = 2
+horizontal_scroll_mode = 3
+vertical_scroll_mode = 3
+
+[node name="EnemyTitleLabel" type="Label" parent="VBoxContainer/EnemyProvincePanel/MarginContainer/VBoxContainer/EnemyTitleLabelScroll" unique_id=1072758819]
+layout_mode = 2
 theme_override_fonts/font = ExtResource("2_40vur")
 theme_override_font_sizes/font_size = 12
 text = "Ukraine"
 
-[node name="EnemyCountLabel" type="Label" parent="VBoxContainer/EnemyProvincePanel" unique_id=1204680869]
-layout_mode = 0
-offset_left = 6.0
-offset_top = 22.0
-offset_right = 100.0
-offset_bottom = 45.0
+[node name="EnemyCountLabel" type="Label" parent="VBoxContainer/EnemyProvincePanel/MarginContainer/VBoxContainer" unique_id=1204680869]
+layout_mode = 2
 theme_override_colors/font_color = Color(0.9450055, 0.023975058, 1.92523e-07, 1)
 theme_override_fonts/font = ExtResource("2_40vur")
 theme_override_font_sizes/font_size = 16

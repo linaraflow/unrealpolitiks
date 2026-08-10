@@ -303,6 +303,7 @@ func _action_display_name(key: String) -> String:
         "zoom_out": tr("KEYBIND_ZOOM_OUT"),
         "pause": tr("KEYBIND_PAUSE"),
         "build_factory": tr("KEYBIND_BUILD_FACTORY"),
+        "build_fortification": tr("KEYBIND_BUILD_FORTIFICATION"),
         "summon_troops": tr("KEYBIND_SUMMON_TROOPS"),
         "summon_max_troops_province": tr("KEYBIND_SUMMON_MAX_TROOPS"),
         "hide_ui": tr("KEYBIND_HIDE_UI"),

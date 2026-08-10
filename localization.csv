@@ -33,6 +33,7 @@ KEYBIND_ZOOM_IN,Zoom in,Приблизить,Vergrößern,Zoom avant
 KEYBIND_ZOOM_OUT,Zoom out,Отдалить,Verkleinern,Zoom arrière
 KEYBIND_PAUSE,Pause,Пауза,Pause,Pause
 KEYBIND_BUILD_FACTORY,Build factory,Построить фабрику,Fabrik bauen,Construire une usine
+KEYBIND_BUILD_FORTIFICATION,Build fortification,Построить укрепление,Befestigung bauen,Construire une fortification
 KEYBIND_SUMMON_TROOPS,Summon troops,Призвать войска,Truppen ausheben,Lever des troupes
 KEYBIND_SUMMON_MAX_TROOPS,Summon max troops in province,Призвать макс. войск в провинции,Max. Truppen in Provinz ausheben,Lever le max. de troupes dans la province
 KEYBIND_HIDE_UI,Hide UI,Скрыть интерфейс,UI ausblenden,Masquer l'interface
@@ -277,7 +278,7 @@ FACTORY_1,factory,фабрика,Fabrik,usine
 FACTORY_2,factories,фабрики,Fabriken,usines
 FACTORY_5,factories,фабрик,Fabriken,usines
 RECRUIT_TROOPS,Recruit troops,Призвать войска,Truppen rekrutieren,Lever des troupes
-BUILD_FACOTRY,Build a factory,Построить фабрику,Eine Fabrik bauen,Construire une usine
+BUILD_FACTORY,Build a factory,Построить фабрику,Eine Fabrik bauen,Construire une usine
 TROOPS,Troops,Войска,Truppen,Troupes
 COST,Cost,Цена,Kosten,Coût
 CONFIRM,Confirm,Подтвердить,Bestätigen,Confirmer
@@ -572,6 +573,9 @@ TOAST_FACTORY_PROGRESS_FMT,Factory construction %d/%d,Строительство
 TOAST_NOT_ENOUGH_MONEY_FMT,Not enough money (%s required),Недостаточно денег (нужно %s),Nicht genug Geld (%s benötigt),Fonds insuffisants (%s requis)
 TOAST_NOT_ENOUGH_RECRUIT,Not enough money or population to recruit (min. 100),Недостаточно денег или населения для призыва (мин. 100),Nicht genug Geld oder Bevölkerung zum Ausheben (min. 100),Fonds ou population insuffisants pour recruter (min. 100)
 TOAST_RECRUITED_FMT,Recruited %d troops,Призвано войск: %d,%d Truppen ausgehoben,%d troupes recrutées
+TOAST_FORTIFICATION_ALREADY_BUILT,A fortification has already been built here,Укрепление здесь уже построено,Hier wurde bereits eine Befestigungsanlage errichtet,Une fortification a déjà été construite ici
+TOAST_FORTIFICATION_IN_PROGRESS,A fortification is already under construction,Укрепление уже строится,Eine Befestigungsanlage wird bereits gebaut,Une fortification est déjà en construction
+TOAST_FORTIFICATION_STARTED,Fortification construction started,Строительство укрепления начато,Bau der Befestigungsanlage begonnen,Construction de la fortification commencée
 MAP_MODE_POLITICS,Politics,Политика,Politik,Politique
 MAP_MODE_ECONOMY,Economy,Экономика,Wirtschaft,Économie
 MAP_MODE_POPULATION,Population,Население,Bevölkerung,Population

@@ -45,6 +45,9 @@ var factory_cooldowns: Dictionary = {}
 ## Кулдаун найма войск: country -> дней до следующего найма
 var recruitment_cooldowns: Dictionary = {}
 
+## Кулдаун строительства укреплений: country -> дней до следующей попытки
+var fortification_cooldowns: Dictionary = {}
+
 ## Если true — армия игрока (settings.active_country) тоже двигается автоматически,
 ## как у обычного ИИ (управляется чекбоксом ai_army_tick в TopMenu).
 var player_ai_army_enabled: bool = false
@@ -92,6 +95,8 @@ const MAX_QUEUE_PER_PROVINCE = 5    # максимум фабрик в очер�
 const RECRUIT_COOLDOWN_DAYS = 5     # раз в 5 дней нанимаем войска
 const MIN_RECRUIT_SIZE      = 50    # минимальный размер призыва
 const RECRUIT_BUDGET_FRACTION = 0.3 # тратим на армию 30% текущего баланса
+
+const FORTIFICATION_COOLDOWN_DAYS = 20 # раз в 20 дней проверяем, не построить ли укрепление
 
 # На сколько падает счастье провинции за каждую 1000 набранных солдат
 const HAPPINESS_DRAIN_PER_1K_RECRUITS = 0.1
@@ -179,6 +184,7 @@ func _on_day_passed(_date: Dictionary) -> void:
 
         # 1. Быстрые кулдауны
         AIMilitary.tick_recruitment_cooldown(country)
+        AIMilitary.tick_fortification_cooldown(country)
         AIEconomy.tick_factory_cooldown(country)
         AIWeapons.tick_uav_launch_cooldown(country)
         AIWeapons.tick_missile_launch_cooldown(country)
@@ -197,6 +203,10 @@ func _on_day_passed(_date: Dictionary) -> void:
         # 4. Экономика — раз в 5 дней
         if (current_day + country_index) % 5 == 0:
             AIEconomy.process_economy(country)
+
+        # 4.5 Укрепления — раз в 7 дней (сдвиг от экономики, чтобы не биться за баланс в один день)
+        if (current_day + country_index + 2) % 7 == 0:
+            AIMilitary.process_fortifications(country)
 
         # 5. Рекрутинг — раз в 3 дня
         if (current_day + country_index) % 3 == 0:
@@ -258,6 +268,15 @@ func _tick_income(delta: float) -> void:
 func _update_monthly_income(country: String) -> void:
     var c_data = ProvinceRegistry.countries_data[country]
     c_data["monthly_income"] = _calculate_monthly_income(country)
+
+## Публичная обёртка над _update_monthly_income — форсирует немедленный пересчёт
+## monthly_income (а значит и ВВП) страны, не дожидаясь ежемесячного тика.
+## Вызывайте её сразу после любого изменения, которое влияет на _calculate_monthly_income
+## (сейчас это идеология через tax_mult) — иначе эффект будет виден только через месяц.
+func force_recalculate_income(country: String) -> void:
+    if not ProvinceRegistry.countries_data.has(country):
+        return
+    _update_monthly_income(country)
 
 func _calculate_monthly_income(country: String) -> float:
     var c_data    = ProvinceRegistry.countries_data[country]
