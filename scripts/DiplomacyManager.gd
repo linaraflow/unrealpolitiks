@@ -37,22 +37,27 @@ var active_processes: Dictionary = {}
 ## happiness_threshold  — счастье страны (0..100); риск копится, если счастье НИЖЕ этого значения.
 ## Авторитарные режимы подавляют недовольство и держатся дольше (высокий exhaustion_threshold,
 ## низкий happiness_threshold), демократии зависят от общественного мнения и падают раньше.
+## Пороги стабильности увеличены вдвое относительно исходных:
+## - happiness_threshold уменьшен в 2 раза (риск копится только при вдвое более низком счастье)
+## - exhaustion_threshold: "запас" до потолка (100) сокращён в 2 раза, т.е. порог отодвинут
+##   вдвое дальше от исходного значения к 100 (простое x2 упёрлось бы в потолок и стёрло
+##   разницу между режимами, т.к. исходные пороги уже близки к 100)
 const REGIME_STABILITY = {
-    "liberalism":             {"exhaustion_threshold": 65.0, "happiness_threshold": 35.0},
-    "parliamentary_republic": {"exhaustion_threshold": 65.0, "happiness_threshold": 35.0},
-    "oligarchy":               {"exhaustion_threshold": 70.0, "happiness_threshold": 32.0},
-    "monarchy":                {"exhaustion_threshold": 75.0, "happiness_threshold": 30.0},
-    "socialism":               {"exhaustion_threshold": 78.0, "happiness_threshold": 28.0},
-    "islamic_republic":        {"exhaustion_threshold": 80.0, "happiness_threshold": 25.0},
-    "communism":               {"exhaustion_threshold": 88.0, "happiness_threshold": 20.0},
-    "fascism":                 {"exhaustion_threshold": 90.0, "happiness_threshold": 18.0},
-    "dictatorship":            {"exhaustion_threshold": 90.0, "happiness_threshold": 15.0},
-    "neo_nazism":              {"exhaustion_threshold": 92.0, "happiness_threshold": 15.0},
-    "military_junta":          {"exhaustion_threshold": 92.0, "happiness_threshold": 15.0},
+    "liberalism":             {"exhaustion_threshold": 82.5, "happiness_threshold": 17.5},
+    "parliamentary_republic": {"exhaustion_threshold": 82.5, "happiness_threshold": 17.5},
+    "oligarchy":               {"exhaustion_threshold": 85.0, "happiness_threshold": 16.0},
+    "monarchy":                {"exhaustion_threshold": 87.5, "happiness_threshold": 15.0},
+    "socialism":               {"exhaustion_threshold": 89.0, "happiness_threshold": 14.0},
+    "islamic_republic":        {"exhaustion_threshold": 90.0, "happiness_threshold": 12.5},
+    "communism":               {"exhaustion_threshold": 94.0, "happiness_threshold": 10.0},
+    "fascism":                 {"exhaustion_threshold": 95.0, "happiness_threshold": 9.0},
+    "dictatorship":            {"exhaustion_threshold": 95.0, "happiness_threshold": 7.5},
+    "neo_nazism":              {"exhaustion_threshold": 96.0, "happiness_threshold": 7.5},
+    "military_junta":          {"exhaustion_threshold": 96.0, "happiness_threshold": 7.5},
 }
 
 ## Пороги по умолчанию для идеологий, которых почему-то нет в REGIME_STABILITY.
-const REGIME_STABILITY_DEFAULT = {"exhaustion_threshold": 80.0, "happiness_threshold": 25.0}
+const REGIME_STABILITY_DEFAULT = {"exhaustion_threshold": 90.0, "happiness_threshold": 12.5}
 
 ## Базовый и максимальный шанс свержения В ДЕНЬ, когда показатель находится
 ## ровно на пороге / в самой критической точке (усталость=100 или счастье=0).

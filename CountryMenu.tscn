@@ -584,9 +584,9 @@ layout_mode = 0
 offset_left = 12.0
 offset_top = 280.0
 offset_right = 288.0
-offset_bottom = 421.0
+offset_bottom = 412.0
 theme_override_constants/h_separation = 6
-theme_override_constants/v_separation = 11
+theme_override_constants/v_separation = 6
 columns = 2
 
 [node name="ImproveRelationsBtn" type="Button" parent="Panel/DiplomacyActionsGrid" unique_id=459177796]
@@ -677,11 +677,9 @@ vertical_icon_alignment = 0
 
 [node name="ImposeSanctionsBtn" type="Button" parent="Panel/DiplomacyActionsGrid" unique_id=980555803]
 modulate = Color(1, 0.6671529, 0.027789155, 1)
-custom_minimum_size = Vector2(135, 60.995)
+custom_minimum_size = Vector2(135, 65)
 custom_maximum_size = Vector2(-1, 65)
 layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 5
 focus_mode = 0
 theme_override_fonts/font = ExtResource("5_r840y")
 theme_override_font_sizes/font_size = 11
