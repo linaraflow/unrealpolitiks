@@ -8,7 +8,9 @@ var settings = preload("res://new_resource.tres")
 @onready var confirm_btn = $ConfirmButton # Кнопка "Призвать"
 @onready var balance_label = get_node_or_null("/root/Game/CanvasLayer/TopMenu/TopPanel/BalanceLabel")
 
-var HAPPINESS_DRAIN_PER_1K_RECRUITS = 0.1
+var HAPPINESS_DRAIN_PER_1K_RECRUITS: float:
+    get:
+        return settings.HAPPINESS_DRAIN_PER_1K_RECRUITS
 
 var current_province_id = -1
 var local_pos = Vector2.ZERO

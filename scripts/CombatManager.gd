@@ -25,6 +25,17 @@ signal casualties_inflicted(country: String, amount: int)
 const DAMAGE_PER_SOLDIER := 0.5
 # ════════════════════════════════════════════════════════════════════════════
 const TICK_INTERVAL  := 0.5       # секунды между тиками боя (реального времени)
+
+# ═══ ИЗМЕНЕНО ═══════════════════════════════════════════════════════════════
+# Множитель урона, наносимого ПО защитнику с укреплением (режет входящий урон
+# атакующего). Раньше был захардкожен 0.5 (укрепление снижало входящий урон
+# на 50%). При 0.25 (снижение на 75%) точка равновесия смещается на
+# соотношение численности 1:2 — то есть защитник с 8к против атакующего
+# с 16к теперь выходят в ничью (обе стороны обнуляются одновременно), а
+# защитник с 9к против тех же 16к атакующего уже побеждает.
+# Формула точки равновесия: k = (D/A)², где D — солдаты защитника,
+# A — солдаты атакующего, на баланс с которым настраиваем.
+const FORTIFICATION_DAMAGE_MULT := 0.25
 const WAR_EXHAUSTION_PER_TICK := 2  # усталость, начисляемая стороне за каждый боевой тик, в котором она участвует
 
 # Активные бои: province_id -> { "sides": { "CountryA": {...}, "CountryB": {...} }, "timer": float }
@@ -233,9 +244,9 @@ func _process_battle_tick(province_id: int) -> bool:
         var dmg := int(soldiers * DAMAGE_PER_SOLDIER * (1.0 - fatigue / 100.0))
         damage_dealt[country] = max(dmg, 0)
 
-    # Укрепление (fortification) в этой провинции снижает на 50% урон,
-    # который получает её ЗАЩИТНИК (владелец провинции) от любого врага —
-    # урон, наносимый самим защитником, не меняется.
+    # Укрепление (fortification) в этой провинции снижает урон (см.
+    # FORTIFICATION_DAMAGE_MULT), который получает её ЗАЩИТНИК (владелец
+    # провинции) от любого врага — урон, наносимый самим защитником, не меняется.
     var p_data: Dictionary = ProvinceRegistry.province_data.get(province_id, {})
     var fortified_defender: String = p_data.get("owner", "") if p_data.get("fortification", false) else ""
     
@@ -257,9 +268,9 @@ func _process_battle_tick(province_id: int) -> bool:
         
         var dmg_per_enemy: int = damage_dealt[attacker]
 
-        # Цель защищена укреплением своей провинции — урон по ней снижен на 50%.
+        # Цель защищена укреплением своей провинции — урон по ней снижен.
         if enemies[0] == fortified_defender:
-            dmg_per_enemy = int(dmg_per_enemy * 0.5)
+            dmg_per_enemy = int(dmg_per_enemy * FORTIFICATION_DAMAGE_MULT)
         
         if not enemies[0] in hit:
             var hp_before = sides[enemies[0]]["hp"]
