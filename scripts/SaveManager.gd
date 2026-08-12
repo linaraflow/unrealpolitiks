@@ -66,6 +66,9 @@ func _on_autosave_day_passed(_date = null) -> void:
 ##   там это просто карточка с ключом "", а реальное имя генерируется в момент
 ##   сохранения) — генерируем новое имя по той же схеме, что и SaveMenu.
 func autosave() -> void:
+    if settings.is_saving_disabled():
+        return
+
     var slot: String = current_slot
     if slot == "":
         slot = _generate_new_slot_name()
@@ -173,6 +176,10 @@ func _calc_gdp(country_info: Dictionary) -> float:
 # ─────────────────────────────────────────────────────────────────────────────
 
 func save_game(slot: String) -> bool:
+    if settings.is_saving_disabled():
+        push_warning("[SaveManager] Сохранение недоступно на сложности Hardcore")
+        return false
+
     var data := {
         "version": SAVE_VERSION,
         "saved_at_unix": Time.get_unix_time_from_system(),
@@ -214,7 +221,8 @@ func _save_settings() -> Dictionary:
     var s = settings  # тот же Resource, что и у остальных синглтонов
     return {
         "active_country": s.active_country,
-        "last_clicked_province_id": s.last_clicked_province_id
+        "last_clicked_province_id": s.last_clicked_province_id,
+        "difficulty": s.difficulty
     }
 
 func _save_province_registry() -> Dictionary:
@@ -232,6 +240,7 @@ func _save_province_registry() -> Dictionary:
         "active_constructions": pr.active_constructions,
         "active_fortification_constructions": pr.active_fortification_constructions,
         "days_in_power": pr.days_in_power,
+        "fog_of_war_enabled": pr.fog_of_war_enabled,
     }
 
 func _save_divisions() -> Dictionary:
@@ -310,6 +319,7 @@ func _save_ai() -> Dictionary:
         "uav_launch_cooldowns": AIManager.uav_launch_cooldowns,
         "missile_launch_cooldowns": AIManager.missile_launch_cooldowns,
         "player_ai_army_enabled": AIManager.player_ai_army_enabled,
+        "ai_aggression": AIManager.ai_aggression,
     }
 
 ## Панель "Внутренняя статистика страны" (statistics_menu.gd) сама не автолоад,
@@ -430,6 +440,12 @@ func load_game(slot: String) -> bool:
     _load_divisions(data.get("divisions", {}), map_node)
     _load_projectiles(data.get("projectiles", {}), map_node)
 
+    # На всякий случай пересчитываем видимость всех дивизий разом — это
+    # актуально, если фактическая видимость какой-то дивизии в момент её
+    # создания в _load_divisions ещё не была корректна (например пока не все
+    # провинции были готовы) или отличалась в старом сейве от текущего флага.
+    DivisionManager.refresh_fog_of_war_visibility()
+
     # Пересобираем бои по факту вражеских войск в одной провинции
     _rebuild_battles()
 
@@ -439,7 +455,7 @@ func load_game(slot: String) -> bool:
 
     var s = settings
     s.can_draw = true
-    map_node.blue.hide()
+    map_node.opening.hide()
     
     Global._on_music_finished()
 
@@ -460,6 +476,7 @@ func _load_clock(d: Dictionary) -> void:
 func _load_settings(d: Dictionary) -> void:
     settings.active_country = d.get("active_country", "")
     settings.last_clicked_province_id = d.get("last_clicked_province_id", "")
+    settings.difficulty = int(d.get("difficulty", GameSettings.Difficulty.STANDARD)) as GameSettings.Difficulty
 
 ## JSON превращает int-ключи Dictionary в строки — конвертируем обратно.
 func _intkeys(d: Dictionary) -> Dictionary:
@@ -485,6 +502,9 @@ func _load_province_registry(d: Dictionary) -> void:
     pr.active_constructions = _intkeys(d.get("active_constructions", {}))
     pr.active_fortification_constructions = _intkeys(d.get("active_fortification_constructions", {}))
     pr.days_in_power = int(d.get("days_in_power", 0))
+    # По умолчанию true, чтобы старые сейвы (сохранённые до появления тумана
+    # войны) грузились с включённым туманом — так же, как выглядит новая игра.
+    pr.fog_of_war_enabled = bool(d.get("fog_of_war_enabled", true))
 
 func _load_diplomacy(d: Dictionary) -> void:
     DiplomacyManager.active_processes = d.get("active_processes", {})
@@ -495,6 +515,9 @@ func _load_ai(d: Dictionary) -> void:
     AIManager.uav_launch_cooldowns = d.get("uav_launch_cooldowns", {})
     AIManager.missile_launch_cooldowns = d.get("missile_launch_cooldowns", {})
     AIManager.player_ai_army_enabled = bool(d.get("player_ai_army_enabled", false))
+    # Старые сейвы (сохранённые до появления слайдера агрессии) не содержат
+    # это поле — по умолчанию считаем агрессию 100% (1.0), как и было раньше.
+    AIManager.ai_aggression = clampf(float(d.get("ai_aggression", 1.0)), 0.0, 1.0)
     AIManager._build_initial_country_cache()  # пересобрать индекс "страна -> провинции" по новому province_data
 
 func _load_statistics(d: Dictionary) -> void:
@@ -526,6 +549,7 @@ func _load_divisions(d: Dictionary, map_node: Node) -> void:
         army.army_name = entry.get("army_name", "")
         army.province_id = p_id
         army._update_flag_texture()
+        army.apply_fog_visibility()
 
         if not DivisionManager.armies.has(p_id):
             DivisionManager.armies[p_id] = []

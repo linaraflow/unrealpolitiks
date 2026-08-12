@@ -438,6 +438,10 @@ func _apply_world_sanctions(country: String) -> void:
     if not c_data.has(country):
         return
 
+    # На лёгкой сложности игроку мировые санкции не назначаются.
+    if country == settings.active_country and settings.is_world_sanctions_disabled():
+        return
+
     var target_data = c_data[country]
     if not target_data.has("sanctioned_by"):
         target_data["sanctioned_by"] = {}

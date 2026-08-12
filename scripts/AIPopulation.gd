@@ -34,7 +34,7 @@ static func process_population() -> void:
                     migration[p_id_str] = migration.get(p_id_str, 0) - loss
                     distribute_refugees(p_id, loss, migration)
             else:
-                var growth = int(current * 0.001)
+                var growth = int(current * 0.05)
                 if growth > 0:
                     migration[p_id_str] = migration.get(p_id_str, 0) + growth
 

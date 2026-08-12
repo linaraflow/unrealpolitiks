@@ -68,7 +68,7 @@ var country_labels_layer: Node2D
 ## Слой-контейнер для иконок укреплений. Создаётся как child-нода в _ready(),
 ## координаты — как у province_centers (та же система, что у остальных слоёв).
 var fortification_icons_layer: Node2D
-const FORTIFICATION_ICON_PATH := "res://assets/icons_on_map/fortification.svg"
+const FORTIFICATION_ICON_PATH := "res://assets/icons_on_map/fortification2.svg"
 ## Множитель размера иконки. SVG рендерится Godot в текстуру заранее (в
 ## оригинальном разрешении), поэтому уменьшение через Sprite2D.scale — это
 ## downscale уже готовой чёткой картинки (не блочное увеличение), качество
@@ -93,7 +93,7 @@ var _last_click_local_pos: Vector2 = Vector2.ZERO
 @onready var FlagRect             = get_node("/root/Game/CanvasLayer/VBoxContainer/CountryMenu/Panel/HeaderRow/FlagRect")
 @onready var ColorPanel           = get_node("/root/Game/CanvasLayer/VBoxContainer/CountryMenu/Panel/HeaderRow/FlagRect/ColorPanel")
 @onready var recruit_slider_panel = get_node("/root/Game/CanvasLayer/VBoxContainer/ProvinceMenu/RecruitSliderPanel")
-@onready var blue                 = get_node("/root/Game/CanvasLayer/BLUE")
+@onready var opening               = get_node("/root/Game/CanvasLayer/Opening")
 @onready var date                 = get_node("/root/Game/CanvasLayer/TopMenu/TopPanel/DatePanel")
 @onready var choose_map_panel     = get_node("/root/Game/CanvasLayer/TopMenu/ChooseMapPanel")
 @onready var DevMenu     = get_node("/root/Game/CanvasLayer/DevMenu")
@@ -458,7 +458,7 @@ func _handle_left_click(p_id, px, province_info, current_owner):
     # До выбора страны (can_draw == false) — показываем ТОЛЬКО CountryMenu,
     # ProvinceMenu и DivisionMenu должны быть скрыты.
     if not settings.can_draw:
-        get_node("../CanvasLayer/BLUE").set_country(current_owner if current_owner != "sea" else "")
+        opening.set_country(current_owner if current_owner != "sea" else "")
         if current_owner == "sea":
             GameRoot.hide_panel()
             return
@@ -971,9 +971,13 @@ func _update_fortification_icons_visibility(zoom_x: float) -> void:
     fortification_icons_layer.visible = zoom_x >= fortification_icons_zoom_threshold
 
 
+## Принудительный размер иконки укрепления на карте (в пикселях, в системе
+## координат province_centers), независимо от исходного разрешения SVG.
+const FORTIFICATION_ICON_SIZE := Vector2(5, 5)
+
 ## Добавляет иконку укрепления в провинции p_id, если её там ещё нет.
-## Позиция — выше центра провинции ровно на высоту самой иконки (по Y),
-## т.е. её нижний край касается центра провинции.
+## Иконка ставится ровно в центр провинции (province_centers[p_id]) и
+## принудительно имеет размер FORTIFICATION_ICON_SIZE (5x5).
 func _add_fortification_icon(p_id: int) -> void:
     if fortification_icons.has(p_id):
         return
@@ -985,13 +989,17 @@ func _add_fortification_icon(p_id: int) -> void:
     var icon := Sprite2D.new()
     icon.texture = fortification_icon_texture
     icon.centered = true
-    icon.scale = Vector2.ONE * FORTIFICATION_ICON_SCALE
 
-    # Позиция считается по УЖЕ уменьшенному (визуальному) размеру иконки,
-    # иначе она "улетела" бы выше, чем нужно, на исходный (не уменьшенный) размер.
-    var icon_size: Vector2 = fortification_icon_texture.get_size() * FORTIFICATION_ICON_SCALE
-    var center: Vector2 = province_centers[p_id]
-    icon.position = center - Vector2(0, icon_size.y)
+    # Принудительный размер 20x20 независимо от исходного разрешения текстуры:
+    # scale вычисляется так, чтобы texture_size * scale == FORTIFICATION_ICON_SIZE.
+    var tex_size: Vector2 = fortification_icon_texture.get_size()
+    icon.scale = Vector2(
+        FORTIFICATION_ICON_SIZE.x / tex_size.x,
+        FORTIFICATION_ICON_SIZE.y / tex_size.y
+    )
+
+    # Иконка строго в центре провинции.
+    icon.position = province_centers[p_id]
 
     fortification_icons_layer.add_child(icon)
     fortification_icons[p_id] = icon
@@ -1046,13 +1054,29 @@ func _deselect_province() -> void:
 func _update_divisions_visibility() -> void:
     for army in get_tree().get_nodes_in_group("army_circles"):
         if is_instance_valid(army):
-            army.visible = not divisions_hidden
-            if is_instance_valid(army.current_path_node):
-                army.current_path_node.visible = not divisions_hidden
+            if army.has_method("set_all_hidden"):
+                # set_all_hidden() хранит состояние кнопки в самой дивизии
+                # (флаг _all_hidden), поэтому последующие пересчёты тумана
+                # войны (apply_fog_visibility) больше не "сбрасывают" скрытие,
+                # как это было при прямом army.visible = ...
+                army.set_all_hidden(divisions_hidden)
+            elif divisions_hidden:
+                army.visible = false
+            elif army.has_method("apply_fog_visibility"):
+                army.apply_fog_visibility()
+            else:
+                army.visible = true
 
 func _on_child_entered_tree(node: Node) -> void:
     if node.has_method("setup") or node is Path2D:
-        node.visible = not divisions_hidden
+        if node.has_method("set_all_hidden"):
+            node.set_all_hidden(divisions_hidden)
+        elif divisions_hidden:
+            node.visible = false
+        elif node.has_method("apply_fog_visibility"):
+            node.apply_fog_visibility()
+        else:
+            node.visible = not divisions_hidden
 
 func _on_country_color_changed() -> void:
     material.set_shader_parameter("country_colors", ProvinceRegistry.country_colors)
@@ -1388,7 +1412,7 @@ func restart() -> void:
 
     settings.active_country = ""
     settings.can_draw = false
-    blue.show()
+    opening.BLUE.show()
 
     # Сбрасываем "слот текущей сессии" — иначе автосейв после начала новой
     # партии продолжил бы молча писать в слот от предыдущей.

@@ -254,8 +254,8 @@ func _close() -> void:
 
     settings.negotiation_mode = false
     Map.exit_negotiation_mode()
-    GameClock.toggle_pause()
     DivisionManager.set_negotiation_visibility([])
+    SelectionManager.clear_selection()
 
     for menu in menu_to_close:
         menu.show()

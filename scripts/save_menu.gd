@@ -66,6 +66,19 @@ func open_for_save() -> void:
     _title_label.text = tr("SAVE_GAME_TITLE")
     _action_button_label.text = tr("SAVE_BTN")
     show()
+
+    if settings.is_saving_disabled():
+        # Хардкор: сохранение полностью запрещено — очищаем список и блокируем кнопку.
+        for child in _list_vbox.get_children():
+            child.queue_free()
+        _entries.clear()
+        _selected_slot = ""
+        _has_selection = false
+        _number_saves_label.text = "0"
+        _title_label.text = "Saving is disabled on Hardcore"
+        _action_button.disabled = true
+        return
+
     _populate_saves()
 
 
@@ -243,6 +256,8 @@ func _on_action_pressed() -> void:
         return
     if _mode == Mode.LOAD:
         SaveManager.request_load(_selected_slot)
+    elif settings.is_saving_disabled():
+        return
     elif _selected_slot == "":
         _create_new_save()
     else:
@@ -253,6 +268,8 @@ func _on_action_pressed() -> void:
 
 func _create_new_save() -> void:
     if settings.can_draw == false:
+        return
+    if settings.is_saving_disabled():
         return 
         
     var slot := _generate_new_slot_name()

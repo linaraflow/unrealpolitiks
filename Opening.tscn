@@ -1,0 +1,271 @@
+[gd_scene format=3 uid="uid://dxxybttfs6lkr"]
+
+[ext_resource type="Script" uid="uid://dbn8woptggmqn" path="res://scripts/opening.gd" id="1_ahqxp"]
+[ext_resource type="FontVariation" uid="uid://eqbeyus3g4j1" path="res://fonts/new_font_variation.tres" id="2_86gsx"]
+[ext_resource type="Resource" uid="uid://dpsywpq1i1i6j" path="res://new_resource.tres" id="4_r3fmk"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_h7o3h"]
+bg_color = Color(0.16924527, 0.16924533, 0.16924518, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.585062, 0.5850621, 0.5850618, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+corner_detail = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7mdbw"]
+content_margin_left = 0.0
+content_margin_top = 4.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+bg_color = Color(0.103743605, 0.103743516, 0.103743516, 1)
+border_color = Color(0.585062, 0.5850621, 0.5850618, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+corner_detail = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_12dxf"]
+content_margin_left = 0.0
+content_margin_top = 4.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+bg_color = Color(0.14767182, 0.14767182, 0.14767176, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.585062, 0.5850621, 0.5850618, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+corner_detail = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_oiixh"]
+bg_color = Color(0.16924527, 0.16924533, 0.16924518, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.585062, 0.5850621, 0.5850618, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+corner_detail = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ahqxp"]
+content_margin_left = 0.0
+content_margin_top = 4.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+bg_color = Color(0.103743605, 0.103743516, 0.103743516, 1)
+border_color = Color(0.585062, 0.5850621, 0.5850618, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+corner_detail = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_86gsx"]
+content_margin_left = 0.0
+content_margin_top = 4.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+bg_color = Color(0.14767182, 0.14767182, 0.14767176, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.585062, 0.5850621, 0.5850618, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+corner_detail = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hwa81"]
+bg_color = Color(0.16924527, 0.16924533, 0.16924518, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.585062, 0.5850621, 0.5850618, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+corner_detail = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hc05d"]
+content_margin_left = 8.0
+content_margin_top = 5.0
+content_margin_right = 8.0
+content_margin_bottom = 5.0
+bg_color = Color(0.23771492, 0.45433557, 0.19247302, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_r3fmk"]
+content_margin_left = 8.0
+content_margin_top = 5.0
+content_margin_right = 8.0
+content_margin_bottom = 5.0
+bg_color = Color(0.20305568, 0.39445567, 0.16257262, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_m4bch"]
+content_margin_left = 8.0
+content_margin_top = 5.0
+content_margin_right = 8.0
+content_margin_bottom = 5.0
+bg_color = Color(0.22156304, 0.42403492, 0.17739439, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[node name="Opening" type="Control" unique_id=1775558749]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_ahqxp")
+settings = ExtResource("4_r3fmk")
+
+[node name="BLUE" type="Button" parent="." unique_id=1988810851]
+custom_minimum_size = Vector2(200, 80)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -100.0
+offset_top = -40.0
+offset_right = 100.0
+offset_bottom = 40.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+theme_override_fonts/font = ExtResource("2_86gsx")
+theme_override_styles/normal = SubResource("StyleBoxFlat_h7o3h")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_7mdbw")
+theme_override_styles/hover = SubResource("StyleBoxFlat_12dxf")
+text = "CHOOSE_COUNTRY"
+
+[node name="StartButton" type="Button" parent="." unique_id=1681392786]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.86700004
+anchor_top = 0.943
+anchor_right = 0.86700004
+anchor_bottom = 0.943
+offset_left = -0.6401367
+offset_top = -0.44000244
+offset_right = 245.35986
+offset_bottom = 51.56024
+theme_override_fonts/font = ExtResource("2_86gsx")
+theme_override_font_sizes/font_size = 25
+theme_override_styles/normal = SubResource("StyleBoxFlat_oiixh")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_ahqxp")
+theme_override_styles/hover = SubResource("StyleBoxFlat_86gsx")
+text = "Start"
+
+[node name="PanelContainer" type="PanelContainer" parent="." unique_id=700021639]
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -297.0
+offset_top = -125.0
+offset_right = -10.0
+offset_bottom = 125.0
+grow_horizontal = 0
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_hwa81")
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer" unique_id=537889760]
+layout_mode = 2
+theme_override_constants/margin_left = 15
+theme_override_constants/margin_top = 15
+theme_override_constants/margin_right = 15
+theme_override_constants/margin_bottom = 15
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer" unique_id=1611790741]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="FogContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=49915171]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/FogContainer" unique_id=1410045969]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_86gsx")
+text = "Fog of War"
+horizontal_alignment = 1
+
+[node name="FogButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/FogContainer" unique_id=1930093740]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_hc05d")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_r3fmk")
+theme_override_styles/hover = SubResource("StyleBoxFlat_m4bch")
+text = "ON"
+
+[node name="DifficultyContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=1588709014]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/DifficultyContainer" unique_id=1505840052]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_86gsx")
+text = "Difficulty"
+horizontal_alignment = 1
+
+[node name="OptionButton" type="OptionButton" parent="PanelContainer/MarginContainer/VBoxContainer/DifficultyContainer" unique_id=576305305]
+layout_mode = 2
+
+[node name="AggressivenessContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=1697596396]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/AggressivenessContainer" unique_id=1293465155]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_86gsx")
+text = "Aggressiveness"
+horizontal_alignment = 1
+
+[node name="HSlider" type="HSlider" parent="PanelContainer/MarginContainer/VBoxContainer/AggressivenessContainer" unique_id=780812492]
+layout_mode = 2
+value = 50.0
+
+[node name="PercentLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/AggressivenessContainer" unique_id=1925971488]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_86gsx")
+text = "50%"
+horizontal_alignment = 1
+
+[connection signal="pressed" from="BLUE" to="BLUE" method="_on_pressed"]
+[connection signal="pressed" from="StartButton" to="." method="_on_start_button_pressed"]
+[connection signal="pressed" from="PanelContainer/MarginContainer/VBoxContainer/FogContainer/FogButton" to="." method="_on_fog_button_pressed"]
+[connection signal="changed" from="PanelContainer/MarginContainer/VBoxContainer/AggressivenessContainer/HSlider" to="." method="_on_h_slider_changed"]

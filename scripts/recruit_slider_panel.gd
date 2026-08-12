@@ -27,7 +27,7 @@ func open_menu(province_id: int, pos: Vector2, pop: int, balance: float):
 
     # Считаем лимиты: 1% от населения и сколько денег в казне
     var pop_limit = int(pop * 0.01)
-    var money_limit = int(balance / settings.COST_PER_SOLDIER)
+    var money_limit = int(balance / settings.get_recruit_cost_per_soldier())
     
     # Максимум можно призвать то, во что мы упираемся раньше
     var max_recruits = min(pop_limit, money_limit)
@@ -46,7 +46,7 @@ func _on_slider_value_changed(value: float):
     _update_info(int(value))
 
 func _update_info(amount: int):
-    cost = int(amount * settings.COST_PER_SOLDIER)
+    cost = int(amount * settings.get_recruit_cost_per_soldier())
     troops_label.text = "🪖 " + tr("TROOPS") + ": " + str(amount)
     cost_label.text = "💵 " + tr("COST") + ": " + ProvinceRegistry._format_number(cost, ".")
     # Минимальный порог призыва - 100 человек

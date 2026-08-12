@@ -94,6 +94,10 @@ static func try_declare_war(country: String, c_data: Dictionary) -> void:
         if DiplomacyManager.has_high_sanctions(neighbor):
             declare_chance *= HIGH_SANCTIONS_WAR_MULT
 
+        # Глобальный слайдер агрессии: 0% -> войны не объявляются, 73% -> все
+        # шансы домножаются на 0.73, 100% -> шансы не меняются.
+        declare_chance *= AIManager.get_aggression_multiplier()
+
         if randf() < declare_chance:
             ProvinceRegistry.declare_war(country, neighbor)
             return
@@ -145,7 +149,7 @@ static func _try_declare_war_on_distant_sanctioned(country: String, ideology: St
 
     var target = candidates.pick_random()
 
-    if randf() < HIGH_SANCTIONS_DISTANT_WAR_CHANCE * war_mult:
+    if randf() < HIGH_SANCTIONS_DISTANT_WAR_CHANCE * war_mult * AIManager.get_aggression_multiplier():
         ProvinceRegistry.declare_war(country, target)
 
 ## Ответные санкции

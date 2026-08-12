@@ -19,6 +19,44 @@ var army_name:  String = ""
 var soldiers: int = 0
 var division_owner: String = ""
 
+# ─── ВИДИМОСТЬ (Fog of War + переговоры) ────────────────────────────────────
+# Итоговая visible-видимость дивизии складывается из двух независимых причин
+# скрытия, чтобы они не перезаписывали друг друга (раньше visible выставлялся
+# напрямую и в set_negotiation_visibility(), и потенциально где-то ещё).
+var _fog_visible: bool = true
+var _negotiation_hidden: bool = false
+# Глобальная кнопка/хоткей "скрыть все дивизии" (map.gd: divisions_hidden).
+# Раньше map.gd выставлял army.visible напрямую, из-за чего apply_fog_visibility()
+# (который теперь дёргается намного чаще — см. refresh_fog_of_war_visibility_near
+# в DivisionManager.gd) тут же перезаписывал visible=true и "сбрасывал" кнопку.
+var _all_hidden: bool = false
+
+## Пересчитывает итоговую visible-видимость дивизии (и её хвоста-пути)
+## из текущих _fog_visible / _negotiation_hidden / _all_hidden.
+func _update_visibility() -> void:
+    var should_be_visible = _fog_visible and not _negotiation_hidden and not _all_hidden
+    visible = should_be_visible
+    if is_instance_valid(current_path_node):
+        current_path_node.visible = should_be_visible
+
+## Пересчитывает видимость этой дивизии по правилам тумана войны
+## (см. ProvinceRegistry.is_division_visible) и применяет её.
+## Вызывать при создании дивизии и при каждой смене province_id.
+func apply_fog_visibility() -> void:
+    _fog_visible = ProvinceRegistry.is_division_visible(division_owner, province_id)
+    _update_visibility()
+
+func set_negotiation_hidden(hidden: bool) -> void:
+    _negotiation_hidden = hidden
+    _update_visibility()
+
+## Вызывается из map.gd вместо прямого army.visible = ...  по кнопке/хоткею
+## "скрыть все дивизии", чтобы это состояние не терялось при последующих
+## пересчётах тумана войны (apply_fog_visibility иначе его не учитывает).
+func set_all_hidden(hidden: bool) -> void:
+    _all_hidden = hidden
+    _update_visibility()
+
 var current_path_node: Path2D = null
 var current_line_node: Line2D = null   
 var is_moving: bool = false
@@ -85,6 +123,7 @@ func setup(p_id: int, name: String = "") -> void:
     army_name   = name
     division_owner = ProvinceRegistry.province_data[p_id].get("owner", "")
     _update_flag_texture()
+    apply_fog_visibility()
 
 func _ready() -> void:
     z_index = 1 
@@ -344,6 +383,7 @@ func _process_movement(delta: float) -> void:
 
                 _transfer_data_to(ground_p_id)
                 province_id = ground_p_id
+                apply_fog_visibility()
 
                 if CombatManager.active_battles.has(ground_p_id):
                     _stop_current_movement()

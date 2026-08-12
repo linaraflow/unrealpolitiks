@@ -64,6 +64,62 @@ var war_relations: Dictionary = {}
 
 var countries_data: Dictionary = {}
 
+# ─── ТУМАН ВОЙНЫ (Fog of War) ────────────────────────────────────────────────
+# Если включён — дивизии, не удовлетворяющие ни одному из условий видимости,
+# скрываются с карты (см. is_division_visible()). Переключается кнопкой Fog
+# в opening.gd. По умолчанию включён (совпадает с исходным состоянием кнопки).
+var fog_of_war_enabled: bool = true
+
+## Видна ли дивизия страны division_owner, стоящая в провинции division_province_id,
+## игроку (settings.active_country) при включённом тумане войны. Правила:
+##   1) свои дивизии — всегда видны;
+##   2) дивизии страны, с которой игрок воюет, — видны везде;
+##   3) дивизии, стоящие в провинции игрока или в провинции, граничащей
+##      с провинцией игрока, — видны;
+##   4) дивизии, стоящие в той же провинции (в т.ч. морской зоне) или в
+##      провинции, граничащей с ней, где физически стоит СВОЯ дивизия, —
+##      видны. Это правило отдельно от (3), т.к. морские зоны не имеют
+##      owner ("sea"), и без него свой флот в море не "рассекречивал"
+##      вражеские дивизии рядом с собой.
+## Если туман войны выключен (или игрок ещё не выбран) — видно всё.
+func is_division_visible(division_owner: String, division_province_id: int) -> bool:
+    if not fog_of_war_enabled:
+        return true
+
+    var player_country: String = settings.active_country
+    if player_country == "":
+        return true
+
+    if division_owner == player_country:
+        return true
+
+    if is_at_war(player_country, division_owner):
+        return true
+
+    var p_owner: String = province_data.get(division_province_id, {}).get("owner", "")
+    if p_owner == player_country:
+        return true
+
+    if _has_own_division_in(player_country, division_province_id):
+        return true
+
+    for neighbor_id in province_adjacency.get(division_province_id, []):
+        if province_data.get(neighbor_id, {}).get("owner", "") == player_country:
+            return true
+        if _has_own_division_in(player_country, neighbor_id):
+            return true
+
+    return false
+
+## true, если у страны country физически стоит хотя бы одна дивизия
+## в провинции p_id (нужно для морских зон, у которых нет owner —
+## их "разведанность" определяется присутствием своих кораблей).
+func _has_own_division_in(country: String, p_id: int) -> bool:
+    for c in DivisionManager.armies.get(p_id, []):
+        if is_instance_valid(c) and c.division_owner == country:
+            return true
+    return false
+
 # Зарезервированное значение owner для морских провинций.
 # "sea" НЕ является страной и НЕ должно попадать в countries.json —
 # это просто маркер, который код явно распознаёт и исключает
@@ -933,6 +989,15 @@ func _process_economy() -> void:
                 if owner != "" and countries_data.has(owner):
                     countries_data[owner]["factories"] = countries_data[owner].get("factories", 0) + 1
 
+                # Прирост населения провинции после постройки фабрики
+                # (доля задаётся в settings.FACTORY_POPULATION_BONUS, по умолчанию 5%)
+                var pop_before = int(p.get("population", 0))
+                var pop_bonus = int(round(pop_before * settings.FACTORY_POPULATION_BONUS))
+                if pop_bonus > 0:
+                    p["population"] = pop_before + pop_bonus
+                    if owner != "" and countries_data.has(owner):
+                        countries_data[owner]["population"] = countries_data[owner].get("population", 0) + pop_bonus
+
                 # Сигналим карте, что в этой провинции достроился завод
                 # (owner может быть "" — тогда просто некому подсвечивать)
                 factory_built.emit(p_id, owner)
@@ -1009,6 +1074,8 @@ func start_uav_order(country: String, amount: int) -> bool:
 
     var uav_cost: float = settings.uav_cost
     var cost: float = uav_cost * amount
+    if country == settings.active_country:
+        cost *= settings.get_cost_multiplier()
 
     if countries_data[country].get("products", 0.0) < cost:
         return false
@@ -1083,6 +1150,8 @@ func start_missile_order(country: String, amount: int) -> bool:
 
     var missile_cost: float = settings.missile_cost
     var cost: float = missile_cost * amount
+    if country == settings.active_country:
+        cost *= settings.get_cost_multiplier()
 
     if countries_data[country].get("products", 0.0) < cost:
         return false
@@ -1144,7 +1213,11 @@ func get_factory_cost(country: String) -> float:
     var c_data   = countries_data.get(country, {})
     var ideology = c_data.get("ideology", "liberalism")
     var eco_mult = DiplomacyManager.IDEOLOGIES.get(ideology, DiplomacyManager.IDEOLOGIES["liberalism"])["eco"]
-    return settings.factory_cost * eco_mult
+    var cost = settings.factory_cost * eco_mult
+    # Модификатор сложности применяется только к игроку — ИИ строит по обычным ценам.
+    if country == settings.active_country:
+        cost *= settings.get_cost_multiplier()
+    return cost
 
 func start_factory_construction(p_id: int, country: String) -> bool:
     var p = province_data[p_id]
@@ -1168,8 +1241,11 @@ func start_factory_construction(p_id: int, country: String) -> bool:
 ## Стоимость постройки укрепления. Берётся напрямую из settings, без модификатора
 ## идеологии (в отличие от get_factory_cost) — при необходимости можно добавить
 ## тот же eco_mult, что и для заводов.
-func get_fortification_cost(_country: String) -> float:
-    return settings.FORTIFICATION_COST
+func get_fortification_cost(country: String) -> float:
+    var cost: float = settings.FORTIFICATION_COST
+    if country == settings.active_country:
+        cost *= settings.get_cost_multiplier()
+    return cost
 
 ## Начинает строительство укрепления в провинции. Правила:
 ##  - в провинции может быть только одно укрепление (уже построенное или строящееся);

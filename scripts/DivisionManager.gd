@@ -55,6 +55,26 @@ func _ready() -> void:
     # обращается к ProvinceRegistry.countries_data[country], которого уже нет).
     ProvinceRegistry.country_eliminated.connect(_on_country_eliminated)
 
+    # ТУМАН ВОЙНЫ: любое из этих событий может изменить набор провинций,
+    # граничащих с игроком, либо список стран, с которыми он воюет —
+    # оба фактора влияют на видимость чужих дивизий, поэтому пересчитываем
+    # видимость всех дивизий на карте разом.
+    ProvinceRegistry.province_captured.connect(func(_p_id, _new_owner): refresh_fog_of_war_visibility())
+    ProvinceRegistry.province_occupied.connect(func(_p_id, _occupier): refresh_fog_of_war_visibility())
+    ProvinceRegistry.war_declared.connect(func(_a, _b): refresh_fog_of_war_visibility())
+    ProvinceRegistry.war_ended.connect(func(_a, _b): refresh_fog_of_war_visibility())
+
+    # ТУМАН ВОЙНЫ (мор.зоны): is_division_visible() теперь также открывает
+    # дивизии рядом со СВОИМИ дивизиями (нужно для моря, у которого нет
+    # владельца-страны). Значит появление/уход любой дивизии в провинции
+    # может изменить видимость чужих дивизий в этой же и соседних
+    # провинциях — но НЕ во всей остальной карте, поэтому используем
+    # точечный refresh_fog_of_war_visibility_near(), а не полный проход
+    # по всем армиям (это и вызывало нарастающие микрофризы).
+    ProvinceRegistry.province_army_changed.connect(
+        func(p_id, _division = null): refresh_fog_of_war_visibility_near(p_id)
+    )
+
 ## Удаляет с карты все дивизии уничтоженной страны (в т.ч. те, что в движении).
 func _on_country_eliminated(country: String) -> void:
     armies_by_country.erase(country)
@@ -396,10 +416,42 @@ func set_negotiation_visibility(countries: Array) -> void:
             if not is_instance_valid(circle):
                 continue
 
-            circle.visible = not on_negotiation_territory
+            circle.set_negotiation_hidden(on_negotiation_territory)
 
-            if is_instance_valid(circle.current_path_node):
-                circle.current_path_node.visible = not on_negotiation_territory
+## ФУНКЦИЯ ТУМАНА ВОЙНЫ: пересчитывает видимость ВСЕХ дивизий на карте
+## по правилам ProvinceRegistry.is_division_visible(). Вызывается при
+## переключении кнопки Fog игроком, а также при событиях, способных
+## ГЛОБАЛЬНО изменить, что игрок должен видеть (смена владельца провинции/
+## оккупация, объявление или окончание войны) — такие события редки,
+## поэтому полный проход по всем армиям тут не проблема.
+func refresh_fog_of_war_visibility() -> void:
+    for p_id in armies:
+        for circle in armies[p_id]:
+            if is_instance_valid(circle):
+                circle.apply_fog_visibility()
+
+## ТУМАН ВОЙНЫ (точечный пересчёт): province_army_changed стреляет очень
+## часто (каждое перемещение/прибытие/роспуск дивизии в ЛЮБОЙ точке карты),
+## поэтому гонять на каждое такое событие refresh_fog_of_war_visibility()
+## по ВСЕМ армиям карты нельзя — это O(total_armies) на событие, и с ростом
+## числа дивизий за игру (рекрутинг каждый день) фризы только растут.
+##
+## По правилам is_division_visible() присутствие/исчезновение дивизии в
+## провинции p_id может повлиять на видимость дивизий ТОЛЬКО в самой p_id
+## и в провинциях, соседних с p_id (именно они проверяют
+## "есть ли моя дивизия в p_id" через _has_own_division_in). Поэтому здесь
+## пересчитываем видимость только этого локального круга провинций.
+func refresh_fog_of_war_visibility_near(p_id: int) -> void:
+    _refresh_fog_of_war_visibility_in_province(p_id)
+    for neighbor_id in ProvinceRegistry.province_adjacency.get(p_id, []):
+        _refresh_fog_of_war_visibility_in_province(neighbor_id)
+
+func _refresh_fog_of_war_visibility_in_province(p_id: int) -> void:
+    if not armies.has(p_id):
+        return
+    for circle in armies[p_id]:
+        if is_instance_valid(circle):
+                circle.apply_fog_visibility()
 
 
 

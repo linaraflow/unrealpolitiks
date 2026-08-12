@@ -302,15 +302,15 @@ func _on_instant_max_recruit() -> void:
     var balance = ProvinceRegistry.countries_data[owner]["balance"]
 
     var pop_limit = int(pop * 0.01)
-    var money_limit = int(balance / settings.COST_PER_SOLDIER)
+    var money_limit = int(balance / settings.get_recruit_cost_per_soldier())
     var amount = min(pop_limit, money_limit)
 
     if amount < 100:
         show_queue_toast(tr("TOAST_NOT_ENOUGH_RECRUIT"), COLOR_BAD)
         return
 
-    var cost = int(amount * settings.COST_PER_SOLDIER)
-    var happiness_drain_per_1k = 0.1
+    var cost = int(amount * settings.get_recruit_cost_per_soldier())
+    var happiness_drain_per_1k = settings.HAPPINESS_DRAIN_PER_1K_RECRUITS
 
     DivisionManager.recruit(province_id, local_pos, amount)
     ProvinceRegistry.countries_data[owner]["balance"] -= cost

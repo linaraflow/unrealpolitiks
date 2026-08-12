@@ -12,8 +12,8 @@ func _ready():
 
 func _input(event):
     if Input.is_action_just_pressed("ui_cancel"):
-        if get_node("/root/Game/CanvasLayer/BLUE"):
-            get_node("/root/Game/CanvasLayer/BLUE").hide()
+        if get_node("/root/Game/CanvasLayer/Opening"):
+            get_node("/root/Game/CanvasLayer/Opening").hide()
         toggle_pause()
 
 func toggle_pause():
@@ -28,7 +28,7 @@ func toggle_pause():
 
 func _on_continue_button_pressed() -> void:
     if settings.can_draw == false:
-        get_node("/root/Game/CanvasLayer/BLUE").show()
+        get_node("/root/Game/CanvasLayer/Opening").show()
     get_tree().paused = false
     hide()
 

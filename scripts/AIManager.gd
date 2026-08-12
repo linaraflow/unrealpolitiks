@@ -52,6 +52,29 @@ var fortification_cooldowns: Dictionary = {}
 ## как у обычного ИИ (управляется чекбоксом ai_army_tick в TopMenu).
 var player_ai_army_enabled: bool = false
 
+## Позиция слайдера "агрессии" ИИ (0.0 .. 1.0), выставляется слайдером
+## на экране выбора страны (opening.gd). Сама по себе НЕ является множителем —
+## используйте get_aggression_multiplier() для получения множителя шанса войны.
+var ai_aggression: float = 1.0
+
+## Переводит позицию слайдера (0.0 .. 1.0) в множитель шанса объявления войны
+## по нелинейной кривой:
+##   0%   (0.0) -> ×0    (ИИ никогда не объявляет войну сам)
+##   50%  (0.5) -> ×1.5  (+50% к базовому шансу)
+##   100% (1.0) -> ×10   (в 10 раз выше базового шанса)
+## На отрезке [0%, 50%] рост линейный (0 -> 1.5), на отрезке [50%, 100%]
+## рост экспоненциальный (1.5 -> 10), чтобы вторая половина слайдера
+## ощутимо "разгоняла" агрессивность ИИ, а не просто продолжала линейный рост.
+static func aggression_to_war_mult(x: float) -> float:
+    var t = clampf(x, 0.0, 1.0)
+    if t <= 0.5:
+        return 3.0 * t
+    var progress = (t - 0.5) / 0.5
+    return 1.5 * pow(10.0 / 1.5, progress)
+
+func get_aggression_multiplier() -> float:
+    return aggression_to_war_mult(ai_aggression)
+
 ## Кулдаун ударов БПЛА: country -> дней до следующего залпа
 var uav_launch_cooldowns: Dictionary = {}
 
@@ -103,8 +126,8 @@ const FORTIFICATION_COOLDOWN_DAYS = 20 # раз в 20 дней проверяе�
 # а не копируем один раз при инициализации — иначе правки в GameSettings
 # (или в ресурсе .tres) не будут подхватываться без перезапуска.
 var HAPPINESS_DRAIN_PER_1K_RECRUITS: float:
-	get:
-		return settings.HAPPINESS_DRAIN_PER_1K_RECRUITS
+    get:
+        return settings.HAPPINESS_DRAIN_PER_1K_RECRUITS
 
 # --- ЛИМИТ АРМИИ НА ОСНОВЕ ВВП ---
 const ARMY_LIMIT_GDP_RATIO = 0.0000714
@@ -132,253 +155,253 @@ const MISSILE_MAX_TARGETS_PER_STRIKE = 3 # бьём максимум по сто
 # -----------------------------------------------------------------------------
 
 func _ready() -> void:
-	GameClock.on_day_passed.connect(_on_day_passed)
-	GameClock.on_month_passed.connect(_on_month_passed)
+    GameClock.on_day_passed.connect(_on_day_passed)
+    GameClock.on_month_passed.connect(_on_month_passed)
 
-	# Следим за захватом провинций, чтобы сразу обновлять кэш, а не пересчитывать его с нуля
-	ProvinceRegistry.province_captured.connect(_on_province_captured)
+    # Следим за захватом провинций, чтобы сразу обновлять кэш, а не пересчитывать его с нуля
+    ProvinceRegistry.province_captured.connect(_on_province_captured)
 
-	# Строим стартовый кэш провинций для ИИ
-	_build_initial_country_cache()
+    # Строим стартовый кэш провинций для ИИ
+    _build_initial_country_cache()
 
-	# Разбиваем массив провинций на 10 частей для оптимизации населения
-	for i in range(POP_CHUNKS_COUNT):
-		pop_chunks.append([])
+    # Разбиваем массив провинций на 10 частей для оптимизации населения
+    for i in range(POP_CHUNKS_COUNT):
+        pop_chunks.append([])
 
-	var idx = 0
-	for p_id_str in ProvinceRegistry.province_data:
-		pop_chunks[idx % POP_CHUNKS_COUNT].append(p_id_str)
-		idx += 1
+    var idx = 0
+    for p_id_str in ProvinceRegistry.province_data:
+        pop_chunks[idx % POP_CHUNKS_COUNT].append(p_id_str)
+        idx += 1
 
-	# Считаем доход при старте
-	for country in ProvinceRegistry.countries_data:
-		_update_monthly_income(country)
+    # Считаем доход при старте
+    for country in ProvinceRegistry.countries_data:
+        _update_monthly_income(country)
 
 func _process(delta: float) -> void:
-	if GameClock.paused:
-		return
-	_tick_income(delta)
+    if GameClock.paused:
+        return
+    _tick_income(delta)
 
 # ── Ежедневный тик (раздаёт работу по модулям) ──────────────────────────────
 func _on_day_passed(_date: Dictionary) -> void:
-	var current_day: int = int(_date.get("day", 1))
+    var current_day: int = int(_date.get("day", 1))
 
-	# Снимок ключей: обработка одной страны (бой/уничтожение) может стереть
-	# ДРУГУЮ страну из countries_data прямо во время этого цикла — итерация
-	# по живому словарю в такой ситуации небезопасна и может пропустить
-	# часть стран в этом тике.
-	for country in ProvinceRegistry.countries_data.keys().duplicate():
-		if not ProvinceRegistry.countries_data.has(country):
-			continue  # страна была уничтожена уже в этом тике, пропускаем
-		if country == settings.active_country:
-			# Игрок обычно управляется вручную и пропускает весь ИИ-блок.
-			# Но если включен чекбокс "AI Army" — обрабатываем его армию
-			# точно так же, как это делает обычный ИИ (движение войск),
-			# не трогая при этом экономику/дипломатию/закупки игрока.
-			if player_ai_army_enabled:
-				AIMilitary.process_military_movement(country)
-			continue
+    # Снимок ключей: обработка одной страны (бой/уничтожение) может стереть
+    # ДРУГУЮ страну из countries_data прямо во время этого цикла — итерация
+    # по живому словарю в такой ситуации небезопасна и может пропустить
+    # часть стран в этом тике.
+    for country in ProvinceRegistry.countries_data.keys().duplicate():
+        if not ProvinceRegistry.countries_data.has(country):
+            continue  # страна была уничтожена уже в этом тике, пропускаем
+        if country == settings.active_country:
+            # Игрок обычно управляется вручную и пропускает весь ИИ-блок.
+            # Но если включен чекбокс "AI Army" — обрабатываем его армию
+            # точно так же, как это делает обычный ИИ (движение войск),
+            # не трогая при этом экономику/дипломатию/закупки игрока.
+            if player_ai_army_enabled:
+                AIMilitary.process_military_movement(country)
+            continue
 
-		var c_data = ProvinceRegistry.countries_data[country]
+        var c_data = ProvinceRegistry.countries_data[country]
 
-		# 0. Начисляем дневной доход ИИ
-		var monthly = c_data.get("monthly_income", 100000.0)
-		c_data["balance"] = c_data.get("balance", 0.0) + (monthly / 30.0)
+        # 0. Начисляем дневной доход ИИ
+        var monthly = c_data.get("monthly_income", 100000.0)
+        c_data["balance"] = c_data.get("balance", 0.0) + (monthly / 30.0)
 
-		var country_index: int = int(ProvinceRegistry.country_index.get(country, 0))
+        var country_index: int = int(ProvinceRegistry.country_index.get(country, 0))
 
-		# 1. Быстрые кулдауны
-		AIMilitary.tick_recruitment_cooldown(country)
-		AIMilitary.tick_fortification_cooldown(country)
-		AIEconomy.tick_factory_cooldown(country)
-		AIWeapons.tick_uav_launch_cooldown(country)
-		AIWeapons.tick_missile_launch_cooldown(country)
+        # 1. Быстрые кулдауны
+        AIMilitary.tick_recruitment_cooldown(country)
+        AIMilitary.tick_fortification_cooldown(country)
+        AIEconomy.tick_factory_cooldown(country)
+        AIWeapons.tick_uav_launch_cooldown(country)
+        AIWeapons.tick_missile_launch_cooldown(country)
 
-		# 2. Резервы под БПЛА и ракеты — ДО торговли, иначе торговля продаст
-		# весь склад products в balance раньше, чем БПЛА/ракеты успеют его забрать
-		AIWeapons.skim_production_reserves(country)
-		if (current_day + country_index) % 6 == 0:
-			AIWeapons.process_uav_program(country)
-		if (current_day + country_index) % MISSILE_ORDER_INTERVAL_DAYS == 0:
-			AIWeapons.process_missile_program(country)
+        # 2. Резервы под БПЛА и ракеты — ДО торговли, иначе торговля продаст
+        # весь склад products в balance раньше, чем БПЛА/ракеты успеют его забрать
+        AIWeapons.skim_production_reserves(country)
+        if (current_day + country_index) % 6 == 0:
+            AIWeapons.process_uav_program(country)
+        if (current_day + country_index) % MISSILE_ORDER_INTERVAL_DAYS == 0:
+            AIWeapons.process_missile_program(country)
 
-		# 3. Торговля — продажа того, что осталось от товаров после резервов
-		AITrade.process_trade(country)
+        # 3. Торговля — продажа того, что осталось от товаров после резервов
+        AITrade.process_trade(country)
 
-		# 4. Экономика — раз в 5 дней
-		if (current_day + country_index) % 5 == 0:
-			AIEconomy.process_economy(country)
+        # 4. Экономика — раз в 5 дней
+        if (current_day + country_index) % 5 == 0:
+            AIEconomy.process_economy(country)
 
-		# 4.5 Укрепления — раз в 7 дней (сдвиг от экономики, чтобы не биться за баланс в один день)
-		if (current_day + country_index + 2) % 7 == 0:
-			AIMilitary.process_fortifications(country)
+        # 4.5 Укрепления — раз в 7 дней (сдвиг от экономики, чтобы не биться за баланс в один день)
+        if (current_day + country_index + 2) % 7 == 0:
+            AIMilitary.process_fortifications(country)
 
-		# 5. Рекрутинг — раз в 3 дня
-		if (current_day + country_index) % 3 == 0:
-			AIMilitary.process_recruitment(country)
+        # 5. Рекрутинг — раз в 3 дня
+        if (current_day + country_index) % 3 == 0:
+            AIMilitary.process_recruitment(country)
 
-		# 6. Движение войск — раз в 1 дня
-		if (current_day + country_index) % 1 == 0:
-			AIMilitary.process_military_movement(country)
+        # 6. Движение войск — раз в 1 дня
+        if (current_day + country_index) % 1 == 0:
+            AIMilitary.process_military_movement(country)
 
-		# 7. Запуск БПЛА по врагу — раз в 2 дня
-		if (current_day + country_index) % 2 == 0:
-			AIWeapons.process_uav_strikes(country)
+        # 7. Запуск БПЛА по врагу — раз в 2 дня
+        if (current_day + country_index) % 2 == 0:
+            AIWeapons.process_uav_strikes(country)
 
-		# 7.5 Запуск ракет по врагу — раз в 5 дней, со сдвигом от БПЛА
-		if (current_day + country_index + 1) % 5 == 0:
-			AIWeapons.process_missile_strikes(country)
+        # 7.5 Запуск ракет по врагу — раз в 5 дней, со сдвигом от БПЛА
+        if (current_day + country_index + 1) % 5 == 0:
+            AIWeapons.process_missile_strikes(country)
 
-	# 8. Обсчет населения
-	AIPopulation.process_population()
+    # 8. Обсчет населения
+    AIPopulation.process_population()
 
 # ── Ежемесячный тик ───────────────────────────────────────────────────────────
 func _on_month_passed(_date: Dictionary) -> void:
-	for country in ProvinceRegistry.countries_data.keys().duplicate():
-		if not ProvinceRegistry.countries_data.has(country):
-			continue
-		_update_monthly_income(country)
+    for country in ProvinceRegistry.countries_data.keys().duplicate():
+        if not ProvinceRegistry.countries_data.has(country):
+            continue
+        _update_monthly_income(country)
 
-	# Снимок ключей: try_make_peace/аннексия могут уничтожить страну
-	# (см. ProvinceRegistry._eliminate_country) прямо в процессе этого цикла.
-	for country in ProvinceRegistry.countries_data.keys().duplicate():
-		if not ProvinceRegistry.countries_data.has(country):
-			continue
-		if country == settings.active_country:
-			continue
-		AIDiplomacy.process_diplomacy(country)
-		if not ProvinceRegistry.countries_data.has(country):
-			continue  # страна могла быть уничтожена внутри process_diplomacy
-		AIDiplomacy.process_relations_drift(country)
+    # Снимок ключей: try_make_peace/аннексия могут уничтожить страну
+    # (см. ProvinceRegistry._eliminate_country) прямо в процессе этого цикла.
+    for country in ProvinceRegistry.countries_data.keys().duplicate():
+        if not ProvinceRegistry.countries_data.has(country):
+            continue
+        if country == settings.active_country:
+            continue
+        AIDiplomacy.process_diplomacy(country)
+        if not ProvinceRegistry.countries_data.has(country):
+            continue  # страна могла быть уничтожена внутри process_diplomacy
+        AIDiplomacy.process_relations_drift(country)
 
 # -----------------------------------------------------------------------------
 # 3. ДОХОД — начисление в реальном времени
 # -----------------------------------------------------------------------------
 
 func _tick_income(delta: float) -> void:
-	var seconds_per_month = 30.0 * GameClock.SECONDS_PER_DAY
-	var speed = GameClock.SPEEDS[GameClock.speed_index]
-	var inc = (delta * speed) / seconds_per_month
+    var seconds_per_month = 30.0 * GameClock.SECONDS_PER_DAY
+    var speed = GameClock.SPEEDS[GameClock.speed_index]
+    var inc = (delta * speed) / seconds_per_month
 
-	# Плавный доход только для игрока
-	var active = settings.active_country
-	if ProvinceRegistry.countries_data.has(active):
-		var c_data = ProvinceRegistry.countries_data[active]
-		var monthly = c_data.get("monthly_income", 100000.0)
-		c_data["balance"] = c_data.get("balance", 0.0) + (monthly * inc)
+    # Плавный доход только для игрока
+    var active = settings.active_country
+    if ProvinceRegistry.countries_data.has(active):
+        var c_data = ProvinceRegistry.countries_data[active]
+        var monthly = c_data.get("monthly_income", 100000.0)
+        c_data["balance"] = c_data.get("balance", 0.0) + (monthly * inc)
 
-	if is_instance_valid(balance_label) and settings.can_draw:
-		balance_label.balance_update()
+    if is_instance_valid(balance_label) and settings.can_draw:
+        balance_label.balance_update()
 
 func _update_monthly_income(country: String) -> void:
-	var c_data = ProvinceRegistry.countries_data[country]
-	c_data["monthly_income"] = _calculate_monthly_income(country)
+    var c_data = ProvinceRegistry.countries_data[country]
+    c_data["monthly_income"] = _calculate_monthly_income(country)
 
 ## Публичная обёртка над _update_monthly_income — форсирует немедленный пересчёт
 ## monthly_income (а значит и ВВП) страны, не дожидаясь ежемесячного тика.
 ## Вызывайте её сразу после любого изменения, которое влияет на _calculate_monthly_income
 ## (сейчас это идеология через tax_mult) — иначе эффект будет виден только через месяц.
 func force_recalculate_income(country: String) -> void:
-	if not ProvinceRegistry.countries_data.has(country):
-		return
-	_update_monthly_income(country)
+    if not ProvinceRegistry.countries_data.has(country):
+        return
+    _update_monthly_income(country)
 
 func _calculate_monthly_income(country: String) -> float:
-	var c_data    = ProvinceRegistry.countries_data[country]
-	var total_pop = _get_country_population(country)
-	var ideology  = c_data.get("ideology", "liberalism")
-	var tax_mult  = DiplomacyManager.IDEOLOGIES[ideology]["tax"]
-	var base_income = float(total_pop) * 1.0 * tax_mult
+    var c_data    = ProvinceRegistry.countries_data[country]
+    var total_pop = _get_country_population(country)
+    var ideology  = c_data.get("ideology", "liberalism")
+    var tax_mult  = DiplomacyManager.IDEOLOGIES[ideology]["tax"]
+    var base_income = float(total_pop) * 1.0 * tax_mult
 
-	# Содержание войск начисляется точечно (O(1)) при найме/потерях через
-	# ProvinceRegistry.adjust_monthly_income_for_troops(), которая копит его
-	# в "troop_upkeep". Полный пересчёт ОБЯЗАН вычесть накопленный upkeep,
-	# иначе он "теряется" при каждом ежемесячном пересчёте дохода
-	# (баг: доход после призыва падал, а на следующий месяц откатывался назад).
-	var troop_upkeep = float(c_data.get("troop_upkeep", 0.0))
+    # Содержание войск начисляется точечно (O(1)) при найме/потерях через
+    # ProvinceRegistry.adjust_monthly_income_for_troops(), которая копит его
+    # в "troop_upkeep". Полный пересчёт ОБЯЗАН вычесть накопленный upkeep,
+    # иначе он "теряется" при каждом ежемесячном пересчёте дохода
+    # (баг: доход после призыва падал, а на следующий месяц откатывался назад).
+    var troop_upkeep = float(c_data.get("troop_upkeep", 0.0))
 
-	return base_income - troop_upkeep
+    return base_income - troop_upkeep
 
 # -----------------------------------------------------------------------------
 # 4. ОБЩИЕ ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ (используются несколькими модулями)
 # -----------------------------------------------------------------------------
 
 func _get_country_population(country: String) -> int:
-	var total = 0
-	for p_id in get_country_provinces(country):
-		total += int(ProvinceRegistry.province_data.get(p_id, {}).get("population", 0))
-	return total
+    var total = 0
+    for p_id in get_country_provinces(country):
+        total += int(ProvinceRegistry.province_data.get(p_id, {}).get("population", 0))
+    return total
 
 ## Суммарная численность войск страны (по всем её провинциям)
 func get_country_total_soldiers(country: String) -> int:
-	var total := 0
-	for p_id in get_country_provinces(country):
-		for circle in DivisionManager.armies.get(p_id, []):
-			if is_instance_valid(circle) and circle.division_owner == country:
-				total += circle.soldiers
-	return total
+    var total := 0
+    for p_id in get_country_provinces(country):
+        for circle in DivisionManager.armies.get(p_id, []):
+            if is_instance_valid(circle) and circle.division_owner == country:
+                total += circle.soldiers
+    return total
 
 ## O(1) — читает готовый индекс, собранный в _build_initial_country_cache().
 func get_country_provinces(country: String) -> Array:
-	return country_provinces_cache.get(country, [])
+    return country_provinces_cache.get(country, [])
 
 ## Собирает базовое распределение провинций при старте игры
 func _build_initial_country_cache() -> void:
-	country_provinces_cache.clear()
-	for p_id_str in ProvinceRegistry.province_data:
-		var p_id = int(p_id_str)
-		var owner = ProvinceRegistry.province_data[p_id_str].get("owner", "")
-		if owner != "" and owner != ProvinceRegistry.SEA_OWNER:
-			if not country_provinces_cache.has(owner):
-				country_provinces_cache[owner] = []
-			country_provinces_cache[owner].append(p_id)
+    country_provinces_cache.clear()
+    for p_id_str in ProvinceRegistry.province_data:
+        var p_id = int(p_id_str)
+        var owner = ProvinceRegistry.province_data[p_id_str].get("owner", "")
+        if owner != "" and owner != ProvinceRegistry.SEA_OWNER:
+            if not country_provinces_cache.has(owner):
+                country_provinces_cache[owner] = []
+            country_provinces_cache[owner].append(p_id)
 
 ## Вызывается только когда провинция РЕАЛЬНО меняет владельца (быстродействие O(1))
 func _on_province_captured(p_id: int, new_owner: String) -> void:
-	for country in country_provinces_cache:
-		country_provinces_cache[country].erase(p_id)
+    for country in country_provinces_cache:
+        country_provinces_cache[country].erase(p_id)
 
-	if new_owner != "":
-		if not country_provinces_cache.has(new_owner):
-			country_provinces_cache[new_owner] = []
-		country_provinces_cache[new_owner].append(p_id)
+    if new_owner != "":
+        if not country_provinces_cache.has(new_owner):
+            country_provinces_cache[new_owner] = []
+        country_provinces_cache[new_owner].append(p_id)
 
 func get_random_neighbor_country(country: String) -> String:
-	var neighbors = []
-	for p_id in get_country_provinces(country):
-		for adj_id in ProvinceRegistry.province_adjacency.get(p_id, []):
-			var clean_id = int(adj_id)
-			var owner    = ProvinceRegistry.province_data.get(clean_id, {}).get("owner", "")
-			if owner != "" and owner != country and ProvinceRegistry.countries_data.has(owner) and not neighbors.has(owner):
-				neighbors.append(owner)
+    var neighbors = []
+    for p_id in get_country_provinces(country):
+        for adj_id in ProvinceRegistry.province_adjacency.get(p_id, []):
+            var clean_id = int(adj_id)
+            var owner    = ProvinceRegistry.province_data.get(clean_id, {}).get("owner", "")
+            if owner != "" and owner != country and ProvinceRegistry.countries_data.has(owner) and not neighbors.has(owner):
+                neighbors.append(owner)
 
-	return "" if neighbors.is_empty() else neighbors.pick_random()
+    return "" if neighbors.is_empty() else neighbors.pick_random()
 
 
 
 
 ## RESET
 func reset() -> void:
-	factory_cooldowns = {}
-	recruitment_cooldowns = {}
-	uav_launch_cooldowns = {}
-	missile_launch_cooldowns = {}
-	country_provinces_cache = {}
-	safe_provinces_cache = {}
-	safe_provinces_list = []
+    factory_cooldowns = {}
+    recruitment_cooldowns = {}
+    uav_launch_cooldowns = {}
+    missile_launch_cooldowns = {}
+    country_provinces_cache = {}
+    safe_provinces_cache = {}
+    safe_provinces_list = []
 
-	_build_initial_country_cache()
+    _build_initial_country_cache()
 
-	pop_chunks = []
-	for i in range(POP_CHUNKS_COUNT):
-		pop_chunks.append([])
-	var idx = 0
-	for p_id_str in ProvinceRegistry.province_data:
-		pop_chunks[idx % POP_CHUNKS_COUNT].append(p_id_str)
-		idx += 1
-	pop_chunk_index = 0
+    pop_chunks = []
+    for i in range(POP_CHUNKS_COUNT):
+        pop_chunks.append([])
+    var idx = 0
+    for p_id_str in ProvinceRegistry.province_data:
+        pop_chunks[idx % POP_CHUNKS_COUNT].append(p_id_str)
+        idx += 1
+    pop_chunk_index = 0
 
-	# Пересчитываем доход всех стран заново — иначе ВВП/monthly_income
-	# остаются "сырыми" дефолтами из countries.json до первого игрового месяца
-	for country in ProvinceRegistry.countries_data:
-		_update_monthly_income(country)
+    # Пересчитываем доход всех стран заново — иначе ВВП/monthly_income
+    # остаются "сырыми" дефолтами из countries.json до первого игрового месяца
+    for country in ProvinceRegistry.countries_data:
+        _update_monthly_income(country)
