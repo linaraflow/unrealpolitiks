@@ -185,7 +185,7 @@ theme_override_font_sizes/font_size = 25
 theme_override_styles/normal = SubResource("StyleBoxFlat_oiixh")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_ahqxp")
 theme_override_styles/hover = SubResource("StyleBoxFlat_86gsx")
-text = "Start"
+text = "START"
 
 [node name="PanelContainer" type="PanelContainer" parent="." unique_id=700021639]
 layout_mode = 1
@@ -195,9 +195,9 @@ anchor_top = 0.5
 anchor_right = 1.0
 anchor_bottom = 0.5
 offset_left = -297.0
-offset_top = -125.0
+offset_top = -150.0
 offset_right = -10.0
-offset_bottom = 125.0
+offset_bottom = 150.0
 grow_horizontal = 0
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_hwa81")
@@ -219,8 +219,10 @@ theme_override_constants/separation = 10
 
 [node name="Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/FogContainer" unique_id=1410045969]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
 theme_override_fonts/font = ExtResource("2_86gsx")
-text = "Fog of War"
+theme_override_font_sizes/font_size = 15
+text = "FOG_OF_WAR"
 horizontal_alignment = 1
 
 [node name="FogButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/FogContainer" unique_id=1930093740]
@@ -232,17 +234,35 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_r3fmk")
 theme_override_styles/hover = SubResource("StyleBoxFlat_m4bch")
 text = "ON"
 
+[node name="HSeparator1" type="HSeparator" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=100001]
+layout_mode = 2
+
 [node name="DifficultyContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=1588709014]
 layout_mode = 2
 theme_override_constants/separation = 10
 
 [node name="Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/DifficultyContainer" unique_id=1505840052]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
 theme_override_fonts/font = ExtResource("2_86gsx")
-text = "Difficulty"
+theme_override_font_sizes/font_size = 15
+text = "DIFFICULTY"
 horizontal_alignment = 1
 
 [node name="OptionButton" type="OptionButton" parent="PanelContainer/MarginContainer/VBoxContainer/DifficultyContainer" unique_id=576305305]
+layout_mode = 2
+selected = 1
+item_count = 4
+popup/item_0/text = "EASY"
+popup/item_0/id = 0
+popup/item_1/text = "STANDARD"
+popup/item_1/id = 1
+popup/item_2/text = "HARD"
+popup/item_2/id = 2
+popup/item_3/text = "HARDCORE"
+popup/item_3/id = 3
+
+[node name="HSeparator2" type="HSeparator" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=100002]
 layout_mode = 2
 
 [node name="AggressivenessContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=1697596396]
@@ -251,16 +271,38 @@ theme_override_constants/separation = 10
 
 [node name="Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/AggressivenessContainer" unique_id=1293465155]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
 theme_override_fonts/font = ExtResource("2_86gsx")
-text = "Aggressiveness"
+theme_override_font_sizes/font_size = 15
+text = "AGGRESSIVENESS"
 horizontal_alignment = 1
 
 [node name="HSlider" type="HSlider" parent="PanelContainer/MarginContainer/VBoxContainer/AggressivenessContainer" unique_id=780812492]
 layout_mode = 2
 value = 50.0
 
+[node name="RangeRow" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer/AggressivenessContainer" unique_id=100004]
+layout_mode = 2
+
+[node name="MinLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/AggressivenessContainer/RangeRow" unique_id=100005]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.5, 0.5, 0.5, 1)
+theme_override_fonts/font = ExtResource("2_86gsx")
+theme_override_font_sizes/font_size = 11
+text = "PASSIVE"
+
+[node name="MaxLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/AggressivenessContainer/RangeRow" unique_id=100006]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.5, 0.5, 1)
+theme_override_fonts/font = ExtResource("2_86gsx")
+theme_override_font_sizes/font_size = 11
+text = "RUTHLESS"
+horizontal_alignment = 2
+
 [node name="PercentLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/AggressivenessContainer" unique_id=1925971488]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.38, 0.68, 0.98, 1)
 theme_override_fonts/font = ExtResource("2_86gsx")
 text = "50%"
 horizontal_alignment = 1
@@ -268,4 +310,3 @@ horizontal_alignment = 1
 [connection signal="pressed" from="BLUE" to="BLUE" method="_on_pressed"]
 [connection signal="pressed" from="StartButton" to="." method="_on_start_button_pressed"]
 [connection signal="pressed" from="PanelContainer/MarginContainer/VBoxContainer/FogContainer/FogButton" to="." method="_on_fog_button_pressed"]
-[connection signal="changed" from="PanelContainer/MarginContainer/VBoxContainer/AggressivenessContainer/HSlider" to="." method="_on_h_slider_changed"]

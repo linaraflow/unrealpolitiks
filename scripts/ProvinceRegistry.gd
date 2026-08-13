@@ -990,9 +990,9 @@ func _process_economy() -> void:
                     countries_data[owner]["factories"] = countries_data[owner].get("factories", 0) + 1
 
                 # Прирост населения провинции после постройки фабрики
-                # (доля задаётся в settings.FACTORY_POPULATION_BONUS, по умолчанию 5%)
+                # (фиксированное значение задаётся в settings.FACTORY_POPULATION_BONUS)
                 var pop_before = int(p.get("population", 0))
-                var pop_bonus = int(round(pop_before * settings.FACTORY_POPULATION_BONUS))
+                var pop_bonus = int(settings.FACTORY_POPULATION_BONUS)
                 if pop_bonus > 0:
                     p["population"] = pop_before + pop_bonus
                     if owner != "" and countries_data.has(owner):

@@ -58,5 +58,5 @@ var MISSILE_KILL_RATIO: float = 0.9
 var FORTIFICATION_COST: int = 50_000_000
 var TIME_FORTIFICATION: int = 10
 var HAPPINESS_DRAIN_PER_1K_RECRUITS: float = 0.01
-## Прирост населения провинции после постройки фабрики (доля от текущего населения провинции, 0.05 = +5%).
-var FACTORY_POPULATION_BONUS: float = 0.05
+## Прирост населения провинции после постройки фабрики
+var FACTORY_POPULATION_BONUS: float = 100_000
