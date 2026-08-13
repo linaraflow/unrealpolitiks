@@ -75,7 +75,7 @@ func open_for_save() -> void:
         _selected_slot = ""
         _has_selection = false
         _number_saves_label.text = "0"
-        _title_label.text = "Saving is disabled on Hardcore"
+        _title_label.text = tr("SAVING_DISABLED_HARDCORE")
         _action_button.disabled = true
         return
 

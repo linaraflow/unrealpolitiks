@@ -301,6 +301,7 @@ func _show_active_order(country: String) -> void:
     order_h_slider.max_value = max(total, 1)
     order_h_slider.value = total - remaining
 
+    order_slider_number_label.text = str(total)
     order_card_number_label.text = "%s / %s" % [
         ProvinceRegistry._format_number(produced),
         ProvinceRegistry._format_number(total)
@@ -316,6 +317,11 @@ func _show_active_order(country: String) -> void:
 
 
 func _on_order_slider_value_changed(value: float) -> void:
+    # Игнорируем сигнал, если value выставляется программно (показ активного заказа),
+    # а не пользователем через слайдер — иначе лейблы на кадр перетираются
+    # "голым" числом amount вместо "produced/total".
+    if not order_h_slider.editable:
+        return
     _update_order_preview(value)
 
 
@@ -469,6 +475,7 @@ func _show_active_missile_order(country: String) -> void:
     order_missile_h_slider.max_value = max(total, 1)
     order_missile_h_slider.value = total - remaining
 
+    order_missile_slider_number_label.text = str(total)
     order_missile_card_number_label.text = "%s / %s" % [
         ProvinceRegistry._format_number(produced),
         ProvinceRegistry._format_number(total)
@@ -484,6 +491,11 @@ func _show_active_missile_order(country: String) -> void:
 
 
 func _on_order_missile_slider_value_changed(value: float) -> void:
+    # Игнорируем сигнал, если value выставляется программно (показ активного заказа),
+    # а не пользователем через слайдер — иначе лейблы на кадр перетираются
+    # "голым" числом amount вместо "produced/total", из-за чего значение "скачет".
+    if not order_missile_h_slider.editable:
+        return
     _update_missile_order_preview(value)
 
 

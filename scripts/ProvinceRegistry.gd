@@ -998,6 +998,10 @@ func _process_economy() -> void:
                     if owner != "" and countries_data.has(owner):
                         countries_data[owner]["population"] = countries_data[owner].get("population", 0) + pop_bonus
 
+                # Прирост счастья провинции после постройки фабрики (+1, максимум 100)
+                var happ_before = float(p.get("happiness", 50.0))
+                p["happiness"] = min(100.0, happ_before + 1.0)
+
                 # Сигналим карте, что в этой провинции достроился завод
                 # (owner может быть "" — тогда просто некому подсвечивать)
                 factory_built.emit(p_id, owner)
