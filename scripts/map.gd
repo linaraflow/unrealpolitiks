@@ -16,6 +16,14 @@ var neg_texture: ImageTexture
 
 var _highlight_elapsed: float = -1.0
 
+# ─── ПЛАВНОЕ ПОЯВЛЕНИЕ/ИСЧЕЗНОВЕНИЕ ПОЛОС ОККУПАЦИИ ──────────────────────────
+## p_id -> Tween текущей анимации alpha-канала occup_texture для этой
+## провинции. Нужен, чтобы при повторном клике (передумал/выбрал снова) до
+## завершения предыдущей анимации новый Tween корректно её обрывал, а не
+## запускался поверх — иначе полосы будут "дёргаться".
+var _occup_fade_tweens: Dictionary = {}
+const OCCUP_FADE_DURATION: float = 0.15
+
 # ─── ЗЕЛЁНАЯ ВСПЫШКА "ЗАВОД ПОСТРОЕН" ────────────────────────────────────────
 const FLASH_SLOTS: int = 8
 var _game_time: float = 0.0
@@ -85,6 +93,15 @@ var fortification_icons_zoom_threshold: float = INF
 
 # Сохраняем локальные координаты последнего физического клика мыши
 var _last_click_local_pos: Vector2 = Vector2.ZERO
+
+# ─── ЗАЩИТА ОТ "КЛИКА ПО КАРТЕ" ПОСЛЕ ПЕРЕТАСКИВАНИЯ СЛАЙДЕРА ────────────────
+## true, если ЛКМ/ПКМ была нажата, когда курсор был над каким-либо Control
+## (слайдер, кнопка и т.п.). Если пользователь тащит слайдер до упора и
+## выходит курсором на карту, к моменту ОТПУСКАНИЯ кнопки
+## gui_get_hovered_control() уже вернёт null (курсор физически над картой),
+## и без этого флага клик ошибочно засчитался бы как клик по карте.
+## Работает сразу для всех слайдеров/кнопок в игре, без правок в них самих.
+var _press_started_on_gui: bool = false
 
 @onready var CountryMenu          = get_node("/root/Game/CanvasLayer/VBoxContainer/CountryMenu")
 @onready var CountryPanel         = get_node("/root/Game/CanvasLayer/VBoxContainer/CountryMenu/Panel")
@@ -347,13 +364,29 @@ func _input(event: InputEvent):
             print("[Map] Enter: у последней нажатой провинции нет владельца")
         return"""
 
-    if not event is InputEventMouseButton or event.pressed:
+    if not event is InputEventMouseButton:
         return
     if event.button_index != MOUSE_BUTTON_LEFT and event.button_index != MOUSE_BUTTON_RIGHT:
         # Игнорируем среднюю кнопку/колёсико и любые другие кнопки мыши —
         # обработка клика по карте (в т.ч. скрытие/показ HUD-панели) должна
         # реагировать только на ЛКМ и ПКМ.
         return
+
+    if event.pressed:
+        # Запоминаем сам факт: началось ли нажатие над каким-то Control
+        # (слайдером, кнопкой и т.п.). Дальше саму карту не обрабатываем —
+        # ждём отпускания кнопки.
+        _press_started_on_gui = get_viewport().gui_get_hovered_control() != null
+        return
+
+    # event.pressed == false, т.е. это отпускание кнопки.
+    # Если нажатие НАЧИНАЛОСЬ над UI (например, тащили слайдер до упора и
+    # вышли курсором на карту) — это не клик по карте, а отпускание после
+    # взаимодействия с UI. Сбрасываем флаг и выходим, не трогая карту.
+    if _press_started_on_gui:
+        _press_started_on_gui = false
+        return
+
     if get_viewport().gui_get_hovered_control() != null:
         return
 
@@ -807,20 +840,56 @@ func _on_province_captured(p_id: int, new_owner: String):
 
 func _on_province_occupied(p_id: int, occupier: String):
     #print("=== ON_PROVINCE_OCCUPIED CALLED === p_id:", p_id, " occupier:", occupier)
-
-    var r = p_id & 0xFF
-    var g = (p_id >> 8) & 0xFF
-
-    if occupier == "":
-        occup_image.set_pixel(r, g, Color(0, 0, 0, 0))
-    else:
-        var idx = ProvinceRegistry.country_index.get(occupier, 0)
-        occup_image.set_pixel(r, g, Color(idx / 255.0, 0, 0, 1))
-
-    occup_texture.update(occup_image)
+    _set_occup_pixel_faded(p_id, occupier)
 
     CountryPanel.update_info()
     FlagRect.update()
+
+
+## Плавно (за OCCUP_FADE_DURATION секунд) меняет alpha пикселя провинции в
+## occup_image от текущего значения до целевого (0 — снять полосы, 1 —
+## показать полосы страны occupier), обновляя occup_texture на каждом шаге.
+## R-канал (индекс страны-оккупанта) при исчезновении НЕ трогаем — иначе
+## цвет полос "перескочит" на новую страну ДО того, как они успеют погаснуть.
+func _set_occup_pixel_faded(p_id: int, occupier: String) -> void:
+    var r = p_id & 0xFF
+    var g = (p_id >> 8) & 0xFF
+
+    if _occup_fade_tweens.has(p_id):
+        var old_tween = _occup_fade_tweens[p_id]
+        if is_instance_valid(old_tween):
+            old_tween.kill()
+        _occup_fade_tweens.erase(p_id)
+
+    var current = occup_image.get_pixel(r, g)
+    var target_alpha: float
+    var target_r: float
+
+    if occupier == "":
+        target_r = current.r
+        target_alpha = 0.0
+    else:
+        var idx = ProvinceRegistry.country_index.get(occupier, 0)
+        target_r = idx / 255.0
+        target_alpha = 1.0
+        # Если полос раньше не было (alpha ~0) — сразу проставляем нужный
+        # R-канал ДО старта анимации, иначе на первых кадрах может мелькнуть
+        # цвет предыдущего оккупанта, пока alpha ещё маленькая.
+        if current.a < 0.01:
+            occup_image.set_pixel(r, g, Color(target_r, 0, 0, 0.0))
+            current = occup_image.get_pixel(r, g)
+
+    var tween = create_tween()
+    _occup_fade_tweens[p_id] = tween
+    tween.tween_method(
+        func(alpha: float):
+            occup_image.set_pixel(r, g, Color(target_r, 0, 0, alpha))
+            occup_texture.update(occup_image),
+        current.a, target_alpha, OCCUP_FADE_DURATION
+    ).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+    tween.finished.connect(func():
+        _occup_fade_tweens.erase(p_id)
+    )
 
 
 func _on_province_army_changed(changed_p_id: int, division = null):

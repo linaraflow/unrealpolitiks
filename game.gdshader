@@ -157,14 +157,19 @@ void fragment() {
     }
     bool is_border_pixel = is_province_edge || is_country_edge;
 
-    // ── Оккупация: теперь используются stripe_width и stripe_opacity ────────
-    if (occup.a > 0.5) {
+    // ── Оккупация: используются stripe_width и stripe_opacity ───────────────
+    // occup.a теперь плавно анимируется в GDScript (0..1) при добавлении/
+    // снятии провинции в переговорах — поэтому здесь alpha используется как
+    // МНОЖИТЕЛЬ интенсивности полос, а не жёсткий порог вкл/выкл, иначе
+    // полосы всё равно бы резко "щёлкали" в районе alpha=0.5.
+    if (occup.a > 0.01) {
         vec2 world_uv = UV * texture_size + camera_pos;
         float slot = mod(world_uv.y / stripe_width, 2.0);
 
         if (slot < 1.0) {
-            // Мягко накладываем серый цвет полос с заданной прозрачностью
-            base_color = mix(base_color, vec3(0.55), stripe_opacity);
+            // Мягко накладываем серый цвет полос, прозрачность полос
+            // масштабируется текущим значением occup.a (плавный фейд).
+            base_color = mix(base_color, vec3(0.55), stripe_opacity * occup.a);
         }
     }
 

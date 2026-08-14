@@ -21,6 +21,11 @@ extends Node
 
 const SAVE_DIR := "user://saves/"
 const SAVE_VERSION := 1
+## Суффикс лёгкого файла метаданных, который лежит рядом с полным сохранением
+## и содержит только то, что нужно для отрисовки карточки в SaveMenu (страна,
+## дата, дни у власти, ВВП) — без чтения/парсинга всего сейва (может быть
+## мегабайты JSON). Пишется в save_game() и читается в get_save_info().
+const META_SUFFIX := ".meta.json"
 
 signal save_completed(slot: String)
 signal load_completed(slot: String)
@@ -105,6 +110,9 @@ func reset_session() -> void:
 func _slot_path(slot: String) -> String:
     return SAVE_DIR + slot + ".json"
 
+func _meta_path(slot: String) -> String:
+    return SAVE_DIR + slot + META_SUFFIX
+
 func has_save(slot: String) -> bool:
     return FileAccess.file_exists(_slot_path(slot))
 
@@ -116,7 +124,9 @@ func list_saves() -> Array:
     dir.list_dir_begin()
     var f = dir.get_next()
     while f != "":
-        if f.ends_with(".json"):
+        # Мета-файлы (*.meta.json) тоже заканчиваются на ".json" — исключаем
+        # их явно, иначе они попадут в список как "сохранения"-призраки.
+        if f.ends_with(".json") and not f.ends_with(META_SUFFIX):
             result.append(f.get_basename())
         f = dir.get_next()
     dir.list_dir_end()
@@ -126,10 +136,38 @@ func delete_save(slot: String) -> void:
     var path = _slot_path(slot)
     if FileAccess.file_exists(path):
         DirAccess.remove_absolute(path)
+    var meta_path = _meta_path(slot)
+    if FileAccess.file_exists(meta_path):
+        DirAccess.remove_absolute(meta_path)
 
 ## Лёгкое чтение метаданных сохранения для UI (SaveMenu) без полной загрузки игры.
 ## Возвращает {} если файл битый/отсутствует.
+##
+## Быстрый путь: читает маленький "slot.meta.json" (пишется в save_game()) —
+## это единственное, что нужно открывать при отрисовке SaveMenu, даже если
+## сохранений 50+.
+## Медленный путь (только для старых сейвов без meta-файла, сделанных до
+## появления этого механизма): парсит весь "slot.json" целиком, как раньше,
+## и затем ДОПИСЫВАЕТ meta-файл рядом, чтобы при следующем открытии SaveMenu
+## этот слот тоже пошёл по быстрому пути.
 func get_save_info(slot: String) -> Dictionary:
+    var meta_path = _meta_path(slot)
+    if FileAccess.file_exists(meta_path):
+        var meta_file := FileAccess.open(meta_path, FileAccess.READ)
+        if meta_file != null:
+            var meta_text := meta_file.get_as_text()
+            meta_file.close()
+            var meta_parsed = JSON.parse_string(meta_text)
+            if meta_parsed != null and typeof(meta_parsed) == TYPE_DICTIONARY:
+                return meta_parsed
+
+    # Мета-файла нет (старый сейв) — читаем и парсим полный файл сохранения один раз.
+    var info := _read_info_from_full_save(slot)
+    if not info.is_empty():
+        _write_meta(slot, info)  # миграция: в следующий раз пойдём быстрым путём
+    return info
+
+func _read_info_from_full_save(slot: String) -> Dictionary:
     var path = _slot_path(slot)
     if not FileAccess.file_exists(path):
         return {}
@@ -162,6 +200,15 @@ func get_save_info(slot: String) -> Dictionary:
         "gdp": _calc_gdp(country_info),
         "saved_at_unix": int(data.get("saved_at_unix", 0)),
     }
+
+## Пишет лёгкий файл метаданных рядом с полным сохранением.
+func _write_meta(slot: String, info: Dictionary) -> void:
+    var meta_file := FileAccess.open(_meta_path(slot), FileAccess.WRITE)
+    if meta_file == null:
+        push_warning("[SaveManager] Не удалось записать meta-файл для слота '%s'" % slot)
+        return
+    meta_file.store_string(JSON.stringify(info))
+    meta_file.close()
 
 ## Приблизительный годовой ВВП страны по сохранённым данным —
 ## дублирует формулу ProvinceRegistry.get_gdp(): (заводы × стоимость продукта + месячный доход) × 12
@@ -202,6 +249,19 @@ func save_game(slot: String) -> bool:
 
     file.store_string(json_string)
     file.close()
+
+    # Сразу же пишем лёгкие метаданные рядом — SaveMenu потом читает только
+    # их и не трогает полный (потенциально огромный) json сохранения.
+    var pr_d: Dictionary = data["province_registry"]
+    var country: String = data["settings"].get("active_country", "")
+    var country_info: Dictionary = (pr_d.get("countries_data", {}) as Dictionary).get(country, {})
+    _write_meta(slot, {
+        "slot": slot,
+        "country": country,
+        "days_in_power": int(pr_d.get("days_in_power", 0)),
+        "gdp": _calc_gdp(country_info),
+        "saved_at_unix": int(data["saved_at_unix"]),
+    })
 
     current_slot = slot
     print("[SaveManager] Игра сохранена в слот '%s'" % slot)
@@ -420,6 +480,16 @@ func load_game(slot: String) -> bool:
     _load_clock(data.get("clock", {}))
     _load_settings(data.get("settings", {}))
     _load_province_registry(data.get("province_registry", {}))
+
+    # _load_province_registry() пишет province_owners/province_data напрямую
+    # в словари, минуя capture_province() — а именно там обычно вызывается
+    # PathCache.invalidate_cache() при смене владельца провинции. Без этого
+    # PathCache остаётся со старым кэшем путей (посчитанным ДО загрузки, для
+    # владельцев "по умолчанию") и не знает о территориях, захваченных за
+    # время партии и записанных в сейв — из-за этого после загрузки дивизии
+    # на таких территориях не могли пройти дальше соседней провинции.
+    PathCache.invalidate_cache()
+
     _load_diplomacy(data.get("diplomacy", {}))
     _load_ai(data.get("ai", {}))
     _load_statistics(data.get("statistics", {}))
@@ -490,7 +560,22 @@ func _intkeys(d: Dictionary) -> Dictionary:
 
 func _load_province_registry(d: Dictionary) -> void:
     var pr = ProvinceRegistry
-    pr.province_data = _intkeys(d.get("province_data", {}))
+
+    # ВАЖНО: pr.province_data НЕЛЬЗЯ переприсваивать новым Dictionary через "=".
+    # При старте игры ProvinceRegistry._load_province_data() делает
+    # "settings.province_data = province_data" — это ссылка на ТОТ ЖЕ объект
+    # Dictionary, а не копия. Pathfinder.gd при построении маршрута дивизий
+    # читает владельца провинции именно из settings.province_data, а не из
+    # ProvinceRegistry.province_data. Если тут написать "pr.province_data =
+    # _intkeys(...)", создаётся НОВЫЙ словарь, и ссылка settings.province_data
+    # рвётся — Pathfinder продолжает видеть СТАРЫЕ (домашние) владения, из-за
+    # чего маршрут через территории, захваченные за игру и восстановленные из
+    # сейва, не строится (дивизия может шагнуть только на 1 соседнюю провинцию).
+    # Поэтому чистим и заполняем существующий словарь на месте — так ссылка
+    # settings.province_data остаётся указывать на актуальные данные.
+    pr.province_data.clear()
+    pr.province_data.merge(_intkeys(d.get("province_data", {})))
+
     pr.province_owners = _intkeys(d.get("province_owners", {}))
     pr.province_occupants = _intkeys(d.get("province_occupants", {}))
     pr.country_index = d.get("country_index", {})

@@ -292,13 +292,22 @@ func _generate_new_slot_name() -> String:
 # ФОРМАТИРОВАНИЕ
 # ─────────────────────────────────────────────────────────────────────────────
 
+## Кэш текстур флагов — при 30-50 сохранениях страны часто повторяются,
+## незачем на каждую карточку заново дёргать ResourceLoader.exists()+load().
+static var _flag_cache: Dictionary = {}
+
 func _load_flag(country: String) -> Texture2D:
     if country == "":
         return null
+    if _flag_cache.has(country):
+        return _flag_cache[country]
+
     var path := "res://assets/flags/%s.png" % country.capitalize()
+    var tex: Texture2D = null
     if ResourceLoader.exists(path):
-        return load(path)
-    return null
+        tex = load(path)
+    _flag_cache[country] = tex
+    return tex
 
 
 func _format_money(value: float) -> String:

@@ -112,21 +112,36 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_fe0qs")
 theme_override_styles/hover = SubResource("StyleBoxFlat_pcu2e")
 text = "SEND_DEMANDS"
 
-[node name="Label" type="Label" parent="MainRect" unique_id=726118625]
+[node name="VBoxContainer" type="VBoxContainer" parent="MainRect" unique_id=1621661013]
 layout_mode = 1
-anchors_preset = -1
+anchors_preset = 8
 anchor_left = 0.5
-anchor_top = 0.071
+anchor_top = 0.5
 anchor_right = 0.5
-anchor_bottom = 0.071
-offset_left = -139.5
-offset_top = 0.3199997
-offset_right = 139.5
-offset_bottom = 38.320015
+anchor_bottom = 0.5
+offset_left = -199.5
+offset_top = -463.0
+offset_right = 199.5
+offset_bottom = -363.0
 grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 6
+
+[node name="MainLabel" type="Label" parent="MainRect/VBoxContainer" unique_id=726118625]
+layout_mode = 2
 theme_override_fonts/font = ExtResource("3_fe0qs")
 theme_override_font_sizes/font_size = 29
 text = "PEACE_NEGOTIATIONS"
+horizontal_alignment = 1
+
+[node name="ClueLabel" type="Label" parent="MainRect/VBoxContainer" unique_id=453943955]
+custom_minimum_size = Vector2(0, 20)
+custom_maximum_size = Vector2(-1, 43)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_40vur")
+text = "CAPTURE_OCCUPIED_PROVINCE"
+horizontal_alignment = 1
+autowrap_mode = 3
 
 [node name="TopRect" type="ColorRect" parent="." unique_id=682133900]
 layout_mode = 1
@@ -171,9 +186,9 @@ text = "LEAVE"
 [node name="ReparationsSlider" type="HSlider" parent="." unique_id=561755127]
 layout_mode = 0
 offset_left = 118.0
-offset_top = 448.0
+offset_top = 508.0
 offset_right = 411.0
-offset_bottom = 464.0
+offset_bottom = 524.0
 
 [node name="ReparationCostLabel" type="Label" parent="ReparationsSlider" unique_id=241496953]
 layout_mode = 0
@@ -186,11 +201,16 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=440313199]
-layout_mode = 0
-offset_left = 12.0
-offset_top = 150.0
-offset_right = 106.0
-offset_bottom = 483.0
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.006
+anchor_top = 0.194
+anchor_right = 0.006
+anchor_bottom = 0.194
+offset_left = 0.47999954
+offset_top = 0.47999573
+offset_right = 94.479996
+offset_bottom = 440.4803
 
 [node name="PlayerFlag" type="TextureRect" parent="VBoxContainer" unique_id=1754850248]
 custom_minimum_size = Vector2(94, 53)
