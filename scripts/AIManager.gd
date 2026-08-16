@@ -81,6 +81,38 @@ var uav_launch_cooldowns: Dictionary = {}
 ## Кулдаун ракетных ударов: country -> дней до следующего залпа
 var missile_launch_cooldowns: Dictionary = {}
 
+## ОПТИМИЗАЦИЯ: p_id (провинция, где стоит "залипшая" армия) -> дней до
+## следующей попытки BFS-поиска врага. Если find_nearest_enemy_province()
+## не нашёл достижимого врага (остров без флота, блокада третьей страной
+## и т.п.), армия остаётся неподвижной, и БЕЗ этого кэша AIMilitary заново
+## гонял бы полный BFS до MAX_BFS_NODES КАЖДЫЙ игровой день, бесконечно —
+## именно это давало устойчивый фриз (см. AI PROFILE в логах: одни и те же
+## страны с одним и тем же числом армий тормозят одинаково каждый ход подряд).
+var stuck_army_cooldowns: Dictionary = {}
+const STUCK_ARMY_RETRY_DAYS = 15
+
+# -----------------------------------------------------------------------------
+# ОПТИМИЗАЦИЯ: размазывание дневного тика ИИ по нескольким кадрам
+# -----------------------------------------------------------------------------
+# ПРОБЛЕМА: раньше _on_day_passed() обрабатывал ВСЕ страны мира одним
+# синхронным циклом в ОДНОМ кадре смены дня. Каждая отдельная операция внутри
+# уже была оптимизирована (O(1)/O(k) кэши), но при большой войне у крупной
+# страны (много провинций/армий) сумма работы по всем воюющим странам в этот
+# единственный кадр всё равно давала заметный фриз — именно он ощущался
+# "каждый день", и рос вместе с масштабом войны.
+#
+# РЕШЕНИЕ: смена дня по-прежнему происходит раз в игровой день (частота не
+# меняется), но обработка стран внутри дня растягивается на несколько
+# ПОСЛЕДУЮЩИХ кадров вместо одного — по AI_COUNTRIES_PER_FRAME стран за кадр.
+# При типичных 60 fps и разумном бюджете вся очередь стран проходит за доли
+# секунды реального времени — на игровой смене дня это незаметно, а пиковая
+# нагрузка на кадр падает в разы.
+const AI_COUNTRIES_PER_FRAME = 3
+
+var _pending_ai_countries: Array = []
+var _pending_ai_date: Dictionary = {}
+var _ai_day_in_progress: bool = false
+
 # -----------------------------------------------------------------------------
 # ОПТИМИЗАЦИЯ: ежедневные кэши
 # -----------------------------------------------------------------------------
@@ -163,6 +195,7 @@ func _ready() -> void:
 
     # Строим стартовый кэш провинций для ИИ
     _build_initial_country_cache()
+    _build_safe_provinces_cache()
 
     # Разбиваем массив провинций на 10 частей для оптимизации населения
     for i in range(POP_CHUNKS_COUNT):
@@ -182,77 +215,168 @@ func _process(delta: float) -> void:
         return
     _tick_income(delta)
 
+    # Размазываем обработку стран по кадрам, см. AI_COUNTRIES_PER_FRAME выше.
+    if _ai_day_in_progress:
+        _process_ai_day_batch()
+
 # ── Ежедневный тик (раздаёт работу по модулям) ──────────────────────────────
+# Больше НЕ обрабатывает страны синхронно сам — только готовит очередь.
+# Реальная обработка идёт в _process_ai_day_batch() порциями по кадрам,
+# см. блок "ОПТИМИЗАЦИЯ: размазывание дневного тика ИИ по нескольким кадрам".
 func _on_day_passed(_date: Dictionary) -> void:
-    var current_day: int = int(_date.get("day", 1))
+    # Если предыдущая дневная очередь почему-то не успела доработать (не
+    # должно происходить при разумном AI_COUNTRIES_PER_FRAME, но на всякий
+    # случай) — доигрываем её остаток синхронно, чтобы не потерять тик
+    # какой-то стране, и только потом начинаем новый день.
+    if _ai_day_in_progress and not _pending_ai_countries.is_empty():
+        for country in _pending_ai_countries:
+            if ProvinceRegistry.countries_data.has(country):
+                _process_country_day(country, _pending_ai_date)
+        _pending_ai_countries.clear()
 
     # Снимок ключей: обработка одной страны (бой/уничтожение) может стереть
-    # ДРУГУЮ страну из countries_data прямо во время этого цикла — итерация
+    # ДРУГУЮ страну из countries_data прямо во время этого тика — итерация
     # по живому словарю в такой ситуации небезопасна и может пропустить
-    # часть стран в этом тике.
-    for country in ProvinceRegistry.countries_data.keys().duplicate():
+    # часть стран.
+    _pending_ai_countries = ProvinceRegistry.countries_data.keys().duplicate()
+    _pending_ai_date = _date
+    _ai_day_in_progress = true
+
+## Обрабатывает до AI_COUNTRIES_PER_FRAME стран из очереди этого дня.
+## Вызывается каждый кадр из _process(), пока очередь не опустеет.
+##
+## ВРЕМЕННЫЙ ПРОФИЛИРОВЩИК: печатает в консоль (Output), сколько миллисекунд
+## занял КАЖДЫЙ отдельный вызов _process_country_day() для КАЖДОЙ страны,
+## если это дольше PROFILE_THRESHOLD_MS. Так сразу видно: (а) виновата ли
+## конкретная страна (и какая) или тормозит "размазанно" много стран сразу,
+# (б) сколько реально миллисекунд уходит — это уже не гадание "фриз есть/нет",
+## а конкретные цифры. Убрать этот блок (или PROFILE_AI_DAY = false) после
+## того, как источник найден.
+const PROFILE_AI_DAY := true
+const PROFILE_THRESHOLD_MS := 4.0
+
+func _process_ai_day_batch() -> void:
+    var processed := 0
+    while processed < AI_COUNTRIES_PER_FRAME and not _pending_ai_countries.is_empty():
+        var country: String = _pending_ai_countries.pop_back()
+        processed += 1
         if not ProvinceRegistry.countries_data.has(country):
-            continue  # страна была уничтожена уже в этом тике, пропускаем
-        if country == settings.active_country:
-            # Игрок обычно управляется вручную и пропускает весь ИИ-блок.
-            # Но если включен чекбокс "AI Army" — обрабатываем его армию
-            # точно так же, как это делает обычный ИИ (движение войск),
-            # не трогая при этом экономику/дипломатию/закупки игрока.
-            if player_ai_army_enabled:
-                AIMilitary.process_military_movement(country)
-            continue
+            continue  # страна была уничтожена раньше в этом же дне — пропускаем
 
-        var c_data = ProvinceRegistry.countries_data[country]
+        if PROFILE_AI_DAY:
+            var t0 := Time.get_ticks_usec()
+            _process_country_day(country, _pending_ai_date)
+            var elapsed_ms := (Time.get_ticks_usec() - t0) / 1000.0
+            if elapsed_ms >= PROFILE_THRESHOLD_MS:
+                var n_provinces := get_country_provinces(country).size()
+                var n_armies := DivisionManager.get_country_provinces_with_armies(country).size()
+                print("[AI PROFILE] %s: %.2f ms (провинций=%d, провинций_с_армиями=%d)" % [country, elapsed_ms, n_provinces, n_armies])
+        else:
+            _process_country_day(country, _pending_ai_date)
 
-        # 0. Начисляем дневной доход ИИ
-        var monthly = c_data.get("monthly_income", 100000.0)
-        c_data["balance"] = c_data.get("balance", 0.0) + (monthly / 30.0)
+    if _pending_ai_countries.is_empty():
+        _ai_day_in_progress = false
+        var t0 := Time.get_ticks_usec()
+        _finish_ai_day()
+        if PROFILE_AI_DAY:
+            var elapsed_ms := (Time.get_ticks_usec() - t0) / 1000.0
+            if elapsed_ms >= PROFILE_THRESHOLD_MS:
+                print("[AI PROFILE] _finish_ai_day (население/кэш): %.2f ms" % elapsed_ms)
 
-        var country_index: int = int(ProvinceRegistry.country_index.get(country, 0))
+## Вся дневная логика ОДНОЙ страны — раньше было телом цикла в _on_day_passed().
+func _process_country_day(country: String, _date: Dictionary) -> void:
+    var current_day: int = int(_date.get("day", 1))
 
-        # 1. Быстрые кулдауны
-        AIMilitary.tick_recruitment_cooldown(country)
-        AIMilitary.tick_fortification_cooldown(country)
-        AIEconomy.tick_factory_cooldown(country)
-        AIWeapons.tick_uav_launch_cooldown(country)
-        AIWeapons.tick_missile_launch_cooldown(country)
-
-        # 2. Резервы под БПЛА и ракеты — ДО торговли, иначе торговля продаст
-        # весь склад products в balance раньше, чем БПЛА/ракеты успеют его забрать
-        AIWeapons.skim_production_reserves(country)
-        if (current_day + country_index) % 6 == 0:
-            AIWeapons.process_uav_program(country)
-        if (current_day + country_index) % MISSILE_ORDER_INTERVAL_DAYS == 0:
-            AIWeapons.process_missile_program(country)
-
-        # 3. Торговля — продажа того, что осталось от товаров после резервов
-        AITrade.process_trade(country)
-
-        # 4. Экономика — раз в 5 дней
-        if (current_day + country_index) % 5 == 0:
-            AIEconomy.process_economy(country)
-
-        # 4.5 Укрепления — раз в 7 дней (сдвиг от экономики, чтобы не биться за баланс в один день)
-        if (current_day + country_index + 2) % 7 == 0:
-            AIMilitary.process_fortifications(country)
-
-        # 5. Рекрутинг — раз в 3 дня
-        if (current_day + country_index) % 3 == 0:
-            AIMilitary.process_recruitment(country)
-
-        # 6. Движение войск — раз в 1 дня
-        if (current_day + country_index) % 1 == 0:
+    if country == settings.active_country:
+        # Игрок обычно управляется вручную и пропускает весь ИИ-блок.
+        # Но если включен чекбокс "AI Army" — обрабатываем его армию
+        # точно так же, как это делает обычный ИИ (движение войск),
+        # не трогая при этом экономику/дипломатию/закупки игрока.
+        if player_ai_army_enabled:
             AIMilitary.process_military_movement(country)
+        return
 
-        # 7. Запуск БПЛА по врагу — раз в 2 дня
-        if (current_day + country_index) % 2 == 0:
-            AIWeapons.process_uav_strikes(country)
+    var c_data = ProvinceRegistry.countries_data[country]
 
-        # 7.5 Запуск ракет по врагу — раз в 5 дней, со сдвигом от БПЛА
-        if (current_day + country_index + 1) % 5 == 0:
-            AIWeapons.process_missile_strikes(country)
+    # 0. Начисляем дневной доход ИИ
+    var monthly = c_data.get("monthly_income", 100000.0)
+    c_data["balance"] = c_data.get("balance", 0.0) + (monthly / 30.0)
 
-    # 8. Обсчет населения
+    var country_index: int = int(ProvinceRegistry.country_index.get(country, 0))
+
+    # 1. Быстрые кулдауны
+    AIMilitary.tick_recruitment_cooldown(country)
+    AIMilitary.tick_fortification_cooldown(country)
+    AIEconomy.tick_factory_cooldown(country)
+    AIWeapons.tick_uav_launch_cooldown(country)
+    AIWeapons.tick_missile_launch_cooldown(country)
+
+    # 2. Резервы под БПЛА и ракеты — ДО торговли, иначе торговля продаст
+    # весь склад products в balance раньше, чем БПЛА/ракеты успеют его забрать
+    AIWeapons.skim_production_reserves(country)
+    if (current_day + country_index) % 6 == 0:
+        AIWeapons.process_uav_program(country)
+    if (current_day + country_index) % MISSILE_ORDER_INTERVAL_DAYS == 0:
+        AIWeapons.process_missile_program(country)
+
+    # 3. Торговля — продажа того, что осталось от товаров после резервов
+    AITrade.process_trade(country)
+
+    # 4. Экономика — раз в 5 дней
+    if (current_day + country_index) % 5 == 0:
+        AIEconomy.process_economy(country)
+
+    # 4.5 Укрепления — раз в 7 дней (сдвиг от экономики, чтобы не биться за баланс в один день)
+    if (current_day + country_index + 2) % 7 == 0:
+        AIMilitary.process_fortifications(country)
+
+    # 5. Рекрутинг — раз в 3 дня
+    if (current_day + country_index) % 3 == 0:
+        AIMilitary.process_recruitment(country)
+
+    # 6. Движение войск — каждый день
+    AIMilitary.process_military_movement(country)
+
+    # 7. Запуск БПЛА по врагу — раз в 2 дня
+    if (current_day + country_index) % 2 == 0:
+        AIWeapons.process_uav_strikes(country)
+
+    # 7.5 Запуск ракет по врагу — раз в 5 дней, со сдвигом от БПЛА
+    if (current_day + country_index + 1) % 5 == 0:
+        AIWeapons.process_missile_strikes(country)
+
+## Выполняется один раз, когда очередь стран этого дня полностью обработана.
+func _finish_ai_day() -> void:
+    # 8. Обновляем кэш "безопасных" провинций — ЧАНКАМИ, а не полной
+    # пересборкой всей карты каждый день.
+    #
+    # РАНЬШЕ: _build_safe_provinces_cache() чистила и заново собирала кэш
+    # ПО ВСЕЙ карте (~10000 провинций) КАЖДЫЙ день — это и было ~11мс,
+    # которые не размазывались по кадрам сами по себе (весь _finish_ai_day
+    # выполняется одним куском в конце дня, после того как очередь стран
+    # опустела).
+    #
+    # ТЕПЕРЬ: используем ТОТ ЖЕ принцип чанкования, что уже применяется для
+    # населения (AIPopulation.process_population() ниже) — обновляем точечно
+    # (_refresh_safe_province, O(1) на провинцию) только 1/10 карты за день,
+    # ротацией по тому же индексу pop_chunk_index. За ~10 дней кэш полностью
+    # проходит по всей карте, как и население. Изменения владения провинций
+    # (главный источник "протухания" кэша) и так обновляются точечно и сразу
+    # через _on_province_captured -> _refresh_safe_province — чанкование
+    # здесь довылавливает более редкий случай (бой начался/закончился без
+    # смены владельца), для которого небольшая задержка в пределах дней
+    # не критична: это лишь резервный список для refugees, у которых не
+    # нашлось безопасной провинции рядом через BFS.
+    #
+    # ВАЖНО: индекс берём ДО того, как AIPopulation.process_population()
+    # его прочитает и провернёт — чтобы оба использовали ОДИН И ТОТ ЖЕ чанк
+    # за этот день (не обязательно, но логично и не добавляет отдельного
+    # прохода по ещё одному чанку).
+    var chunk = pop_chunks[pop_chunk_index]
+    for p_id_str in chunk:
+        _refresh_safe_province(int(p_id_str))
+
+    # 9. Обсчет населения
     AIPopulation.process_population()
 
 # ── Ежемесячный тик ───────────────────────────────────────────────────────────
@@ -366,6 +490,44 @@ func _on_province_captured(p_id: int, new_owner: String) -> void:
             country_provinces_cache[new_owner] = []
         country_provinces_cache[new_owner].append(p_id)
 
+    # Провинция сменила владельца — старая запись "недостижимого врага" для
+    # неё больше не актуальна (расклад сил на карте изменился), пусть при
+    # следующей попытке движения армия честно пересчитает BFS заново.
+    stuck_army_cooldowns.erase(p_id)
+
+    # Захват провинции почти всегда меняет и её "безопасность" (новый владелец
+    # мог тут же начать оккупацию/бой) — сразу актуализируем её в кэше, чтобы
+    # он не "протух" за день. Полная пересборка всё равно раз в день ниже.
+    _refresh_safe_province(p_id)
+
+## Раз в день (O(provinces)): строим p_id -> true для провинций без активных
+## боёв и без оккупации + плоский список этих p_id для быстрого pick_random().
+## Используется AIPopulation.find_nearest_safe_province() как фолбэк, когда
+## рядом (в радиусе BFS) безопасной провинции не нашлось.
+func _build_safe_provinces_cache() -> void:
+    safe_provinces_cache.clear()
+    safe_provinces_list.clear()
+    for p_id_str in ProvinceRegistry.province_data:
+        var p_id = int(p_id_str)
+        if not CombatManager.active_battles.has(p_id) and not ProvinceRegistry.is_occupied(p_id):
+            safe_provinces_cache[p_id] = true
+            safe_provinces_list.append(p_id)
+
+## Точечное O(1) обновление одной провинции в кэше (см. _on_province_captured).
+func _refresh_safe_province(p_id: int) -> void:
+    var is_safe = ProvinceRegistry.province_data.has(p_id) \
+        and not CombatManager.active_battles.has(p_id) \
+        and not ProvinceRegistry.is_occupied(p_id)
+
+    if is_safe:
+        if not safe_provinces_cache.has(p_id):
+            safe_provinces_cache[p_id] = true
+            safe_provinces_list.append(p_id)
+    else:
+        if safe_provinces_cache.has(p_id):
+            safe_provinces_cache.erase(p_id)
+            safe_provinces_list.erase(p_id)
+
 func get_random_neighbor_country(country: String) -> String:
     var neighbors = []
     for p_id in get_country_provinces(country):
@@ -386,11 +548,19 @@ func reset() -> void:
     recruitment_cooldowns = {}
     uav_launch_cooldowns = {}
     missile_launch_cooldowns = {}
+    stuck_army_cooldowns = {}
     country_provinces_cache = {}
     safe_provinces_cache = {}
     safe_provinces_list = []
 
+    # Сбрасываем очередь размазанного дневного тика ИИ — иначе после
+    # рестарта партии могла бы доиграться очередь стран из ПРЕДЫДУЩЕЙ игры.
+    _pending_ai_countries = []
+    _pending_ai_date = {}
+    _ai_day_in_progress = false
+
     _build_initial_country_cache()
+    _build_safe_provinces_cache()
 
     pop_chunks = []
     for i in range(POP_CHUNKS_COUNT):

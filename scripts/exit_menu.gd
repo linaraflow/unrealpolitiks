@@ -3,6 +3,7 @@ extends Control # Или CanvasLayer, смотря какой тип у корн
 @export var settings: Resource
 
 const MAIN_SCENE := preload("res://MainMenu.tscn")
+const SETTINGS_SCENE := preload("res://SettingsMenu.tscn")
 
 func _ready():
     # Скрываем меню при запуске игры
@@ -30,6 +31,11 @@ func _on_continue_button_pressed() -> void:
     if settings.can_draw == false:
         get_node("/root/Game/CanvasLayer/Opening").show()
     get_tree().paused = false
+    
+    DiscordRPC.state = tr("TAKING_OVER_THE_WORLD")
+    DiscordRPC.start_timestamp = int(Time.get_unix_time_from_system())
+    DiscordRPC.refresh()  # обязательно вызывать после каждого изменения полей
+    
     hide()
 
 
@@ -48,3 +54,8 @@ func _on_main_button_pressed() -> void:
     get_tree().paused = false
     get_node("/root/Game/Map").restart()
     get_tree().change_scene_to_packed(MAIN_SCENE)
+
+
+func _on_settings_button_pressed() -> void:
+    var instance := SETTINGS_SCENE.instantiate()
+    add_child(instance)

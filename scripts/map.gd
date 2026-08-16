@@ -22,6 +22,21 @@ var _highlight_elapsed: float = -1.0
 ## завершения предыдущей анимации новый Tween корректно её обрывал, а не
 ## запускался поверх — иначе полосы будут "дёргаться".
 var _occup_fade_tweens: Dictionary = {}
+
+## Флаг "текстура полос требует перезаливки". Вместо того чтобы каждый
+## активный твин сам вызывал occup_texture.update() на каждом кадре
+## (что при массовом изменении провинций — например, кнопка "Забрать всё" —
+## даёт десятки update() за один кадр и убивает FPS, из-за чего анимация
+## выглядит как мгновенный скачок), все твины просто помечают текстуру
+## "грязной", а реальная перезаливка происходит один раз за кадр в _process().
+var _occup_texture_dirty: bool = false
+
+## То же самое, но для CountryPanel/FlagRect: раньше _on_province_occupied
+## вызывал их напрямую на каждый сигнал, что при массовом изменении
+## провинций (кнопка "Забрать всё") давало десятки тяжёлых UI-апдейтов за
+## один кадр и роняло FPS настолько, что твины анимации полос "проглатывали"
+## огромную дельту времени и завершались практически мгновенно.
+var _country_panel_dirty: bool = false
 const OCCUP_FADE_DURATION: float = 0.15
 
 # ─── ЗЕЛЁНАЯ ВСПЫШКА "ЗАВОД ПОСТРОЕН" ────────────────────────────────────────
@@ -332,6 +347,17 @@ func _process(delta: float) -> void:
 
     _game_time += delta
     material.set_shader_parameter("game_time", _game_time)
+
+    # Один update() текстуры полос за кадр, даже если сразу много провинций
+    # анимируются одновременно (например, кнопка "Забрать всё").
+    if _occup_texture_dirty:
+        occup_texture.update(occup_image)
+        _occup_texture_dirty = false
+
+    if _country_panel_dirty:
+        CountryPanel.update_info()
+        FlagRect.update()
+        _country_panel_dirty = false
 
 
 func _input(event: InputEvent):
@@ -842,8 +868,16 @@ func _on_province_occupied(p_id: int, occupier: String):
     #print("=== ON_PROVINCE_OCCUPIED CALLED === p_id:", p_id, " occupier:", occupier)
     _set_occup_pixel_faded(p_id, occupier)
 
-    CountryPanel.update_info()
-    FlagRect.update()
+    # Раньше CountryPanel.update_info()/FlagRect.update() вызывались тут же,
+    # напрямую. При одиночном клике это незаметно, но кнопка "Забрать всё"
+    # эмитит этот сигнал синхронно для КАЖДОЙ провинции в одном цикле — то
+    # есть эти (не самые дешёвые) UI-апдейты срабатывали десятки раз за один
+    # кадр. Из-за этого возникал заметный фриз кадра, и твин анимации полос
+    # на следующем шаге получал огромную дельту времени — визуально это
+    # выглядело так, будто вся анимация "прыгает" мгновенно, а не плавно.
+    # Теперь просто помечаем, что апдейт нужен, а делаем его один раз за
+    # кадр в _process().
+    _country_panel_dirty = true
 
 
 ## Плавно (за OCCUP_FADE_DURATION секунд) меняет alpha пикселя провинции в
@@ -884,7 +918,7 @@ func _set_occup_pixel_faded(p_id: int, occupier: String) -> void:
     tween.tween_method(
         func(alpha: float):
             occup_image.set_pixel(r, g, Color(target_r, 0, 0, alpha))
-            occup_texture.update(occup_image),
+            _occup_texture_dirty = true,
         current.a, target_alpha, OCCUP_FADE_DURATION
     ).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
     tween.finished.connect(func():

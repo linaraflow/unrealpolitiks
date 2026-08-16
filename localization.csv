@@ -603,3 +603,16 @@ PASSIVE,Passive,Пассивная,Passiv,Passive
 RUTHLESS,Ruthless,Беспощадная,Unbarmherzig,Impitoyable
 SAVING_DISABLED_HARDCORE,Saving is disabled on Hardcore,Сохранение отключено в режиме Хардкор,Speichern ist im Hardcore-Modus deaktiviert,La sauvegarde est désactivée en mode Hardcore
 CAPTURE_OCCUPIED_PROVINCE,"You can take any province you have occupied.","Вы можете забрать любую провинцию, которую оккупировали.","Sie können jede Provinz übernehmen, die Sie besetzt haben.","Vous pouvez prendre toute province que vous avez occupée."
+DIFFICULTY_TOOLTIP_EASY,Buildings and troop recruitment cost 25% less. World sanctions (__WORLD__) do not apply. Saving is available.,Постройки и призыв войск дешевле на 25%. Мировые санкции (__WORLD__) не действуют. Сохранение доступно.,Gebäude und Truppenaushebung kosten 25% weniger. Weltsanktionen (__WORLD__) gelten nicht. Speichern ist möglich.,Les bâtiments et le recrutement coûtent 25% moins cher. Les sanctions mondiales (__WORLD__) ne s'appliquent pas. La sauvegarde est disponible.
+DIFFICULTY_TOOLTIP_STANDARD,Normal prices for buildings and troop recruitment. World sanctions apply. Saving is available.,Обычные цены на постройки и призыв войск. Мировые санкции действуют. Сохранение доступно.,Normale Preise für Gebäude und Truppenaushebung. Weltsanktionen gelten. Speichern ist möglich.,Prix normaux pour les bâtiments et le recrutement. Les sanctions mondiales s'appliquent. La sauvegarde est disponible.
+DIFFICULTY_TOOLTIP_HARD,Buildings and troop recruitment cost 25% more. World sanctions apply. Saving is available.,Постройки и призыв войск дороже на 25%. Мировые санкции действуют. Сохранение доступно.,Gebäude und Truppenaushebung kosten 25% mehr. Weltsanktionen gelten. Speichern ist möglich.,Les bâtiments et le recrutement coûtent 25% plus cher. Les sanctions mondiales s'appliquent. La sauvegarde est disponible.
+DIFFICULTY_TOOLTIP_HARDCORE,Buildings and troop recruitment cost 50% more. World sanctions apply. Saving is DISABLED (manual and auto).,Постройки и призыв войск дороже на 50%. Мировые санкции действуют. Сохранение ОТКЛЮЧЕНО (ни ручное, ни авто).,Gebäude und Truppenaushebung kosten 50% mehr. Weltsanktionen gelten. Speichern ist DEAKTIVIERT (manuell und automatisch).,Les bâtiments et le recrutement coûtent 50% plus cher. Les sanctions mondiales s'appliquent. La sauvegarde est DÉSACTIVÉE (manuelle et automatique).
+DIFFICULTY_COST_LABEL,Buildings & recruitment,Постройки и призыв,Gebäude & Aushebung,Bâtiments et recrutement
+DIFFICULTY_SANCTIONS_LABEL,World sanctions,Мировые санкции,Weltsanktionen,Sanctions mondiales
+DIFFICULTY_SANCTIONS_ON,active,действуют,aktiv,actives
+DIFFICULTY_SANCTIONS_OFF,disabled,отключены,deaktiviert,désactivées
+DIFFICULTY_SAVING_LABEL,Saving,Сохранение,Speichern,Sauvegarde
+DIFFICULTY_SAVING_ON,available,доступно,verfügbar,disponible
+DIFFICULTY_SAVING_OFF,disabled,отключено,deaktiviert,désactivée
+TAKING_OVER_THE_WORLD,Taking over the world,Захват мира,Die Weltherrschaft übernehmen,Conquérir le monde
+CAUSE_TOTAL_OCCUPATION,Territorial collapse,Территориальный коллапс,Territorialer Zusammenbruch,Effondrement territorial

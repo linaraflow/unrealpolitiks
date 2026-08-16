@@ -11,6 +11,8 @@ var is_closed := false
 var _base_x: float
 
 func _ready() -> void:
+    SaveManager.NotificationMenu = self
+    
     hide()
     
     _base_x = panel.position.x

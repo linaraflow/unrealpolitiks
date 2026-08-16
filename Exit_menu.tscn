@@ -65,9 +65,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -103.0
-offset_top = -104.75
+offset_top = -144.375
 offset_right = 103.0
-offset_bottom = 104.75
+offset_bottom = 144.375
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 6
@@ -100,6 +100,14 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_d3tli")
 theme_override_styles/hover = SubResource("StyleBoxFlat_xw7um")
 text = "MAIN_MENU"
 
+[node name="Settings_button" type="Button" parent="VBoxContainer" unique_id=468360477]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/normal = SubResource("StyleBoxFlat_p64cw")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_d3tli")
+theme_override_styles/hover = SubResource("StyleBoxFlat_xw7um")
+text = "SETTINGS"
+
 [node name="Exit_button" type="Button" parent="VBoxContainer" unique_id=926170686]
 layout_mode = 2
 size_flags_vertical = 3
@@ -112,4 +120,5 @@ text = "EXIT"
 [connection signal="pressed" from="VBoxContainer/Continue_button" to="." method="_on_continue_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/Save_button" to="." method="_on_save_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/Main_button" to="." method="_on_main_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/Settings_button" to="." method="_on_settings_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/Exit_button" to="." method="_on_exit_button_pressed"]

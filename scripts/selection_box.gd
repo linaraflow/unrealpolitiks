@@ -4,7 +4,7 @@ var settings = preload("res://new_resource.tres")
 
 var box_color: Color = Color(0.2, 0.6, 1.0, 0.15)
 var border_color: Color = Color(0.2, 0.6, 1.0, 0.7)
-var border_width: float = 1.5
+var border_width: float = 1.0
 
 var is_dragging: bool = false
 

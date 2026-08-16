@@ -6,6 +6,8 @@ extends Panel
 @export var CountryLabel: Label
 @export var CountryLabelScroll: ScrollContainer
 @export var ProvincesLabel: Label
+@export var IdeologyHeaderLabel: Label
+@export var IdeologyHeaderLabelScroll: ScrollContainer
 
 # --- Marquee (бегущая строка для названия страны) ---
 var _marquee_tween: Tween
@@ -91,6 +93,8 @@ func _check_nodes() -> void:
         "CountryLabel": CountryLabel,
         "CountryLabelScroll": CountryLabelScroll,
         "ProvincesLabel": ProvincesLabel,
+        "IdeologyHeaderLabel": IdeologyHeaderLabel,
+        "IdeologyHeaderLabelScroll": IdeologyHeaderLabelScroll,
         "PopulationLabel": PopulationLabel,
         "FactoriesLabel": FactoriesLabel,
         "HappinessLabel": HappinessLabel,
@@ -123,9 +127,13 @@ func _check_nodes() -> void:
 
 
 func _on_visibility_changed() -> void:
-    if not visible and _marquee_tween:
-        _marquee_tween.kill()
-        _marquee_tween = null
+    if not visible:
+        if _marquee_tween:
+            _marquee_tween.kill()
+            _marquee_tween = null
+        if _ideology_marquee_tween:
+            _ideology_marquee_tween.kill()
+            _ideology_marquee_tween = null
 
 
 func _on_day_passed(_date: Dictionary) -> void:
@@ -163,8 +171,15 @@ func _set_stat_bar(bar: ProgressBar, value_label: Label, value: float, bad_when_
 const MARQUEE_MIN_WIDTH: float = 212.0  # порог ширины CountryLabel, после которого включается бегущая строка
 const MARQUEE_GAP: float = 40.0         # пустой промежуток между концом и началом текста при зацикливании
 
+const IDEOLOGY_MARQUEE_MIN_WIDTH: float = 130.0  # порог ширины IdeologyHeaderLabel
+
 var _marquee_request_id: int = 0        # чтобы устаревшие (перегнанные) вызовы сами себя отменяли
 var _last_marquee_text: String = ""     # чтобы не перезапускать марки, если текст не менялся
+
+var _ideology_marquee_tween: Tween
+var _ideology_marquee_request_id: int = 0
+var _last_ideology_marquee_text: String = ""
+
 
 func _update_country_label_marquee() -> void:
     # Если название не поменялось с прошлого раза — ничего не трогаем,
@@ -181,7 +196,31 @@ func _update_country_label_marquee() -> void:
         _marquee_tween.kill()
         _marquee_tween = null
 
-    CountryLabelScroll.scroll_horizontal = 0
+    _marquee_tween = await _run_label_marquee(CountryLabel, CountryLabelScroll, MARQUEE_MIN_WIDTH, my_id, func(): return my_id == _marquee_request_id)
+
+
+func _update_ideology_label_marquee() -> void:
+    if IdeologyHeaderLabel.text == _last_ideology_marquee_text and _ideology_marquee_tween and _ideology_marquee_tween.is_valid():
+        return
+    _last_ideology_marquee_text = IdeologyHeaderLabel.text
+
+    _ideology_marquee_request_id += 1
+    var my_id = _ideology_marquee_request_id
+
+    if _ideology_marquee_tween:
+        _ideology_marquee_tween.kill()
+        _ideology_marquee_tween = null
+
+    _ideology_marquee_tween = await _run_label_marquee(IdeologyHeaderLabel, IdeologyHeaderLabelScroll, IDEOLOGY_MARQUEE_MIN_WIDTH, my_id, func(): return my_id == _ideology_marquee_request_id)
+
+
+# Общая логика бегущей строки: измеряет реальную ширину текста лейбла и,
+# если она превышает и min_width, и видимую ширину скролл-контейнера,
+# запускает бесконечную анимацию scroll_horizontal.
+# is_still_current — коллбек, проверяющий, что вызов не устарел (не пришёл
+# более новый запрос, пока мы ждали кадры).
+func _run_label_marquee(label: Label, scroll: ScrollContainer, min_width: float, my_id: int, is_still_current: Callable) -> Tween:
+    scroll.scroll_horizontal = 0
 
     # Ждём два кадра: одного не всегда хватает, чтобы контейнеры выше по
     # иерархии успели пересчитать layout после смены текста/видимости.
@@ -190,22 +229,22 @@ func _update_country_label_marquee() -> void:
 
     # Пока ждали кадры, могла прилететь ещё одна перегонка (или панель
     # успели скрыть/удалить) — тогда этот вызов уже неактуален, выходим.
-    if my_id != _marquee_request_id or not is_instance_valid(CountryLabel) or not is_instance_valid(CountryLabelScroll):
-        return
+    if not is_still_current.call() or not is_instance_valid(label) or not is_instance_valid(scroll):
+        return null
 
-    # Измеряем реальную ширину текста через шрифт, а не CountryLabel.size.x —
+    # Измеряем реальную ширину текста через шрифт, а не label.size.x —
     # если у лейбла выставлен size flag EXPAND/FILL внутри ScrollContainer,
     # его size растягивается под контейнер и overflow всегда получался <= 0,
     # из-за чего марки то работала, то нет в зависимости от предыдущего layout.
-    var font: Font = CountryLabel.get_theme_font("font")
-    var font_size: int = CountryLabel.get_theme_font_size("font_size")
-    var text_width: float = font.get_string_size(CountryLabel.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+    var font: Font = label.get_theme_font("font")
+    var font_size: int = label.get_theme_font_size("font_size")
+    var text_width: float = font.get_string_size(label.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
 
-    var viewport_width: float = CountryLabelScroll.size.x
+    var viewport_width: float = scroll.size.x
 
     # Если название не вылезает за границы — просто оставляем как есть, без бегущей строки.
-    if text_width < MARQUEE_MIN_WIDTH or text_width <= viewport_width:
-        return
+    if text_width < min_width or text_width <= viewport_width:
+        return null
 
     var overflow = text_width - viewport_width
 
@@ -214,23 +253,25 @@ func _update_country_label_marquee() -> void:
     var total_distance = overflow + MARQUEE_GAP
     var duration = total_distance / MARQUEE_SPEED
 
-    _marquee_tween = create_tween()
-    _marquee_tween.set_loops()
+    var tween = create_tween()
+    tween.set_loops()
     # 1. Пауза в начале перед стартом
-    _marquee_tween.tween_interval(MARQUEE_PAUSE)
+    tween.tween_interval(MARQUEE_PAUSE)
 
     # 2. Анимация движения текста до конца
-    _marquee_tween.tween_property(CountryLabelScroll, "scroll_horizontal", overflow, duration * overflow / total_distance)\
+    tween.tween_property(scroll, "scroll_horizontal", overflow, duration * overflow / total_distance)\
         .from(0).set_trans(Tween.TRANS_LINEAR)
 
     # 3. Пауза, когда текст доехал до конца
-    _marquee_tween.tween_interval(MARQUEE_PAUSE)
+    tween.tween_interval(MARQUEE_PAUSE)
 
     # 4. Резкий сброс в начало
-    _marquee_tween.tween_callback(func():
-        if is_instance_valid(CountryLabelScroll):
-            CountryLabelScroll.scroll_horizontal = 0
+    tween.tween_callback(func():
+        if is_instance_valid(scroll):
+            scroll.scroll_horizontal = 0
     )
+
+    return tween
 
 
 func _update_relations_bar(value: int) -> void:
@@ -260,8 +301,10 @@ func update_info():
     var data = ProvinceRegistry.countries_data[owner_name]
 
     CountryLabel.text = tr(owner_name.to_upper())
-    ProvincesLabel.text = tr("PROVINCES") + ": " + str(ProvinceRegistry.owner_province_count[owner_name]) + "   " + tr(data.get("ideology", "liberalism").to_upper()).capitalize()
+    ProvincesLabel.text = tr("PROVINCES") + ": " + str(int(ProvinceRegistry.owner_province_count[owner_name]))
+    IdeologyHeaderLabel.text = tr(data.get("ideology", "liberalism").to_upper()).capitalize()
     _update_country_label_marquee()
+    _update_ideology_label_marquee()
     PopulationLabel.text = ProvinceRegistry._format_number(ProvinceRegistry.get_country_population(owner_name), " ")
 
     var GDP = (ProvinceRegistry.countries_data[owner_name].get("factories", 0) * settings.product_cost + data.get("monthly_income", 0)) * 12

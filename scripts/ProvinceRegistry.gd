@@ -179,6 +179,8 @@ const WAR_EXHAUSTION_DECAY_PER_DAY := 1.0   # снижение в день, то
 
 var days_in_power: int = 0
 
+var DISCORD_ID: int = 1518316614397853736
+
 func _ready():
     _load_countries()
     _load_province_data()
@@ -199,12 +201,12 @@ func _ready():
     _recalculate_all_factories() # Первичный расчет фабрик при старте игры
     
     # ==== DISCORD ====
-    DiscordRPC.app_id = 1518316614397853736  # ваш Application ID
-    DiscordRPC.details = "Playing"
-    DiscordRPC.state = "Taking over the world"
-    DiscordRPC.large_image = "screenshot_2026-07-13_141225"
-    DiscordRPC.start_timestamp = int(Time.get_unix_time_from_system())
-    DiscordRPC.refresh()  # обязательно вызывать после каждого изменения полей
+    DiscordRPC.app_id = DISCORD_ID  # ваш Application ID
+    # DiscordRPC.details = "Playing"
+    # DiscordRPC.state = "Taking over the world"
+    DiscordRPC.large_image = "logo_3"
+    # DiscordRPC.start_timestamp = int(Time.get_unix_time_from_system())
+    # DiscordRPC.refresh()  # обязательно вызывать после каждого изменения полей
     
 func _process(delta: float) -> void:
     DiscordRPC.run_callbacks()
@@ -841,7 +843,19 @@ func _eliminate_country(country: String) -> void:
     # Подстраховка: если страна дошла до полного уничтожения путём, который не
     # проходит через capture_province (аннексия при свержении режима и т.п.),
     # эмит через guard всё равно сработает (и не задублируется, если уже сработал).
+    #
+    # ВАЖНО: _check_province_loss() может СИНХРОННО заэмитить
+    # country_lost_all_provinces, на который подписан
+    # _on_country_lost_all_provinces() — а он, в свою очередь, может повторно
+    # (реентерабельно) вызвать _eliminate_country(country) прямо сейчас, пока
+    # мы ещё внутри этого, первого, вызова. Вложенный вызов дойдёт до конца
+    # и сделает countries_data.erase(country) РАНЬШЕ, чем мы вернёмся сюда.
+    # Поэтому после _check_province_loss нужно перепроверить, не стёрли ли
+    # страну уже — иначе обращение к countries_data[country] ниже упадёт с
+    # "Invalid access to property or key" (баг с Oman).
     _check_province_loss(country)
+    if not countries_data.has(country):
+        return
 
     #print("[Registry] Страна %s потеряла последнюю провинцию (столицу)" % country)
     # Сначала чистим поле в самих данных — чтобы к моменту сигнала

@@ -4,12 +4,14 @@ var settings = preload("res://new_resource.tres")
 
 @export var zoom_speed: float = 0.1
 @export var max_zoom: float = 10.0
+@export var zoom_smoothness: float = 8.0  # чем больше, тем быстрее камера "догоняет" целевой зум
 
 signal zoom_changed(new_zoom: Vector2)
 
 var min_zoom: float = 1.0
 var map_rect: Rect2
 var is_dragging: bool = false
+var target_zoom: float = 1.0
 
 func _ready():
     var map = get_parent().get_node("Map")
@@ -27,6 +29,7 @@ func _update_min_zoom():
     var zoom_y = viewport_size.y / map_rect.size.y
     min_zoom = max(zoom_x, zoom_y)  # чтобы карта всегда заполняла экран
     zoom = Vector2(min_zoom, min_zoom)
+    target_zoom = min_zoom
 
 func _is_mouse_over_gui() -> bool:
     # Спрашиваем у Viewport'а напрямую, без флагов и сигналов —
@@ -52,21 +55,28 @@ func _unhandled_input(event):
         if _is_mouse_over_gui():
             return
         if event.button_index == MOUSE_BUTTON_WHEEL_UP:
-            _set_zoom(zoom.x + zoom_speed)
+            _set_zoom(target_zoom + zoom_speed)
         elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-            _set_zoom(zoom.x - zoom_speed)
+            _set_zoom(target_zoom - zoom_speed)
         if event.button_index == MOUSE_BUTTON_MIDDLE:
             is_dragging = event.pressed
     if event is InputEventMouseMotion and is_dragging:
         position -= event.relative / zoom.x
         _clamp_position()
 
+func _process(delta):
+    if not is_equal_approx(zoom.x, target_zoom):
+        var new_zoom_value = lerp(zoom.x, target_zoom, 1.0 - exp(-zoom_smoothness * delta))
+        # чтобы не "зависать" бесконечно на подлёте к цели
+        if abs(new_zoom_value - target_zoom) < 0.001:
+            new_zoom_value = target_zoom
+        zoom = Vector2(new_zoom_value, new_zoom_value)
+        _clamp_position()
+
 func _set_zoom(value: float):
-    var new_zoom = clamp(value, min_zoom, max_zoom)
-    zoom = Vector2(new_zoom, new_zoom)
-    zoom_changed.emit(zoom)
-    #print("New zoom: " + str(zoom))
-    _clamp_position()
+    target_zoom = clamp(value, min_zoom, max_zoom)
+    zoom_changed.emit(Vector2(target_zoom, target_zoom))
+    #print("New target zoom: " + str(target_zoom))
 
 func _clamp_position():
     var viewport_size = get_viewport_rect().size

@@ -11,6 +11,7 @@ var settings = preload("res://new_resource.tres")
 @onready var Map = get_node("/root/Game/Map")
 
 const MAIN_SCENE := preload("res://MainMenu.tscn")
+const SAVE_MENU_SCENE := preload("res://SaveMenu.tscn")
 
 func _ready() -> void:
     hide()
@@ -70,3 +71,10 @@ func _on_menu_button_pressed() -> void:
     Global._on_music_finished()
     restart()
     get_tree().change_scene_to_packed(MAIN_SCENE)
+
+
+func _on_save_button_pressed() -> void:
+    var menu := SAVE_MENU_SCENE.instantiate()
+    add_child(menu)
+    menu.closed.connect(menu.queue_free)
+    menu.open_for_load()

@@ -9,6 +9,11 @@ func _ready() -> void:
         SaveManager.load_failed.connect(_on_load_failed)
     if not SaveManager.load_completed.is_connected(_on_load_completed):
         SaveManager.load_completed.connect(_on_load_completed)
+        
+    # ==== DISCORD ====
+    DiscordRPC.state = tr("BTN_MAIN_MENU")
+    DiscordRPC.start_timestamp = int(Time.get_unix_time_from_system())
+    DiscordRPC.refresh()  # обязательно вызывать после каждого изменения полей
 
 func _on_load_failed(slot: String, reason: String) -> void:
     push_error("[MainMenu] Загрузка слота '%s' провалилась: %s" % [slot, reason])
@@ -21,6 +26,11 @@ func _on_settings_pressed() -> void:
     add_child(instance)
 
 func _on_new_game_pressed() -> void:
+    # ==== DISCORD ====
+    DiscordRPC.state = tr("TAKING_OVER_THE_WORLD")
+    DiscordRPC.start_timestamp = int(Time.get_unix_time_from_system())
+    DiscordRPC.refresh()  # обязательно вызывать после каждого изменения полей
+    
     Global._on_music_finished()
     SaveManager.reset_session()  # новая партия — автосейв не должен писать в слот предыдущей
     get_tree().change_scene_to_file("res://game.tscn")

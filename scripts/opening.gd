@@ -16,6 +16,7 @@ var country_id: String = ""
 @onready var NotificationMenu = get_node("/root/Game/CanvasLayer/NotificationMenu")
 @onready var fog_button: Button = $PanelContainer/MarginContainer/VBoxContainer/FogContainer/FogButton
 @onready var difficulty_option: OptionButton = $PanelContainer/MarginContainer/VBoxContainer/DifficultyContainer/OptionButton
+@onready var difficulty_details: RichTextLabel = $PanelContainer/MarginContainer/VBoxContainer/DifficultyContainer/DifficultyDetails
 @onready var aggression_slider: HSlider = $PanelContainer/MarginContainer/VBoxContainer/AggressivenessContainer/HSlider
 @onready var aggression_value_label: Label = $PanelContainer/MarginContainer/VBoxContainer/AggressivenessContainer/PercentLabel
 
@@ -74,6 +75,17 @@ func _ready() -> void:
         settings.difficulty = GameSettings.Difficulty.STANDARD
     difficulty_option.item_selected.connect(_on_difficulty_selected)
 
+    # Тултипы на пунктах выпадающего списка сложности (всплывают при наведении
+    # на конкретный пункт в открытом попапе OptionButton).
+    var difficulty_popup: PopupMenu = difficulty_option.get_popup()
+    for i in range(difficulty_option.item_count):
+        var item_difficulty := difficulty_option.get_item_id(i) as GameSettings.Difficulty
+        difficulty_popup.set_item_tooltip(i, _get_difficulty_tooltip(item_difficulty))
+
+    # Подпись с характеристиками сложности под самим OptionButton — сразу
+    # показываем данные для сложности по умолчанию (STANDARD).
+    _update_difficulty_details(GameSettings.Difficulty.STANDARD)
+
     # Стартовое значение берём из самого слайдера (задано в сцене), а не
     # перезаписываем его текущим AIManager.ai_aggression — иначе слайдер
     # всегда прыгал бы на 100%, затирая значение по умолчанию из .tscn.
@@ -93,8 +105,91 @@ func set_country(id: String) -> void:
 
 
 func _on_difficulty_selected(index: int) -> void:
+    var selected_difficulty := difficulty_option.get_item_id(index) as GameSettings.Difficulty
     if settings:
-        settings.difficulty = difficulty_option.get_item_id(index) as GameSettings.Difficulty
+        settings.difficulty = selected_difficulty
+    _update_difficulty_details(selected_difficulty)
+
+
+## Возвращает текст тултипа для конкретного уровня сложности — краткая
+## сводка модификатора цены построек/призыва, статуса санкций и сохранений.
+func _get_difficulty_tooltip(d: GameSettings.Difficulty) -> String:
+    var key: String
+    var fallback: String
+    match d:
+        GameSettings.Difficulty.EASY:
+            key = "DIFFICULTY_TOOLTIP_EASY"
+            fallback = "Постройки и призыв войск дешевле на 25%.\nМировые санкции (__WORLD__) не действуют.\nСохранение доступно."
+        GameSettings.Difficulty.HARD:
+            key = "DIFFICULTY_TOOLTIP_HARD"
+            fallback = "Постройки и призыв войск дороже на 25%.\nМировые санкции действуют.\nСохранение доступно."
+        GameSettings.Difficulty.HARDCORE:
+            key = "DIFFICULTY_TOOLTIP_HARDCORE"
+            fallback = "Постройки и призыв войск дороже на 50%.\nМировые санкции действуют.\nСохранение ОТКЛЮЧЕНО (ни ручное, ни авто)."
+        _:
+            key = "DIFFICULTY_TOOLTIP_STANDARD"
+            fallback = "Обычные цены на постройки и призыв войск.\nМировые санкции действуют.\nСохранение доступно."
+
+    var translated := tr(key)
+    # Если перевода для ключа нет в CSV — Godot вернёт сам ключ; в этом
+    # случае показываем заготовленный текст, чтобы тултип не был пустым/сырым.
+    return fallback if translated == key else translated
+
+
+## Обновляет подпись под OptionButton — подробные характеристики выбранной
+## сложности (BBCode: цвет зелёный — бонус игроку, красный — штраф/запрет).
+func _update_difficulty_details(d: GameSettings.Difficulty) -> void:
+    if not difficulty_details:
+        return
+
+    var cost_percent: int
+    var cost_color: String
+    var cost_sign: String
+    match d:
+        GameSettings.Difficulty.EASY:
+            cost_percent = 25
+            cost_color = "#7CFC7C"   # зелёный — дешевле
+            cost_sign = "-"
+        GameSettings.Difficulty.HARD:
+            cost_percent = 25
+            cost_color = "#FF8C6B"   # красный — дороже
+            cost_sign = "+"
+        GameSettings.Difficulty.HARDCORE:
+            cost_percent = 50
+            cost_color = "#FF5C5C"   # ярко-красный — дороже всего
+            cost_sign = "+"
+        _:
+            cost_percent = 0
+            cost_color = "#CFCFCF"   # серый — без изменений
+            cost_sign = ""
+
+    var cost_label := _tr_or("DIFFICULTY_COST_LABEL", "Постройки и призыв")
+    var cost_line: String
+    if cost_percent == 0:
+        cost_line = "[color=%s]%s: 0%%[/color]" % [cost_color, cost_label]
+    else:
+        cost_line = "[color=%s]%s: %s%d%%[/color]" % [cost_color, cost_label, cost_sign, cost_percent]
+
+    var sanctions_on := d != GameSettings.Difficulty.EASY
+    var sanctions_color := "#FF8C6B" if sanctions_on else "#7CFC7C"
+    var sanctions_label := _tr_or("DIFFICULTY_SANCTIONS_LABEL", "Мировые санкции")
+    var sanctions_text := _tr_or("DIFFICULTY_SANCTIONS_ON", "действуют") if sanctions_on else _tr_or("DIFFICULTY_SANCTIONS_OFF", "отключены")
+    var sanctions_line := "[color=%s]%s: %s[/color]" % [sanctions_color, sanctions_label, sanctions_text]
+
+    var saving_disabled := d == GameSettings.Difficulty.HARDCORE
+    var saving_color := "#FF5C5C" if saving_disabled else "#7CFC7C"
+    var saving_label := _tr_or("DIFFICULTY_SAVING_LABEL", "Сохранение")
+    var saving_text := _tr_or("DIFFICULTY_SAVING_OFF", "отключено") if saving_disabled else _tr_or("DIFFICULTY_SAVING_ON", "доступно")
+    var saving_line := "[color=%s]%s: %s[/color]" % [saving_color, saving_label, saving_text]
+
+    difficulty_details.bbcode_text = "%s\n%s\n%s" % [cost_line, sanctions_line, saving_line]
+
+
+## tr() с запасным вариантом на случай отсутствия ключа в CSV переводов —
+## чтобы UI не показывал "сырые" ключи вида DIFFICULTY_COST_LABEL.
+func _tr_or(key: String, fallback: String) -> String:
+    var translated := tr(key)
+    return fallback if translated == key else translated
 
 
 ## Сохраняет позицию слайдера "агрессии" ИИ (0..100, слайдер) как 0.0..1.0

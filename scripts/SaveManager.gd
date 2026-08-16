@@ -35,6 +35,7 @@ signal autosave_completed(slot: String)
 var TopMenu: Control
 var balance_label: Label
 var SelectionBox: Control
+var NotificationMenu: Control
 
 var settings = preload("res://new_resource.tres")
 
@@ -449,6 +450,11 @@ func load_game(slot: String) -> bool:
         return false
 
     var data: Dictionary = parsed
+    
+    # ==== DISCORD ====
+    DiscordRPC.state = tr("TAKING_OVER_THE_WORLD")
+    DiscordRPC.start_timestamp = int(Time.get_unix_time_from_system())
+    DiscordRPC.refresh()  # обязательно вызывать после каждого изменения полей
 
     # Полный сброс текущего состояния (как при рестарте), затем накатываем сохранение
     # ВАЖНО: раньше здесь был жёсткий путь "/root/Game/Map", который ломался,
@@ -498,6 +504,7 @@ func load_game(slot: String) -> bool:
     TopMenu.update(settings.active_country)
     balance_label.balance_update()
     SelectionBox.show()
+    NotificationMenu.show()
 
     # Перерисовываем карту по загруженным данным (аналог restart())
     map_node._reset_map_textures()
@@ -604,6 +611,16 @@ func _load_ai(d: Dictionary) -> void:
     # это поле — по умолчанию считаем агрессию 100% (1.0), как и было раньше.
     AIManager.ai_aggression = clampf(float(d.get("ai_aggression", 1.0)), 0.0, 1.0)
     AIManager._build_initial_country_cache()  # пересобрать индекс "страна -> провинции" по новому province_data
+
+    # ВАЖНО: AIManager.player_ai_army_enabled выше восстановлен верно, но
+    # визуальный CheckBox в TopMenu (TopPanel/AIArmyContainer/CheckBox) сам
+    # по себе не трогается никем — он остаётся в том состоянии, в котором его
+    # оставил top_menu.gd._ready() (выполняется ДО load_game(), см. request_load()).
+    # Без этой синхронизации галочка на экране не совпадает с реальным
+    # значением, и первое же нажатие пользователем на чекбокс перезаписывает
+    # только что загруженное состояние обратно.
+    if TopMenu != null:
+        TopMenu.set_ai_army_tick(AIManager.player_ai_army_enabled)
 
 func _load_statistics(d: Dictionary) -> void:
     var stats_menu = get_node_or_null("/root/Game/CanvasLayer/StatisticsMenu")

@@ -5,6 +5,10 @@
 [ext_resource type="Resource" uid="uid://dpsywpq1i1i6j" path="res://new_resource.tres" id="4_r3fmk"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_h7o3h"]
+content_margin_left = 10.0
+content_margin_top = 5.0
+content_margin_right = 10.0
+content_margin_bottom = 5.0
 bg_color = Color(0.16924527, 0.16924533, 0.16924518, 1)
 border_width_left = 1
 border_width_top = 1
@@ -18,10 +22,10 @@ corner_radius_bottom_left = 8
 corner_detail = 20
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7mdbw"]
-content_margin_left = 0.0
-content_margin_top = 4.0
-content_margin_right = 0.0
-content_margin_bottom = 0.0
+content_margin_left = 10.0
+content_margin_top = 5.0
+content_margin_right = 10.0
+content_margin_bottom = 5.0
 bg_color = Color(0.103743605, 0.103743516, 0.103743516, 1)
 border_color = Color(0.585062, 0.5850621, 0.5850618, 1)
 corner_radius_top_left = 8
@@ -31,10 +35,10 @@ corner_radius_bottom_left = 8
 corner_detail = 20
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_12dxf"]
-content_margin_left = 0.0
-content_margin_top = 4.0
-content_margin_right = 0.0
-content_margin_bottom = 0.0
+content_margin_left = 10.0
+content_margin_top = 5.0
+content_margin_right = 10.0
+content_margin_bottom = 5.0
 bg_color = Color(0.14767182, 0.14767182, 0.14767176, 1)
 border_width_left = 1
 border_width_top = 1
@@ -174,12 +178,12 @@ layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.86700004
 anchor_top = 0.943
-anchor_right = 0.86700004
-anchor_bottom = 0.943
+anchor_right = 0.99500006
+anchor_bottom = 0.99100006
 offset_left = -0.6401367
 offset_top = -0.44000244
-offset_right = 245.35986
-offset_bottom = 51.56024
+offset_right = -0.40014648
+offset_bottom = -0.27978516
 theme_override_fonts/font = ExtResource("2_86gsx")
 theme_override_font_sizes/font_size = 25
 theme_override_styles/normal = SubResource("StyleBoxFlat_oiixh")
@@ -189,15 +193,15 @@ text = "START"
 
 [node name="PanelContainer" type="PanelContainer" parent="." unique_id=700021639]
 layout_mode = 1
-anchors_preset = 6
-anchor_left = 1.0
-anchor_top = 0.5
-anchor_right = 1.0
-anchor_bottom = 0.5
-offset_left = -297.0
-offset_top = -150.0
-offset_right = -10.0
-offset_bottom = 150.0
+anchors_preset = -1
+anchor_left = 0.845
+anchor_top = 0.351
+anchor_right = 0.99500006
+anchor_bottom = 0.64900005
+offset_left = 0.5999756
+offset_top = 10.919983
+offset_right = -0.40014648
+offset_bottom = -10.920044
 grow_horizontal = 0
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_hwa81")
@@ -261,6 +265,13 @@ popup/item_2/text = "HARD"
 popup/item_2/id = 2
 popup/item_3/text = "HARDCORE"
 popup/item_3/id = 3
+
+[node name="DifficultyDetails" type="RichTextLabel" parent="PanelContainer/MarginContainer/VBoxContainer/DifficultyContainer" unique_id=576305306]
+layout_mode = 2
+theme_override_font_sizes/normal_font_size = 13
+bbcode_enabled = true
+fit_content = true
+scroll_active = false
 
 [node name="HSeparator2" type="HSeparator" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=100002]
 layout_mode = 2

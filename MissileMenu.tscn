@@ -69,13 +69,12 @@ script = ExtResource("1_p4le1")
 
 [node name="MainPanel" type="Panel" parent="." unique_id=498576468]
 layout_mode = 1
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -960.0
-offset_right = 960.0
-offset_bottom = 50.0
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 0.046000004
+offset_bottom = 0.31999588
 grow_horizontal = 2
+mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_6vbwh")
 
 [node name="MainLabel" type="Label" parent="MainPanel" unique_id=426190872]
@@ -98,13 +97,13 @@ vertical_alignment = 1
 
 [node name="LeaveButton" type="Button" parent="MainPanel" unique_id=1760669868]
 layout_mode = 1
-anchors_preset = 4
-anchor_top = 0.5
-anchor_bottom = 0.5
-offset_left = 8.25
-offset_top = -16.75
-offset_right = 154.75
-offset_bottom = 16.75
+anchors_preset = -1
+anchor_left = 0.004
+anchor_top = 0.165
+anchor_right = 0.081
+anchor_bottom = 0.83500004
+offset_left = 0.5699997
+offset_right = -0.7700043
 grow_vertical = 2
 theme_override_fonts/font = ExtResource("2_526u6")
 theme_override_font_sizes/font_size = 12
@@ -113,11 +112,16 @@ text = "LEAVE"
 
 [node name="LaunchButton" type="Button" parent="." unique_id=1552816266]
 custom_minimum_size = Vector2(0, 46)
-layout_mode = 0
-offset_left = 6.0
-offset_top = 56.0
-offset_right = 274.0
-offset_bottom = 102.00003
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.003
+anchor_top = 0.052
+anchor_right = 0.143
+anchor_bottom = 0.094000004
+offset_left = 0.23999977
+offset_top = -0.15999985
+offset_right = -0.55999756
+offset_bottom = 0.48002625
 theme_override_colors/font_color = Color(0.92941177, 0.6313726, 0, 1)
 theme_override_font_sizes/font_size = 14
 theme_override_styles/normal = SubResource("StyleBoxFlat_526u6")
@@ -125,9 +129,13 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_tdsqg")
 theme_override_styles/hover = SubResource("StyleBoxFlat_3wakc")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="LaunchButton" unique_id=1991604268]
-layout_mode = 0
-offset_right = 268.0
-offset_bottom = 46.0
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_bottom = -3.0517578e-05
+grow_horizontal = 2
+grow_vertical = 2
 theme_override_constants/separation = -6
 alignment = 1
 

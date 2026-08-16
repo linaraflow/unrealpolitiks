@@ -11,6 +11,13 @@ var window_mode: int = 0               # 0=окно,1=полноэкран,2=б�
 var vsync_enabled: bool = true
 var fps_limit: int = 60                # 0 = без лимита
 
+## Логический холст, в котором живёт весь UI (все .tscn с якорями/офсетами
+## подобраны под него). НЕ равен выбранному в настройках "разрешению" —
+## иначе элементы с фиксированными пиксельными офсетами (SellMenu, панели
+## заказа БПЛА/ракет и т.п.) начинают "уезжать" относительно элементов
+## с процентными якорями при смене разрешения (см. баг с TopMenu на 2К).
+const BASE_UI_RESOLUTION := Vector2i(1920, 1080)
+
 const RESOLUTIONS := [
     Vector2i(1280, 720),
     Vector2i(1600, 900),
@@ -21,6 +28,9 @@ const RESOLUTIONS := [
 # ---------- Интерфейс ----------
 var ui_scale: float = 1.0              # 0.8 .. 1.5
 var language: String = "ru"            # "ru","en", ...
+
+const SUPPORTED_LANGUAGES := ["en", "ru", "de", "fr"]
+const DEFAULT_LANGUAGE := "en"
 
 # ---------- Геймплей ----------
 var autopause_on_war: bool = true
@@ -133,8 +143,12 @@ func _apply_display() -> void:
             win.borderless = false
             win.mode = Window.MODE_WINDOWED
             win.current_screen = screen_idx
-            win.size = res
-            _center_window(res, screen_idx)
+            # Физическое окно не может быть больше рабочей области монитора —
+            # иначе часть окна окажется за пределами экрана.
+            var screen_size := DisplayServer.screen_get_size(screen_idx)
+            var window_size := Vector2i(min(res.x, screen_size.x), min(res.y, screen_size.y))
+            win.size = window_size
+            _center_window(window_size, screen_idx)
         1: # Полноэкранный (настоящий эксклюзивный fullscreen — реальная смена
             # видеорежима, со сворачиванием при alt-tab)
             win.borderless = false
@@ -149,11 +163,18 @@ func _apply_display() -> void:
             win.size = screen_size
             win.position = screen_pos
 
-    # CONTENT_SCALE_MODE_VIEWPORT реально рендерит игру во внутреннем разрешении res
-    # (меньше пикселей = меньше нагрузка на GPU = больше FPS), а затем растягивает
-    # готовую картинку до размера окна/экрана. Это и есть тот эффект "понизил разрешение
-    # ради FPS", который ты имел в виду.
-    win.content_scale_size = res
+    # ВАЖНО: content_scale_size — это ЛОГИЧЕСКИЙ холст UI, а не "внутреннее
+    # разрешение под FPS". Он должен быть ПОСТОЯННЫМ (BASE_UI_RESOLUTION),
+    # а не равным выбранному res — иначе при смене "разрешения" сам холст,
+    # в котором живут все .tscn с якорями/офсетами, физически меняет размер,
+    # и элементы с фиксированными пиксельными офсетами (SellMenu, панели
+    # заказа БПЛА/ракет) начинают рассинхронизироваться с элементами на
+    # процентных якорях (см. баг: TopMenu "не уменьшается" на 2К).
+    #
+    # CONTENT_SCALE_MODE_VIEWPORT сам растянет/сожмёт этот постоянный холст
+    # под фактический размер окна (win.size = res) — именно это и даёт эффект
+    # "выбрал 2К — картинка стала другого размера", без поломки раскладки UI.
+    win.content_scale_size = BASE_UI_RESOLUTION
     win.content_scale_mode = Window.CONTENT_SCALE_MODE_VIEWPORT
     win.content_scale_aspect = Window.CONTENT_SCALE_ASPECT_KEEP
 
@@ -208,7 +229,10 @@ func save_settings() -> void:
 func load_settings() -> void:
     var cfg := ConfigFile.new()
     if cfg.load(SAVE_PATH) != OK:
-        return # файла ещё нет — остаются значения по умолчанию
+        # Файла ещё нет — это первый запуск. Пытаемся подхватить язык
+        # операционной системы пользователя вместо жёстко заданного "ru".
+        language = _detect_system_language()
+        return
 
     resolution_index = cfg.get_value("graphics", "resolution_index", resolution_index)
     window_mode = cfg.get_value("graphics", "window_mode", window_mode)
@@ -234,6 +258,16 @@ func load_settings() -> void:
     keybinds = {}
     for key in default_keys:
         keybinds[key] = loaded_keybinds.get(key, _default_keybind(key))
+
+## Определяет язык ОС пользователя (OS.get_locale() вернёт что-то вроде
+## "ru_RU", "en_US", "de_DE", "fr_FR", "uk_UA" и т.п.). Берём только код
+## языка (первые 2 буквы) и проверяем, есть ли он в списке поддерживаемых.
+## Если нет — откатываемся на DEFAULT_LANGUAGE ("en").
+func _detect_system_language() -> String:
+    var locale := OS.get_locale_language() # напр. "ru", "en", "uk"
+    if locale in SUPPORTED_LANGUAGES:
+        return locale
+    return DEFAULT_LANGUAGE
 
 func apply_language() -> void:
     TranslationServer.set_locale(language)

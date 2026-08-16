@@ -56,7 +56,8 @@ func _ready():
                      get_node("/root/Game/CanvasLayer/VBoxContainer/DivisionMenu"),
                      get_node("/root/Game/CanvasLayer/TopMenu"),
                      get_node("/root/Game/CanvasLayer/NotificationMenu"),
-                     get_node("/root/Game/CanvasLayer/StatisticsMenu")]
+                     get_node("/root/Game/CanvasLayer/StatisticsMenu"),
+                     get_node("/root/Game/CanvasLayer/ControlDivisionsMenu")]
 
     for b in buttons:
         b.pivot_offset = b.size / 2
@@ -270,8 +271,8 @@ func _update_country_info() -> void:
     enemy_flag_rect.texture = load("res://assets/flags/" + _enemy + ".png")
     
     var unreturned_count = _occupied_snapshot.size() - _claimed.size()
-    var my_count = ProvinceRegistry.owner_province_count.get(my_country, 0) - unreturned_count
-    var enemy_count = ProvinceRegistry.owner_province_count.get(_enemy, 0) + unreturned_count
+    var my_count = int(ProvinceRegistry.owner_province_count.get(my_country, 0) - unreturned_count)
+    var enemy_count = int(ProvinceRegistry.owner_province_count.get(_enemy, 0) + unreturned_count)
     
     player_title_label.text = tr(my_country.to_upper())
     enemy_title_label.text = tr(_enemy.to_upper())

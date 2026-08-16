@@ -74,14 +74,18 @@ static func find_nearest_safe_province(start_p_id: int) -> int:
                     queue.append(next_id)
         hops += 1
 
-    # Если рядом безопасной провинции нет, ищем её рандомом (максимум 15 попыток)
-    var all_keys = ProvinceRegistry.province_data.keys()
-    if all_keys.is_empty():
+    # Если рядом безопасной провинции нет — берём из готового ежедневного кэша
+    # AIManager.safe_provinces_list (O(1) вместо копирования всех province_data.keys()
+    # на каждый вызов, что при большой войне и было источником микрофризов).
+    var safe_list = AIManager.safe_provinces_list
+    if safe_list.is_empty():
         return -1
 
-    for i in range(15):
-        var rand_key = all_keys.pick_random()
-        var rand_id = int(rand_key)
+    # Кэш обновляется раз в день + точечно при захвате провинций, так что почти
+    # всегда достаточно одной попытки; на всякий случай — до 5 попыток, если
+    # конкретно выбранная провинция успела "протухнуть" внутри этого же дня.
+    for i in range(min(5, safe_list.size())):
+        var rand_id = safe_list.pick_random()
         if is_province_safe(rand_id):
             return rand_id
 

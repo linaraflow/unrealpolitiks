@@ -14,6 +14,7 @@ var last_clicked_province
 
 @onready var CountryMenu = get_node("/root/Game/CanvasLayer/CountryMenu")
 @onready var ProvinceMenu = get_node("/root/Game/CanvasLayer/ProvinceMenu")
+@onready var top_menu = get_node_or_null("/root/Game/CanvasLayer/TopMenu")
 
 
 func _ready() -> void:
@@ -48,6 +49,11 @@ func _toggle_color_menu() -> void:
     var idx = ProvinceRegistry.country_index.get(owner_name, 0)
     if idx < ProvinceRegistry.country_colors.size():
         _color_picker.color = ProvinceRegistry.country_colors[idx]
+
+    # Перед открытием ColorPicker закрываем все менюшки TopMenu (UAV/Missile/Products/статистика),
+    # чтобы ColorPicker не оставался под открытым меню.
+    if top_menu:
+        top_menu.close_all_menus()
 
     _color_panel.visible = true
 

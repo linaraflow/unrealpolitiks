@@ -140,9 +140,10 @@ grow_vertical = 2
 script = ExtResource("3_6fdey")
 
 [node name="ColorRect" type="ColorRect" parent="." unique_id=291987971]
-layout_mode = 0
-offset_right = 1920.0
-offset_bottom = 1080.0
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 color = Color(0, 0, 0, 0.19607843)
 
 [node name="PanelContainer" type="PanelContainer" parent="." unique_id=773578330]
@@ -387,5 +388,6 @@ theme_override_fonts/font = ExtResource("3_mxvw5")
 text = "BTN_QUIT_GAME"
 
 [connection signal="pressed" from="PanelContainer/MarginContainer/VBoxContainer/RestartButton" to="." method="_on_restart_button_pressed"]
+[connection signal="pressed" from="PanelContainer/MarginContainer/VBoxContainer/SaveButton" to="." method="_on_save_button_pressed"]
 [connection signal="pressed" from="PanelContainer/MarginContainer/VBoxContainer/MenuButton" to="." method="_on_menu_button_pressed"]
 [connection signal="pressed" from="PanelContainer/MarginContainer/VBoxContainer/ExitButton" to="." method="_on_exit_button_pressed"]

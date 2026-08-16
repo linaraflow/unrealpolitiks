@@ -281,7 +281,7 @@ anchors_preset = 0
 offset_right = 1920.0
 offset_bottom = 1080.0
 
-[node name="Panel" type="Panel" parent="." unique_id=135916731 node_paths=PackedStringArray("FlagRect", "CountryLabel", "CountryLabelScroll", "ProvincesLabel", "PopulationLabel", "FactoriesLabel", "HappinessLabel", "HappinessBar", "WarExhaustionValueLabel", "WarExhaustionBar", "SanctionsValueLabel", "SanctionsBar", "RelationsRow", "RelationsValueLabel", "RelationsBarBox", "RelationsMarker", "DiplomacyActionsGrid", "ImproveBtn", "WorsenBtn", "SanctionBtn", "DeclareWarBtn", "NegotiationBtn", "IdeologyCard", "IdeologyLabel", "ChangeIdeologyBtn", "ideology_panel", "ideology_list", "change_btn", "close_btn")]
+[node name="Panel" type="Panel" parent="." unique_id=135916731 node_paths=PackedStringArray("FlagRect", "CountryLabel", "CountryLabelScroll", "ProvincesLabel", "IdeologyHeaderLabel", "IdeologyHeaderLabelScroll", "PopulationLabel", "FactoriesLabel", "HappinessLabel", "HappinessBar", "WarExhaustionValueLabel", "WarExhaustionBar", "SanctionsValueLabel", "SanctionsBar", "RelationsRow", "RelationsValueLabel", "RelationsBarBox", "RelationsMarker", "DiplomacyActionsGrid", "ImproveBtn", "WorsenBtn", "SanctionBtn", "DeclareWarBtn", "NegotiationBtn", "IdeologyCard", "IdeologyLabel", "ChangeIdeologyBtn", "ideology_panel", "ideology_list", "change_btn", "close_btn")]
 layout_mode = 1
 offset_right = 300.0
 offset_bottom = 433.0
@@ -291,7 +291,9 @@ settings = ExtResource("3_e437t")
 FlagRect = NodePath("HeaderRow/FlagRect")
 CountryLabel = NodePath("HeaderRow/TitleBox/CountryLabelScroll/CountryLabel")
 CountryLabelScroll = NodePath("HeaderRow/TitleBox/CountryLabelScroll")
-ProvincesLabel = NodePath("HeaderRow/TitleBox/ProvincesLabel")
+ProvincesLabel = NodePath("HeaderRow/TitleBox/HBoxContainer/ProvincesLabel")
+IdeologyHeaderLabel = NodePath("HeaderRow/TitleBox/HBoxContainer/IdeologyLabelScroll/IdeologyLabel")
+IdeologyHeaderLabelScroll = NodePath("HeaderRow/TitleBox/HBoxContainer/IdeologyLabelScroll")
 PopulationLabel = NodePath("StatsCardsRow/PopulationCard/VBoxContainer/PopulationLabel")
 FactoriesLabel = NodePath("StatsCardsRow/GDPCard/VBoxContainer/FactoriesLabel")
 HappinessLabel = NodePath("BarsContainer/HappinessRow/HappinessHeader/HappinessLabel")
@@ -369,12 +371,37 @@ theme_override_fonts/font = ExtResource("5_r840y")
 theme_override_font_sizes/font_size = 16
 text = "Germany"
 
-[node name="ProvincesLabel" type="Label" parent="Panel/HeaderRow/TitleBox" unique_id=1943410449]
+[node name="HBoxContainer" type="HBoxContainer" parent="Panel/HeaderRow/TitleBox" unique_id=1382846151]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="ProvincesLabel" type="Label" parent="Panel/HeaderRow/TitleBox/HBoxContainer" unique_id=1943410449]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.5330367, 0.5330367, 0.5330367, 1)
 theme_override_fonts/font = ExtResource("5_r840y")
 theme_override_font_sizes/font_size = 10
-text = "Provinces: 12"
+text = "Provinces: 12666"
+
+[node name="Control" type="Control" parent="Panel/HeaderRow/TitleBox/HBoxContainer" unique_id=1748364530]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="IdeologyLabelScroll" type="ScrollContainer" parent="Panel/HeaderRow/TitleBox/HBoxContainer" unique_id=559119657]
+custom_minimum_size = Vector2(130, -1)
+layout_mode = 2
+size_flags_horizontal = 8
+horizontal_scroll_mode = 3
+vertical_scroll_mode = 3
+
+[node name="IdeologyLabel" type="Label" parent="Panel/HeaderRow/TitleBox/HBoxContainer/IdeologyLabelScroll" unique_id=1775020364]
+custom_maximum_size = Vector2(150, -1)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.5330367, 0.5330367, 0.5330367, 1)
+theme_override_fonts/font = ExtResource("5_r840y")
+theme_override_font_sizes/font_size = 10
+text = "Диктатура"
+horizontal_alignment = 2
 
 [node name="StatsCardsRow" type="HBoxContainer" parent="Panel" unique_id=1011465082]
 layout_mode = 0

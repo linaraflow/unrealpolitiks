@@ -12,9 +12,31 @@ var _shown_x: float
 var _tween: Tween
 
 func _ready() -> void:
+    await get_tree().process_frame
+
+    _shown_x = hud_panel.position.x
+    _position_stat_menu()
+
+    # Пересчитываем позицию StatisticMenu КАЖДЫЙ раз, когда реально
+    # меняется размер hud_panel (смена разрешения, языка и т.п.),
+    # а не только один раз при старте игры.
+    hud_panel.resized.connect(_on_hud_panel_resized)
+
     hide_panel()
     hud_panel.hide()
+
+func _on_hud_panel_resized() -> void:
+    # Во время открытия/закрытия панели (твин) её реальный x не совпадает
+    # с "открытой" позицией — пересчитываем только когда панель в базовом,
+    # не анимированном состоянии, иначе поедет и твин, и вручную поставленная позиция.
+    if _tween and _tween.is_running():
+        return
     _shown_x = hud_panel.position.x
+    if _panel_visible:
+        _position_stat_menu()
+
+func _position_stat_menu() -> void:
+    StatisticMenu.position.x = hud_panel.position.x + hud_panel.size.x + 6
 
 func _unhandled_input(event: InputEvent) -> void:
     if Input.is_action_just_pressed("hide_ui"):
@@ -27,9 +49,6 @@ func _toggle_panel() -> void:
     else:
         show_panel()
 
-## Прячет hud_panel (уезжает влево за экран). Можно звать откуда угодно
-## (например, при клике по морю на карте) — если панель уже спрятана,
-## ничего не делает.
 func hide_panel() -> void:
     if not _panel_visible:
         return
@@ -51,12 +70,7 @@ func hide_panel() -> void:
     _tween.chain().tween_callback(func(): hud_panel.visible = false)
 
     _panel_visible = false
-    
-    
 
-## Показывает hud_panel (выезжает обратно на место). Можно звать откуда
-## угодно (например, при клике по суше на карте) — если панель уже
-## видима, ничего не делает.
 func show_panel() -> void:
     if _panel_visible:
         return

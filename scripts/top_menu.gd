@@ -148,6 +148,15 @@ func _close_other_top_panels(keep_open: Array = []) -> void:
         p.hide()
 
 
+## Публичный метод — закрывает вообще все менюшки TopMenu (панели UAV/Missile/Products
+## и панель статистики). Вызывается извне (например, из flag_rect.gd), когда открывается
+## ColorPicker, чтобы он не оставался открытым вместе с каким-то из меню TopMenu.
+func close_all_menus() -> void:
+    _close_other_top_panels()
+    if statistics_menu:
+        statistics_menu.close_menu()
+
+
 ## Кнопка TopMenu/TopPanel/Flag — открывает/закрывает панель статистики.
 ## Перед открытием закрываем остальные панели TopMenu (UAV/Missile/Products),
 ## чтобы не было двух открытых одновременно.
@@ -155,6 +164,14 @@ func _close_other_top_panels(keep_open: Array = []) -> void:
 ## армии игрока по тем же правилам, что использует ИИ (AIMilitary.process_military_movement).
 func _on_ai_army_tick_toggled(toggled_on: bool) -> void:
     AIManager.player_ai_army_enabled = toggled_on
+
+
+## Вызывается из SaveManager._load_ai() после загрузки сейва, чтобы визуальное
+## состояние чекбокса совпадало с восстановленным AIManager.player_ai_army_enabled.
+## set_pressed_no_signal() используется намеренно, чтобы не дёргать лишний раз
+## сигнал toggled (а вместе с ним и _on_ai_army_tick_toggled()) во время загрузки.
+func set_ai_army_tick(value: bool) -> void:
+    ai_army_tick.set_pressed_no_signal(value)
 
 
 func _on_flag_button_pressed() -> void:

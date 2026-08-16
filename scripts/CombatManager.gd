@@ -190,6 +190,9 @@ func _calc_side_max_hp(circles: Array) -> int:
     return total_soldiers
 
 func _process_all_battles(delta: float) -> void:
+    var t0 := Time.get_ticks_usec()
+    var battle_count := active_battles.size()
+
     var ended: Array = []
     
     for province_id in active_battles:
@@ -203,6 +206,14 @@ func _process_all_battles(delta: float) -> void:
     
     for province_id in ended:
         active_battles.erase(province_id)
+
+    # ВРЕМЕННЫЙ ПРОФИЛИРОВЩИК — см. такой же блок в AIManager._process_ai_day_batch().
+    # Печатает, сколько миллисекунд занял ПОЛНЫЙ проход по всем активным боям
+    # ЗА ОДИН КАДР (не раз в день!) — если фриз держится постоянно, а не
+    # скачком в момент смены дня, скорее всего виноват именно этот блок.
+    var elapsed_ms := (Time.get_ticks_usec() - t0) / 1000.0
+    if elapsed_ms >= 4.0:
+        print("[COMBAT PROFILE] _process_all_battles: %.2f ms (активных боёв=%d)" % [elapsed_ms, battle_count])
 
 func _process_battle_tick(province_id: int) -> bool:
     var battle = active_battles[province_id]

@@ -170,129 +170,171 @@ static func get_army_limit(country: String) -> int:
     return int(limit_float)
 
 ## Движение армий во время войны (вызывается ежедневно)
+##
+## ПЕРЕПИСАНО ПОЛНОСТЬЮ: раньше (два предыдущих захода на оптимизацию) мы
+## считали ФРОНТ ВСЕЙ СТРАНЫ (get_allied_territory_provinces +
+## get_frontier_enemy_provinces / волна от фронта вглубь территории) — то
+## есть O(вся_территория_страны) операций каждый день, даже если реальных
+## армий у страны было 5-6 штук из 2265 провинций. Кэш "по количеству своих
+## провинций" не спасал, потому что в активной войне территория меняется
+## буквально каждый день (см. профилирование — Россия теряла/приобретала
+## по 4-6 провинций ежедневно), так что кэш почти всегда промахивался.
+##
+## ПРАВИЛЬНЫЙ ПОДХОД: армий мало — значит вместо "просканировать всю страну,
+## чтобы понять, где фронт" делаем BFS НАРУЖУ от каждой конкретной провинции
+## С АРМИЕЙ, пока не наткнёмся на ближайшую вражескую провинцию, и сразу же
+## останавливаемся. Стоимость — O(расстояние_до_фронта), не O(размер_страны).
+## Работает одинаково для суши и "нет прямой границы" (высадка через море) —
+## просто BFS идёт на несколько шагов дальше, никакого отдельного фолбэка
+## на "все провинции врагов" больше не нужно.
 static func process_military_movement(country: String) -> void:
     var enemies = ProvinceRegistry.war_relations.get(country, [])
     if enemies.is_empty():
         return
 
-    var own_provinces = get_allied_territory_provinces(country)
-    var own_set: Dictionary = {}
-    for p in own_provinces:
-        own_set[p] = true
+    # ОПТИМИЗАЦИЯ: если враг формально ещё "в войне" (мир не заключён), но
+    # у него уже 0 провинций (полностью оккупирован/разгромлен), то ниже
+    # find_nearest_enemy_province() НИКОГДА не найдёт вражескую провинцию —
+    # BFS каждый раз доходит до MAX_BFS_NODES и завершается впустую. Раньше
+    # это повторялось КАЖДЫЙ ДЕНЬ для каждой простаивающей армии такой
+    # страны бесконечно (до заключения мира), что и давало устойчивый лаг
+    # даже "без войн" по ощущениям игрока. Отфильтровываем таких врагов
+    # заранее — O(k) проверка по готовому кэшу вместо BFS по всей карте.
+    var enemy_set: Dictionary = {}
+    for e in enemies:
+        if not AIManager.get_country_provinces(e).is_empty():
+            enemy_set[e] = true
 
-    var frontier_targets = get_frontier_enemy_provinces(enemies, own_set)
-
-    # Если сухопутной границы нет, добавляем все провинции врагов для морских атак/высадок
-    if frontier_targets.is_empty():
-        for enemy in enemies:
-            frontier_targets.append_array(AIManager.get_country_provinces(enemy))
-
-        if frontier_targets.is_empty():
-            return
+    if enemy_set.is_empty():
+        return  # все враги уже без территории — двигать войска некуда
 
     var provinces_with_armies: Dictionary = {}
-    for p in own_provinces:
-        provinces_with_armies[p] = true
-    # ОПТИМИЗАЦИЯ: раньше здесь был двойной цикл по DivisionManager.armies.keys()
-    # и по всем кружкам в каждой провинции — т.е. полный скан ВСЕХ армий на
-    # карте ради поиска армий одной страны, повторяющийся для каждой страны
-    # каждый день (O(countries * total_armies) синхронно в кадре смены дня).
-    # Теперь используем инкрементальный индекс DivisionManager.armies_by_country — O(k).
     for p_id in DivisionManager.get_country_provinces_with_armies(country):
         provinces_with_armies[p_id] = true
 
-    var assigned_count: Dictionary = {}
+    if provinces_with_armies.is_empty():
+        return
 
     for p_id in provinces_with_armies:
         if CombatManager.active_battles.has(p_id):
             continue
 
+        # ОПТИМИЗАЦИЯ: если для этой провинции вчера уже выяснили, что враг
+        # недостижим (BFS дошёл до MAX_BFS_NODES и вернул -1), не гоняем
+        # полный BFS заново каждый день — ждём STUCK_ARMY_RETRY_DAYS дней.
+        # См. AIManager.stuck_army_cooldowns.
+        if AIManager.stuck_army_cooldowns.has(p_id):
+            AIManager.stuck_army_cooldowns[p_id] -= 1
+            if AIManager.stuck_army_cooldowns[p_id] > 0:
+                continue
+            AIManager.stuck_army_cooldowns.erase(p_id)
+
+        # ОПТИМИЗАЦИЯ: раньше по армиям в этой провинции проходили ДВАЖДЫ
+        # (один раз — посчитать own_division_count для слияния, второй раз —
+        # для движения). Теперь считаем и собираем "подвижные" армии за один
+        # проход; повторный проход нужен только ПОСЛЕ реального слияния,
+        # т.к. merge_divisions() меняет список армий в провинции.
         var own_division_count = 0
+        var movable_armies: Array = []
         for army_check in DivisionManager.armies.get(p_id, []):
-            if is_instance_valid(army_check) and army_check.division_owner == country:
-                own_division_count += 1
+            if not is_instance_valid(army_check) or army_check.division_owner != country:
+                continue
+            own_division_count += 1
+            if not army_check.is_moving:
+                movable_armies.append(army_check)
+
         if own_division_count > 4 and country != AIManager.settings.active_country:
             DivisionManager.merge_divisions(p_id)
+            movable_armies.clear()
+            for army_check in DivisionManager.armies.get(p_id, []):
+                if is_instance_valid(army_check) and army_check.division_owner == country and not army_check.is_moving:
+                    movable_armies.append(army_check)
 
-        for army in DivisionManager.armies.get(p_id, []):
-            if not is_instance_valid(army) or army.division_owner != country or army.is_moving:
-                continue
+        if movable_armies.is_empty():
+            continue
 
-            var adjacent_targets = []
-            for adj_id in ProvinceRegistry.province_adjacency.get(p_id, []):
-                var t_id = int(adj_id)
-                if frontier_targets.has(t_id):
-                    adjacent_targets.append(t_id)
+        # ВАЖНО: передаём именно КОНЕЧНУЮ вражескую провинцию, а не первого
+        # соседа по маршруту. start_movement_to() сам строит через PathCache
+        # ПОЛНЫЙ путь и плавно ведёт армию по всем провинциям без остановок —
+        # если отдавать только "следующий сосед", армия останавливается на
+        # каждом шаге и ждёт СЛЕДУЮЩЕГО ДНЕВНОГО ТИКА, чтобы получить
+        # следующего соседа — отсюда "рывки" по одной провинции в день,
+        # особенно заметные на море, где останавливаться незачем вовсе.
+        var target_p_id: int = find_nearest_enemy_province(country, p_id, enemy_set)
+        if target_p_id == -1:
+            # Враг не найден за MAX_BFS_NODES — не долбим BFS каждый день,
+            # ставим кулдаун и вернёмся к этой провинции позже.
+            AIManager.stuck_army_cooldowns[p_id] = AIManager.STUCK_ARMY_RETRY_DAYS
+            continue  # нет достижимого врага из этой провинции
 
-            var target_p_id = -1
-            if not adjacent_targets.is_empty():
-                target_p_id = pick_least_assigned_target(adjacent_targets, assigned_count)
-            else:
-                target_p_id = pick_least_assigned_target(frontier_targets, assigned_count)
-
-            if target_p_id == -1:
-                continue
-
-            assigned_count[target_p_id] = assigned_count.get(target_p_id, 0) + 1
-
-            var target_pos = AIManager.settings.province_centers.get(target_p_id, Vector2.ZERO)
+        var target_pos = AIManager.settings.province_centers.get(target_p_id, Vector2.ZERO)
+        for army in movable_armies:
             army.start_movement_to(target_p_id, target_pos)
 
-## Провинции страны + провинции её контролёра (сюзерена) + провинции всех её марионеток.
-static func get_allied_territory_provinces(country: String) -> Array:
-    var result: Array = AIManager.get_country_provinces(country).duplicate()
-    var seen: Dictionary = {}
-    for p in result:
-        seen[p] = true
+## Ограничение на размер BFS в find_nearest_enemy_province(): если враг не
+## найден в пределах этого числа посещённых провинций — считаем, что он
+## недостижим/слишком далеко, и НЕ продолжаем поиск. Без этого лимита BFS
+## в наземно-непроходимых/морских войнах (когда ближайший враг далеко или
+## недостижим вовсе) обходил бы ОГРОМНЫЙ кусок связанной морской сети карты.
+##
+## Раньше (когда AI пересчитывал маршрут КАЖДЫЙ ДЕНЬ для каждой стоящей
+## армии, отдавая только следующего соседа) лимит держали низким (250),
+## чтобы не тратить кадр на ежедневный пересчёт. Теперь start_movement_to()
+## получает сразу конечную вражескую провинцию и армия идёт до неё одним
+## непрерывным маршем (см. process_military_movement) — значит этот поиск
+## выполняется один раз на весь марш-бросок, а не каждый день, и лимит
+## можно держать значительно выше без риска деградации производительности.
+const MAX_BFS_NODES := 4000
 
-    var c_data = ProvinceRegistry.countries_data.get(country, {})
+## BFS НАРУЖУ от start_p, пока не найдём province, принадлежащую врагу из
+## enemy_set — возвращает САМУ вражескую провинцию (конечную цель марша),
+## а не промежуточный шаг: armee движется до неё одним непрерывным путём
+## через PathCache/start_movement_to. -1, если врагов не нашли вовсе
+## (например, страна отрезана от всех врагов чужой территорией без доступа)
+## ИЛИ ближайший враг дальше MAX_BFS_NODES провинций (см. пояснение выше).
+static func find_nearest_enemy_province(country: String, start_p: int, enemy_set: Dictionary) -> int:
+    var start_owner = ProvinceRegistry.province_data.get(start_p, {}).get("owner", "")
+    if enemy_set.has(start_owner):
+        return -1  # уже стоим на вражеской земле — двигаться дальше некуда
 
-    var controller = c_data.get("controller", "")
-    if controller != "" and controller != country:
-        for p in AIManager.get_country_provinces(controller):
-            if not seen.has(p):
-                seen[p] = true
-                result.append(p)
+    var visited: Dictionary = {start_p: true}
+    var queue: Array = [start_p]
+    var q_idx := 0
 
-    for puppet in c_data.get("control", []):
-        if puppet == "" or puppet == country:
-            continue
-        for p in AIManager.get_country_provinces(puppet):
-            if not seen.has(p):
-                seen[p] = true
-                result.append(p)
+    while q_idx < queue.size():
+        if visited.size() > MAX_BFS_NODES:
+            return -1  # враг слишком далеко/недостижим — не тратим на поиск весь кадр
 
-    return result
-
-## Вражеские провинции, граничащие хотя бы с одной нашей провинцией
-static func get_frontier_enemy_provinces(enemies: Array, own_set: Dictionary) -> Array:
-    var enemy_set: Dictionary = {}
-    for e in enemies:
-        enemy_set[e] = true
-
-    var result = []
-    var seen: Dictionary = {}
-    for p_id in own_set:
-        for adj_id in ProvinceRegistry.province_adjacency.get(p_id, []):
-            var t_id = int(adj_id)
-            if seen.has(t_id):
+        var current: int = queue[q_idx]
+        q_idx += 1
+        for adj_id in ProvinceRegistry.province_adjacency.get(current, []):
+            var n: int = int(adj_id)
+            if visited.has(n):
                 continue
-            var owner = ProvinceRegistry.province_data.get(t_id, {}).get("owner", "")
-            if owner != "" and owner != ProvinceRegistry.SEA_OWNER and enemy_set.has(owner):
-                seen[t_id] = true
-                result.append(t_id)
-    return result
 
-## Выбирает цель с наименьшим числом уже направленных на неё армий в этом тике
-static func pick_least_assigned_target(candidates: Array, assigned_count: Dictionary) -> int:
-    var shuffled = candidates.duplicate()
-    shuffled.shuffle()
+            var n_owner = ProvinceRegistry.province_data.get(n, {}).get("owner", "")
+            if enemy_set.has(n_owner):
+                return n  # нашли ближайшую вражескую провинцию — это и есть цель марша
 
-    var best_id    = -1
-    var best_count = INF
-    for t_id in shuffled:
-        var c = assigned_count.get(t_id, 0)
-        if c < best_count:
-            best_count = c
-            best_id    = t_id
-    return best_id
+            if not _is_passable_for_movement(country, n):
+                continue
+
+            visited[n] = true
+            queue.append(n)
+
+    return -1
+
+## Проходимость провинции для сухопутного/морского марша армии этой страны —
+## те же правила, что _can_enter_territory()/Pathfinder.find_path(): свои,
+## ничейные/морские, вражеские (война есть — идём напролом) и подконтрольные.
+static func _is_passable_for_movement(country: String, p_id: int) -> bool:
+    var owner = ProvinceRegistry.province_data.get(p_id, {}).get("owner", "")
+    if owner == "" or owner == ProvinceRegistry.SEA_OWNER or owner == country:
+        return true
+    if not ProvinceRegistry.countries_data.has(owner) or not ProvinceRegistry.countries_data.has(country):
+        return false
+    if ProvinceRegistry.is_at_war(country, owner):
+        return true
+    var my_ctrl = ProvinceRegistry.countries_data[country].get("control", [])
+    var their_ctrl = ProvinceRegistry.countries_data[owner].get("control", [])
+    return owner in my_ctrl or country in their_ctrl

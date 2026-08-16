@@ -249,16 +249,23 @@ static func process_missile_strikes(country: String) -> void:
 
 ## Вражеские дивизии (по всем врагам страны), отсортированные по убыванию
 ## численности солдат — ракета теперь целится в самую "жирную" дивизию,
-## а не в провинцию с заводами. Ищем по ВСЕМ дивизиям на карте (а не только
-## по "своим" провинциям врага), чтобы учитывать и войска врага, стоящие
-## транзитом на чужой/нейтральной территории.
+## а не в провинцию с заводами. Учитывает и войска врага, стоящие транзитом
+## на чужой/нейтральной территории (не только "родные" провинции врага).
+##
+## ОПТИМИЗАЦИЯ: раньше здесь был полный скан ВСЕХ дивизий на карте
+## (DivisionManager.armies.keys()) ради поиска дивизий нескольких вражеских
+## стран — O(total_divisions) на каждый ракетный залп КАЖДОЙ воюющей страны.
+## При большой войне (много армий с обеих сторон) это ощутимо. Теперь берём
+## готовый инкрементальный индекс DivisionManager.armies_by_country и идём
+## только по провинциям, где реально стоят армии врагов — O(enemy_armies).
 static func get_richest_enemy_divisions(enemies: Array, max_count: int) -> Array:
     var candidates: Array = []
 
-    for p_id in DivisionManager.armies.keys():
-        for division in DivisionManager.armies[p_id]:
-            if is_instance_valid(division) and division.division_owner in enemies and division.soldiers > 0:
-                candidates.append(division)
+    for enemy in enemies:
+        for p_id in DivisionManager.get_country_provinces_with_armies(enemy):
+            for division in DivisionManager.armies.get(p_id, []):
+                if is_instance_valid(division) and division.division_owner == enemy and division.soldiers > 0:
+                    candidates.append(division)
 
     candidates.sort_custom(func(a, b): return a.soldiers > b.soldiers)
 
